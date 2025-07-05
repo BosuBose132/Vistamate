@@ -1,5 +1,5 @@
 Meteor.methods({
-  async 'visitors.processOCR'(base64Image) {
+  async 'visitors.processOCR'(base64ImageData) {
     check(base64ImageData, String);
 
     if (!openaiApiKey) {
