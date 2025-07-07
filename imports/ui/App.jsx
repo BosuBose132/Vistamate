@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import CameraCapture from './components/CameraCapture';
+import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
-const [surveyModel, setSurveyModel] = useState(null);
+import CameraCapture from './CameraCapture';
+import SurveyForm from './SurveyForm';
+
 
 
 export const App = () => {
   const [capturedImage, setCapturedImage] = useState(null);
+  const [ocrResult, setOcrResult] = useState(null);
+  const [surveyModel, setSurveyModel] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
