@@ -11,7 +11,7 @@ export const App = () => {
     console.log('Captured in App.jsx:', base64);
     setCapturedImage(base64);
 
-  
+
     setLoading(true);
     setError(null);
     setOcrResult(null);
@@ -29,6 +29,63 @@ export const App = () => {
       setOcrResult(result);
     });
   };
+  const generateSurveyJsonFromOCR = (ocrData) => {
+    const elements = [];
+
+    if ('name' in ocrData) {
+      elements.push({
+        type: "text",
+        name: "name",
+        title: "Full Name",
+        isRequired: true,
+        defaultValue: ocrData.name || ""
+      });
+    }
+
+    if ('email' in ocrData) {
+      elements.push({
+        type: "text",
+        name: "email",
+        title: "Email",
+        inputType: "email",
+        defaultValue: ocrData.email || ""
+      });
+    }
+
+    if ('phone' in ocrData) {
+      elements.push({
+        type: "text",
+        name: "phone",
+        title: "Phone Number",
+        defaultValue: ocrData.phone || ""
+      });
+    }
+
+    if ('dob' in ocrData) {
+      elements.push({
+        type: "text",
+        name: "dob",
+        title: "Date of Birth",
+        defaultValue: ocrData.dob || ""
+      });
+    }
+
+    if ('gender' in ocrData || 'sex' in ocrData) {
+      elements.push({
+        type: "dropdown",
+        name: "gender",
+        title: "Gender",
+        choices: ["M", "F", "Other"],
+        defaultValue: ocrData.gender || ocrData.sex || ""
+      });
+    }
+
+    return {
+      title: "Visitor Registration",
+      elements
+    };
+  };
+
 
   return (
     <div style={{ padding: '20px' }}>
@@ -40,7 +97,7 @@ export const App = () => {
           <img src={capturedImage} alt="Captured" style={{ width: '300px', border: '1px solid #ccc' }} />
         </div>
       )}
-    {ocrResult && (
+      {ocrResult && (
         <div>
           <h3>OCR Result JSON:</h3>
           <pre style={{ background: '#f4f4f4', padding: '10px' }}>
