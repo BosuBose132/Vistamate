@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import CameraCapture from './components/CameraCapture';
+import { Model } from 'survey-core';
+const [surveyModel, setSurveyModel] = useState(null);
+
 
 export const App = () => {
   const [capturedImage, setCapturedImage] = useState(null);
