@@ -1,6 +1,7 @@
 import React from 'react';
 import { Survey } from 'survey-react-ui';
-import 'survey-core/defaultV2.min.css';
+import 'survey-core/survey-core.css';
+
 
 const SurveyForm = ({ surveyModel }) => {
   if (!surveyModel) {
