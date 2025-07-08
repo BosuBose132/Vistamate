@@ -1,3 +1,8 @@
+import { Meteor } from 'meteor/meteor';
+import { check } from 'meteor/check';
+import OpenAI from 'openai';
+
+
 Meteor.methods({
   async 'visitors.processOCR'(base64ImageData) {
     check(base64ImageData, String);
