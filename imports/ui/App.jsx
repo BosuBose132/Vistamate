@@ -36,13 +36,21 @@ export const App = () => {
       setOcrResult(result);
 
       if (result) {
-        const surveyJson = generateSurveyJsonFromOCR(result);
+        let ocrJson = {};
+        try {
+          ocrJson = JSON.parse(result.text);
+        } catch (e) {
+          console.error("Failed to parse OCR JSON:", e);
+        }
+
+        const surveyJson = generateSurveyJsonFromOCR(ocrJson);
+        
         const model = new Model(surveyJson);
 
         model.onComplete.add((sender) => {
           const finalData = sender.data;
           console.log('Final submitted data:', finalData);
-           Meteor.call('visitors.checkIn', finalData, (err, res) => {
+          Meteor.call('visitors.checkIn', finalData, (err, res) => {
             if (err) {
               console.error('Error saving visitor:', err);
               alert('Error saving visitor: ' + err.message);
@@ -57,74 +65,65 @@ export const App = () => {
       }
     });
   };
-      const generateSurveyJsonFromOCR = (ocrData) => {
-        const elements = [];
-
-        if ('name' in ocrData) {
-          elements.push({
-            type: "text",
-            name: "name",
-            title: "Full Name",
-            isRequired: true,
-            defaultValue: ocrData.name || ""
-          });
+  const generateSurveyJsonFromOCR = (ocrData = {}) => {
+    return {
+      title: "Visitor Registration",
+      showQuestionNumbers: "off",
+      elements: [
+        {
+          type: "text",
+          name: "name",
+          title: "Full Name",
+          isRequired: true,
+          defaultValue: ocrData.name || ""
+        },
+        {
+          type: "text",
+          name: "email",
+          title: "Email",
+          inputType: "email",
+          defaultValue: ocrData.email || ""
+        },
+        {
+          type: "text",
+          name: "phone",
+          title: "Phone Number",
+          defaultValue: ocrData.phone || ""
+        },
+        {
+          type: "text",
+          name: "company",
+          title: "Company / Organization",
+          defaultValue: ocrData.company || ""
+        },
+        {
+          type: "text",
+          name: "dob",
+          title: "Date of Birth",
+          defaultValue: ocrData.dob || ""
+        },
+        {
+          type: "dropdown",
+          name: "gender",
+          title: "Gender",
+          choices: ["M", "F", "Other"],
+          defaultValue: ocrData.gender || ocrData.sex || ""
         }
-
-        if ('email' in ocrData) {
-          elements.push({
-            type: "text",
-            name: "email",
-            title: "Email",
-            inputType: "email",
-            defaultValue: ocrData.email || ""
-          });
-        }
-
-        if ('phone' in ocrData) {
-          elements.push({
-            type: "text",
-            name: "phone",
-            title: "Phone Number",
-            defaultValue: ocrData.phone || ""
-          });
-        }
-
-        if ('dob' in ocrData) {
-          elements.push({
-            type: "text",
-            name: "dob",
-            title: "Date of Birth",
-            defaultValue: ocrData.dob || ""
-          });
-        }
-
-        if ('gender' in ocrData || 'sex' in ocrData) {
-          elements.push({
-            type: "dropdown",
-            name: "gender",
-            title: "Gender",
-            choices: ["M", "F", "Other"],
-            defaultValue: ocrData.gender || ocrData.sex || ""
-          });
-        }
-
-        return {
-          title: "Visitor Registration",
-          elements
-        };
-      };
+      ]
+    };
+  };
 
 
-      return (
-        <div style={{ padding: '20px' }}>
-          <h1>SurveyJS Visitor Registration</h1>
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>SurveyJS Visitor Registration</h1>
 
-          {loading && <p>Processing OCR... please wait.</p>}
+      {loading && <p>Processing OCR... please wait.</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {!surveyModel && (
         <>
-        
+
           <CameraCapture onCapture={handleCapture} />
           {capturedImage && (
             <div>
@@ -132,11 +131,11 @@ export const App = () => {
               <img src={capturedImage} alt="Captured" style={{ width: '300px', border: '1px solid #ccc' }} />
             </div>
           )}
-          </>
+        </>
       )}
-           {surveyModel && (
+      {surveyModel && (
         <SurveyForm surveyModel={surveyModel} />
       )}
     </div>
-      );
-    };
+  );
+};
