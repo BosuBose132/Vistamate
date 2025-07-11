@@ -44,9 +44,12 @@ const CameraCapture = ({ onCapture }) => {
 
   return (
     <div className="container my-5">
-      <div className="card shadow p-4">
-        <h2 className="text-center mb-4 text-primary">Visitor Check-In - Camera Capture</h2>
-
+      <div className="card shadow-lg rounded-4 overflow-hidden">
+        <div className="bg-dark text-white text-center py-3">
+          <h2 className="mb-1">Visitor Check-In</h2>
+          <p className="mb-0">Capture your photo to check in</p>
+        </div>
+     <div className="card-body p-4">
         {error && (
           <div className="alert alert-danger text-center">
             {error}
@@ -66,13 +69,14 @@ const CameraCapture = ({ onCapture }) => {
 
         <div className="d-grid gap-2">
           <button
-            className="btn btn-primary btn-lg"
+            className="btn btn-success btn-lg"
             onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
           >
-            📸 Capture & Scan
+            Capture & Scan
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

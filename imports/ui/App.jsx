@@ -116,7 +116,7 @@ export const App = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>SurveyJS Visitor Registration</h1>
+      <h1></h1>
 
       {loading && <p>Processing OCR... please wait.</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}

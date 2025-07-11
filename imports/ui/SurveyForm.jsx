@@ -10,7 +10,7 @@ const SurveyForm = ({ surveyModel }) => {
 
   return (
     <div>
-      <h2>Visitor Registration Form</h2>
+      <h2></h2>
       <Survey model={surveyModel} />
     </div>
   );
