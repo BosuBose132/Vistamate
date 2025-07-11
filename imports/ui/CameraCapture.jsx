@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import './camera.css';
 
 const handleCapture = (videoRef, canvasRef, onCapture) => {
   const video = videoRef.current;
@@ -42,12 +43,36 @@ const CameraCapture = ({ onCapture }) => {
   }, []);
 
   return (
-    <div>
-      <h2>Camera Capture</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <video ref={videoRef} autoPlay playsInline style={{ width: '100%', maxWidth: '400px', border: '1px solid #ccc' }} />
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <button onClick={() => handleCapture(videoRef, canvasRef, onCapture)}>Capture & Scan</button>
+    <div className="container my-5">
+      <div className="card shadow p-4">
+        <h2 className="text-center mb-4 text-primary">Visitor Check-In - Camera Capture</h2>
+
+        {error && (
+          <div className="alert alert-danger text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="video-container text-center mb-3">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="border rounded"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+        </div>
+
+        <div className="d-grid gap-2">
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
+          >
+            📸 Capture & Scan
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
