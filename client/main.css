@@ -1,4 +1,17 @@
-body {
-  padding: 10px;
-  font-family: sans-serif;
+.bg-primary {
+  background-color: #403f3f !important;
+}
+
+.btn-primary {
+  background-color: #b4cd93;
+  border-color: #427a5b;
+}
+
+.btn-primary:hover {
+  background-color: #403f3f;
+  border-color: #427a5b;
+}
+
+h2, p {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
