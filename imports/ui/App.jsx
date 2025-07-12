@@ -98,17 +98,11 @@ export const App = () => {
         },
         {
           type: "text",
-          name: "dob",
-          title: "Date of Birth",
-          defaultValue: ocrData.dob || ""
+          name: "address",
+          title: "Address",
+          defaultValue: ocrData.address || ""
         },
-        {
-          type: "dropdown",
-          name: "gender",
-          title: "Gender",
-          choices: ["M", "F", "Other"],
-          defaultValue: ocrData.gender || ocrData.sex || ""
-        }
+        
       ]
     };
   };
