@@ -13,3 +13,12 @@
   background-color: #427a5b;
   border-color: #b4cd93;
 }
+
+.video-container {
+  position: relative;
+}
+
+
+.overlay-box {
+  transition: border 0.3s;
+}
