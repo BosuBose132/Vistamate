@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './camera.css';
+import Tesseract from 'tesseract.js';
+import { Meteor } from 'meteor/meteor';
 
 
 
@@ -31,9 +33,18 @@ const CameraCapture = ({ onCapture }) => {
   const canvasRef = useRef(null);
   const [error, setError] = useState(null);
 
-  const [borderColor, setBorderColor] = useState('red');
+  // Box overlay color: black by default
+  const [borderColor, setBorderColor] = useState('black');
+  // Timer for steady alignment
   const [steadyTimer, setSteadyTimer] = useState(0);
+  // Timer for green state
+  const [greenTimer, setGreenTimer] = useState(0);
+  // Last frame for movement detection
   const [lastFrameData, setLastFrameData] = useState(null);
+  // Whether box is green (ID detected and aligned)
+  const [isBoxGreen, setIsBoxGreen] = useState(false);
+  // For OCR check debounce
+  const [isCheckingOCR, setIsCheckingOCR] = useState(false);
 
   useEffect(() => {
     const enableCamera = async () => {
@@ -44,56 +55,136 @@ const CameraCapture = ({ onCapture }) => {
         setError('Unable to access camera: ' + err.message);
       }
     };
-
     enableCamera();
   }, []);
+
+  // Main interval: check alignment and OCR
   useEffect(() => {
     const interval = setInterval(() => {
-      checkSteadyFrame();
-    }, 500);
+      checkFrameAndOCR();
+    }, 300); // 0.3s for faster response
     return () => clearInterval(interval);
-  }, [lastFrameData, steadyTimer]);
+  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR]);
 
-  const checkSteadyFrame = () => {
+  // Reset green timer if box not green
+  useEffect(() => {
+    if (!isBoxGreen) setGreenTimer(0);
+  }, [isBoxGreen]);
 
-    const triggerAutoCapture = () => {
+  // If greenTimer reaches 3, auto-capture
+  useEffect(() => {
+    if (greenTimer >= 3) {
       handleCapture(videoRef, canvasRef, onCapture);
-      setSteadyTimer(0);
-      setBorderColor('red');
-    };
+      setGreenTimer(0);
+      setIsBoxGreen(false);
+      setBorderColor('black');
+    }
+  }, [greenTimer]);
+
+  // Check alignment and OCR
+  const checkFrameAndOCR = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
+    // Draw current frame
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const currentData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    // Get overlay box region (centered)
+    const box = {
+      x: Math.floor(canvas.width * 0.35),
+      y: Math.floor(canvas.height * 0.20),
+      w: Math.floor(canvas.width * 0.35),
+      h: Math.floor(canvas.height * 0.50)
+    };
+    const boxImage = ctx.getImageData(box.x, box.y, box.w, box.h);
 
+    // Movement detection (simple diff)
+    const currentData = boxImage.data;
     if (lastFrameData) {
       let diff = 0;
       for (let i = 0; i < currentData.length; i += 4) {
         diff += Math.abs(currentData[i] - lastFrameData[i]);
       }
       const averageDiff = diff / (currentData.length / 4);
-
-      if (averageDiff < 10) {
-        setSteadyTimer(prev => prev + 0.5);
-        if (steadyTimer >= 3) {
-          setBorderColor('green');
-          triggerAutoCapture();
-        } else {
-          setBorderColor('orange');
+      // If movement is low, consider steady (less sensitive)
+      if (averageDiff < 25) {
+        setSteadyTimer(prev => prev + 0.3);
+        // Only check OCR if not already checking
+        if (!isCheckingOCR) {
+          setIsCheckingOCR(true);
+          // Convert box region to base64
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = box.w;
+          tempCanvas.height = box.h;
+          tempCanvas.getContext('2d').putImageData(boxImage, 0, 0);
+          const boxBase64 = tempCanvas.toDataURL('image/png');
+          // Use OCR API to check for ID card
+          checkOCRForText(boxBase64).then(isIdCard => {
+            if (isIdCard) {
+              setBorderColor('green');
+              setIsBoxGreen(true);
+              setGreenTimer(prev => prev + 0.3);
+            } else {
+              setBorderColor('black');
+              setIsBoxGreen(false);
+              setGreenTimer(0);
+            }
+            setIsCheckingOCR(false);
+          });
+        } else if (isBoxGreen) {
+          setGreenTimer(prev => prev + 0.3);
         }
       } else {
         setSteadyTimer(0);
-        setBorderColor('red');
+        setBorderColor('black');
+        setIsBoxGreen(false);
+        setGreenTimer(0);
       }
     }
-
     setLastFrameData(currentData);
   };
+
+  // Use full frame for manual capture
+  const captureFrameAsBase64 = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return null;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/png');
+  };
+
+  // Use OpenAI OCR API via Meteor method to check if image is an ID card
+  const checkOCRForText = (imageBase64) => {
+    return new Promise((resolve) => {
+      Meteor.call('visitors.processOCR', imageBase64, (err, result) => {
+        if (err) {
+          console.error('OCR error:', err);
+          return resolve(false);
+        }
+        try {
+          const parsed = JSON.parse(result.text);
+          // Accept as ID card if at least 2 valid fields
+          let validFields = 0;
+          if (parsed.name && parsed.name.trim().length >= 3) validFields++;
+          if (parsed.company && parsed.company.trim().length >= 3) validFields++;
+          if (parsed.email && parsed.email.includes('@')) validFields++;
+          if (parsed.phone && parsed.phone.trim().length >= 6) validFields++;
+          if (parsed.address && parsed.address.trim().length >= 6) validFields++;
+          resolve(validFields >= 2);
+        } catch (e) {
+          console.error('Error parsing OCR result:', e);
+        }
+        resolve(false);
+      });
+    });
+  };
+
   return (
     <div className="container my-5">
       <div className="card shadow-lg rounded-4 overflow-hidden">
@@ -120,14 +211,27 @@ const CameraCapture = ({ onCapture }) => {
             <div className="overlay-box" style={{
               position: 'absolute',
               top: '20%',
-              left: '20%',
-              width: '40%',
-              height: '40%',
+              left: '35%',
+              width: '35%',
+              height: '50%',
               border: `5px solid ${borderColor}`,
               borderRadius: '8px',
               pointerEvents: 'none',
-              transition: 'border 0.3s'
-            }}></div>
+              transition: 'border 0.3s',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: borderColor === 'green' ? 'green' : 'black',
+              fontWeight: 'bold',
+              fontSize: '1.2em'
+            }}>
+              {borderColor === 'green' && (
+                <span>Auto-capturing in {Math.max(0, Math.ceil(3 - greenTimer))}s...</span>
+              )}
+              {borderColor === 'black' && (
+                <span>Align your ID card inside the box</span>
+              )}
+            </div>
           </div>
 
           <div className="d-grid gap-2">
