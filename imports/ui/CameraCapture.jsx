@@ -62,10 +62,11 @@ const CameraCapture = ({ onCapture }) => {
   // Main interval: check alignment and OCR
   useEffect(() => {
     const interval = setInterval(() => {
+      if (hasCaptured) return;
       checkFrameAndOCR();
     }, 300); // 0.3s for faster response
     return () => clearInterval(interval);
-  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR]);
+  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR,hasCaptured]);
 
   // Reset green timer if box not green
   useEffect(() => {
@@ -74,14 +75,15 @@ const CameraCapture = ({ onCapture }) => {
 
   // If greenTimer reaches 3, auto-capture
   useEffect(() => {
-    if (greenTimer >= 3) {
+    if (greenTimer >= 3 && !hasCaptured) {
       handleCapture(videoRef, canvasRef, onCapture);
       setHasCaptured(true);
       setGreenTimer(0);
       setIsBoxGreen(false);
-      setBorderColor('black');
+      setBorderColor('gray');
+      setSteadyTimer(0);
     }
-  }, [greenTimer]);
+  }, [greenTimer, hasCaptured]);
 
   // Check alignment and OCR
   const checkFrameAndOCR = async () => {
@@ -164,23 +166,23 @@ const CameraCapture = ({ onCapture }) => {
   // Use OpenAI OCR API via Meteor method to check if image is an ID card
   const checkOCRForText = async (imageBase64) => {
     try {
-    const result = await Tesseract.recognize(
-      imageBase64,
-      'eng',
-      { logger: m => console.log(m) }
-    );
+      const result = await Tesseract.recognize(
+        imageBase64,
+        'eng',
+        { logger: m => console.log(m) }
+      );
 
-    const text = result.data.text.trim();
-    console.log("Tesseract OCR result:", text);
+      const text = result.data.text.trim();
+      console.log("Tesseract OCR result:", text);
 
-    // Heuristic: check non-space chars + word count
-    const nonSpaceChars = text.replace(/\s/g, '').length;
-    const words = text.split(/\s+/).filter(Boolean);
+      // Heuristic: check non-space chars + word count
+      const nonSpaceChars = text.replace(/\s/g, '').length;
+      const words = text.split(/\s+/).filter(Boolean);
 
-    return (nonSpaceChars > 10 || words.length >= 5);
-  } catch (err) {
-    console.error('Tesseract error:', err);
-    return false;
+      return (nonSpaceChars > 10 || words.length >= 5);
+    } catch (err) {
+      console.error('Tesseract error:', err);
+      return false;
     };
   };
 
