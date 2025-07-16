@@ -32,6 +32,7 @@ const CameraCapture = ({ onCapture }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [error, setError] = useState(null);
+  const [hasCaptured, setHasCaptured] = useState(false);
 
   // Box overlay color: black by default
   const [borderColor, setBorderColor] = useState('black');
@@ -75,6 +76,7 @@ const CameraCapture = ({ onCapture }) => {
   useEffect(() => {
     if (greenTimer >= 3) {
       handleCapture(videoRef, canvasRef, onCapture);
+      setHasCaptured(true);
       setGreenTimer(0);
       setIsBoxGreen(false);
       setBorderColor('black');
@@ -160,29 +162,26 @@ const CameraCapture = ({ onCapture }) => {
   };
 
   // Use OpenAI OCR API via Meteor method to check if image is an ID card
-  const checkOCRForText = (imageBase64) => {
-    return new Promise((resolve) => {
-      Meteor.call('visitors.processOCR', imageBase64, (err, result) => {
-        if (err) {
-          console.error('OCR error:', err);
-          return resolve(false);
-        }
-        try {
-          const parsed = JSON.parse(result.text);
-          // Accept as ID card if at least 2 valid fields
-          let validFields = 0;
-          if (parsed.name && parsed.name.trim().length >= 3) validFields++;
-          if (parsed.company && parsed.company.trim().length >= 3) validFields++;
-          if (parsed.email && parsed.email.includes('@')) validFields++;
-          if (parsed.phone && parsed.phone.trim().length >= 6) validFields++;
-          if (parsed.address && parsed.address.trim().length >= 6) validFields++;
-          resolve(validFields >= 2);
-        } catch (e) {
-          console.error('Error parsing OCR result:', e);
-        }
-        resolve(false);
-      });
-    });
+  const checkOCRForText = async (imageBase64) => {
+    try {
+    const result = await Tesseract.recognize(
+      imageBase64,
+      'eng',
+      { logger: m => console.log(m) }
+    );
+
+    const text = result.data.text.trim();
+    console.log("Tesseract OCR result:", text);
+
+    // Heuristic: check non-space chars + word count
+    const nonSpaceChars = text.replace(/\s/g, '').length;
+    const words = text.split(/\s+/).filter(Boolean);
+
+    return (nonSpaceChars > 10 || words.length >= 5);
+  } catch (err) {
+    console.error('Tesseract error:', err);
+    return false;
+    };
   };
 
   return (
