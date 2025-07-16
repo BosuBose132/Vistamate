@@ -44,7 +44,7 @@ export const App = () => {
         }
 
         const surveyJson = generateSurveyJsonFromOCR(ocrJson);
-        
+
         const model = new Model(surveyJson);
 
         model.onComplete.add((sender) => {
@@ -55,8 +55,11 @@ export const App = () => {
               console.error('Error saving visitor:', err);
               alert('Error saving visitor: ' + err.message);
             } else {
-              console.log('Visitor saved:', res);
-              alert('Visitor successfully checked in!');
+              if (res.status === 'duplicate') {
+                alert('Visitor already exists. Please see the front desk.');
+              } else {
+                alert('Visitor successfully checked in!');
+              }
             }
           });
         });
@@ -102,7 +105,7 @@ export const App = () => {
           title: "Address",
           defaultValue: ocrData.address || ""
         },
-        
+
       ]
     };
   };
