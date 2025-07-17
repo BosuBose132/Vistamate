@@ -12,6 +12,7 @@ export const App = () => {
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
@@ -68,6 +69,15 @@ export const App = () => {
       }
     });
   };
+
+const handleReturnHome = () => {
+    setCapturedImage(null);
+    setSurveyModel(null);
+    setOcrResult(null);
+    setLoading(false);
+    setError(null);
+  };
+
   const generateSurveyJsonFromOCR = (ocrData = {}) => {
     return {
       title: "Visitor Registration",
@@ -131,8 +141,13 @@ export const App = () => {
         </>
       )}
       {surveyModel && (
-        <SurveyForm surveyModel={surveyModel} />
+        <SurveyForm surveyModel={surveyModel}  onReturnHome={handleReturnHome} />
       )}
     </div>
   );
+ 
+
+  
 };
+
+export default App;
