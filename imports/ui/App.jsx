@@ -12,7 +12,7 @@ export const App = () => {
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
@@ -57,7 +57,7 @@ export const App = () => {
               alert('Error saving visitor: ' + err.message);
             } else {
               if (res.status === 'duplicate') {
-                alert('Visitor already exists. Please see the front desk.');
+                alert('Visitor already exists');
               } else {
                 alert('Visitor successfully checked in!');
               }
@@ -70,7 +70,7 @@ export const App = () => {
     });
   };
 
-const handleReturnHome = () => {
+  const handleReturnHome = () => {
     setCapturedImage(null);
     setSurveyModel(null);
     setOcrResult(null);
@@ -141,13 +141,13 @@ const handleReturnHome = () => {
         </>
       )}
       {surveyModel && (
-        <SurveyForm surveyModel={surveyModel}  onReturnHome={handleReturnHome} />
+        <SurveyForm surveyModel={surveyModel} onReturnHome={handleReturnHome} />
       )}
     </div>
   );
- 
 
-  
+
+
 };
 
 export default App;
