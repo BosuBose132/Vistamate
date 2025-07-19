@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import SurveyForm from './SurveyForm';
 import { Survey } from 'survey-react-ui';
 import 'survey-core/survey-core.css';
 import { generateVCard } from '../../utils/vcard';
-import { QRCode } from 'qrcode.react';
+import QRCode  from 'qrcode.react';
 
 
 const SurveyForm = ({ surveyModel, onReturnHome }) => {
