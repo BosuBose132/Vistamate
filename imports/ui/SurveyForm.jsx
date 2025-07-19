@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Survey } from 'survey-react-ui';
 import 'survey-core/survey-core.css';
 import { generateVCard } from '../../utils/vcard';
-import QRCode  from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
+
+
 
 
 const SurveyForm = ({ surveyModel, onReturnHome }) => {
@@ -36,10 +38,13 @@ const SurveyForm = ({ surveyModel, onReturnHome }) => {
     return (
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
         <h2>Thank you for submitting the form!</h2>
-        <div className="my-4">
-          <p>Scan to get contact details</p>
-          <QRCode value={generateVCard(visitorData)} size={160} />
-        </div>
+        {visitorData && (
+          <div className="my-4">
+            <p>Scan to get contact details</p>
+            <QRCodeSVG value={generateVCard(visitorData)} size={160} />
+          </div>
+        )}
+
         <button className="btn btn-success gap-3 mt-4" onClick={handleDownloadVCard}>
           Download Contact Card
         </button>
@@ -49,6 +54,8 @@ const SurveyForm = ({ surveyModel, onReturnHome }) => {
         >
           Return to Home
         </button>
+        {console.log("visitorData in QR code:", visitorData)}
+
       </div>
     );
   }
