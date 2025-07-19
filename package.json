@@ -12,6 +12,7 @@
     "bootstrap": "^5.3.7",
     "meteor-node-stubs": "^1.2.5",
     "openai": "^5.8.3",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "survey-core": "^2.2.3",
