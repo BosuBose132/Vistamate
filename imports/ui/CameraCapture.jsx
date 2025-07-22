@@ -187,25 +187,25 @@ const CameraCapture = ({ onCapture }) => {
   };
 
   return (
-    <div className="container my-5">
-      <div className="card shadow-lg rounded-4 overflow-hidden">
-        <div className="bg-dark text-white text-center py-3">
-          <h2 className="mb-1">Visitor Check-In</h2>
-          <p className="mb-0">Capture your photo to check in</p>
+    <div className="flex flex-col items-center justify-center py-8">
+      <div className="relative w-full max-w-xl">
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold text-slate-800">Visitor Check-In</h2>
+          <p className="mb-text-slate-600">Capture your photo to check in</p>
         </div>
-        <div className="card-body p-4">
+        <div className="p-6 bg-white rounded-b-lg shadow-inner">
           {error && (
-            <div className="alert alert-danger text-center">
+            <div className="text-red-600 mb-4 text-center font-medium">
               {error}
             </div>
           )}
 
-          <div className="video-container text-center mb-3" style={{ position: 'relative' }}>
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg" style={{ position: 'relative' }}>
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="border rounded"
+              className="w-full h-auto object-cover"
               style={{ maxWidth: '100%', height: 'auto' }}
             />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
@@ -238,7 +238,7 @@ const CameraCapture = ({ onCapture }) => {
 
           <div className="d-grid gap-2">
             <button
-              className="btn btn-success btn-lg"
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold text-lg shadow-md transition"
               onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
             >
               Capture & Scan
