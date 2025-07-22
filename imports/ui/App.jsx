@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import WelcomePage from './WelcomePage';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import CameraCapture from './CameraCapture';
@@ -7,12 +8,16 @@ import SurveyForm from './SurveyForm';
 
 
 export const App = () => {
+  const [started, setStarted] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
   const [ocrResult, setOcrResult] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  if (!started) {
+    return <WelcomePage onStart={() => setStarted(true)} />;
+  }
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);

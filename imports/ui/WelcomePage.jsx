@@ -1,16 +1,33 @@
 // WelcomePage.js
 import React from 'react';
-import ThemeToggle from './ThemeToggle';
-import logo from './logo.png'; // Place your logo in src/
 
-const WelcomePage = ({ onStart }) => (
-  <div className="d-flex flex-column justify-content-center align-items-center vh-100 position-relative" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)' }}>
-    <ThemeToggle />
-    <img src={logo} alt="Company Logo" style={{ width: 120, marginBottom: 24 }} />
-    <h1 className="mb-2 fw-bold">Welcome to [Company Name]</h1>
-    <p className="mb-4 fs-5">Please check in to proceed</p>
-    <button className="btn btn-primary btn-lg px-5" onClick={onStart}>Start Check-In</button>
-  </div>
-);
+
+const WelcomePage = ({ onStart }) => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen px-6 bg-gradient-to-br from-slate-100 to-slate-300">
+      {/* Logo
+      <img src={logo} alt="Vistamate Logo" className="w-28 mb-6" /> */}
+
+      {/* Headline */}
+      <h1 className="text-4xl font-bold text-slate-800 mb-2 text-center">
+        Welcome to <span className="text-green-600">Vistamate</span>
+      </h1>
+
+      {/* Subheading */}
+      <p className="text-lg text-slate-600 mb-6 text-center">
+        Please check in to proceed
+      </p>
+
+      {/* Start Button */}
+      <button
+        onClick={onStart}
+        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200"
+      >
+        Start Check-In
+      </button>
+    </div>
+  );
+};
+
 
 export default WelcomePage;
