@@ -66,7 +66,7 @@ const CameraCapture = ({ onCapture }) => {
       checkFrameAndOCR();
     }, 300); // 0.3s for faster response
     return () => clearInterval(interval);
-  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR,hasCaptured]);
+  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR, hasCaptured]);
 
   // Reset green timer if box not green
   useEffect(() => {
@@ -75,7 +75,7 @@ const CameraCapture = ({ onCapture }) => {
 
   // If greenTimer reaches 3, auto-capture
   useEffect(() => {
-    if (greenTimer >= 3 && !hasCaptured) {
+    if (greenTimer >= 2 && !hasCaptured) {
       handleCapture(videoRef, canvasRef, onCapture);
       setHasCaptured(true);
       setGreenTimer(0);
@@ -233,6 +233,7 @@ const CameraCapture = ({ onCapture }) => {
                 <span>Align your ID card inside the box</span>
               )}
             </div>
+
           </div>
 
           <div className="d-grid gap-2">
