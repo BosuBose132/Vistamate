@@ -76,6 +76,7 @@ export const App = () => {
   };
 
   const handleReturnHome = () => {
+    setStarted(false);
     setCapturedImage(null);
     setSurveyModel(null);
     setOcrResult(null);

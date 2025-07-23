@@ -20,7 +20,7 @@ const SurveyForm = ({ surveyModel, onReturnHome }) => {
   }, [surveyModel]);
 
   if (!surveyModel) {
-    return <p>No form to display yet. Capture an ID first!</p>;
+    return <p className="text-center text-slate-600 text-lg py-6">No form to display yet. Capture an ID first!</p>;
   }
 
   const handleDownloadVCard = () => {
@@ -36,31 +36,31 @@ const SurveyForm = ({ surveyModel, onReturnHome }) => {
 
   if (isCompleted) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <h2>Thank you for submitting the form!</h2>
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-white text-center">
+        <h2 className="text-2xl font-bold text-slate-800 mb-4">Thank you for submitting the form!</h2>
         {visitorData && (
-          <div className="my-4">
-            <p>Scan to get contact details</p>
+          <div className="my-6">
+            <p className="text-slate-600 mb-2">Scan to get contact details</p>
             <QRCodeSVG value={generateVCard(visitorData)} size={160} />
           </div>
         )}
-
-        <button className="btn btn-success gap-3 mt-4" onClick={handleDownloadVCard}>
-          Download Contact Card
-        </button>
-        <button
-          className="btn btn-primary mt-4 ms-2"
-          onClick={onReturnHome}
-        >
-          Return to Home
-        </button>
-        {console.log("visitorData in QR code:", visitorData)}
-
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition" onClick={handleDownloadVCard}>
+            Download Contact Card
+          </button>
+          <button
+            className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg font-medium transition"
+            onClick={onReturnHome}
+          >
+            Return to Home
+          </button>
+          {console.log("visitorData in QR code:", visitorData)}
+        </div>
       </div>
     );
   }
   return (
-    <div>
+    <div className="p-6 max-w-3xl mx-auto">
       <h2></h2>
       <Survey model={surveyModel}
         onComplete={(sender) => {

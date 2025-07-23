@@ -187,67 +187,67 @@ const CameraCapture = ({ onCapture }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8">
-      <div className="relative w-full max-w-xl">
-        <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold text-slate-800">Visitor Check-In</h2>
-          <p className="mb-text-slate-600">Capture your photo to check in</p>
-        </div>
-        <div className="p-6 bg-white rounded-b-lg shadow-inner">
-          {error && (
-            <div className="text-red-600 mb-4 text-center font-medium">
-              {error}
-            </div>
-          )}
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 bg-gray-50">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-slate-800">Visitor Check-In</h2>
+        <p className="text-lg text-slate-600">Capture your photo to check in</p>
+      </div>
 
-          <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg" style={{ position: 'relative' }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full h-auto object-cover"
-              style={{ maxWidth: '100%', height: 'auto' }}
-            />
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
-            <div className="overlay-box" style={{
-              position: 'absolute',
-              top: '20%',
-              left: '35%',
-              width: '35%',
+      <div className="w-full max-w-xl space-y-6">
+        {/* Error Message */}
+        {error && (
+          <div className="text-red-600 text-center font-medium">{error}</div>
+        )}
+
+        {/* Video Container */}
+        <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg bg-white">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <canvas ref={canvasRef} className="hidden" />
+
+          {/* Overlay Box */}
+          <div
+            className={`absolute border-4 ${borderColor} rounded-lg transition-all duration-300`}
+            style={{
+              top: '25%',
+              left: '22%',
+              width: '50%',
               height: '50%',
-              border: `5px solid ${borderColor}`,
-              borderRadius: '8px',
-              pointerEvents: 'none',
               transition: 'border 0.3s',
+              border: `5px solid ${borderColor}`,
+              pointerEvents: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: borderColor === 'green' ? 'green' : 'black',
               fontWeight: 'bold',
-              fontSize: '1.2em'
-            }}>
-              {borderColor === 'green' && (
-                <span>Auto-capturing in {Math.max(0, Math.ceil(3 - greenTimer))}s...</span>
-              )}
-              {borderColor === 'black' && (
-                <span>Align your ID card inside the box</span>
-              )}
-            </div>
-
+              fontSize: '1.1rem',
+              color: borderColor === 'border-green-500' ? 'green' : 'black',
+            }}
+          >
+            {borderColor === 'border-green-500'
+              ? `Auto-capturing in ${Math.max(0, Math.ceil(3 - greenTimer))}s...`
+              : 'Align your ID card inside the box'}
           </div>
+        </div>
 
-          <div className="d-grid gap-2">
-            <button
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold text-lg shadow-md transition"
-              onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
-            >
-              Capture & Scan
-            </button>
-          </div>
+        {/* Capture Button */}
+        <div className="flex justify-center">
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md transition"
+            onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
+          >
+            Capture & Scan
+          </button>
         </div>
       </div>
     </div>
   );
+
 };
 
 export default CameraCapture;
