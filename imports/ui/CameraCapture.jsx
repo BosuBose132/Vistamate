@@ -35,7 +35,7 @@ const CameraCapture = ({ onCapture }) => {
   const [hasCaptured, setHasCaptured] = useState(false);
 
   // Box overlay color: black by default
-  const [borderColor, setBorderColor] = useState('black');
+  const [borderColor, setBorderColor] = useState('border-black-500');
   // Timer for steady alignment
   const [steadyTimer, setSteadyTimer] = useState(0);
   // Timer for green state
@@ -70,7 +70,9 @@ const CameraCapture = ({ onCapture }) => {
 
   // Reset green timer if box not green
   useEffect(() => {
-    if (!isBoxGreen) setGreenTimer(0);
+    if (isBoxGreen) {
+      setGreenTimer(prev => prev + 0.3);
+    }
   }, [isBoxGreen]);
 
   // If greenTimer reaches 3, auto-capture
@@ -80,8 +82,8 @@ const CameraCapture = ({ onCapture }) => {
       setHasCaptured(true);
       setGreenTimer(0);
       setIsBoxGreen(false);
-      setBorderColor('gray');
-      setSteadyTimer(0);
+      setBorderColor('border-gray-500');
+      //setSteadyTimer(0);
     }
   }, [greenTimer, hasCaptured]);
 
@@ -114,7 +116,7 @@ const CameraCapture = ({ onCapture }) => {
       }
       const averageDiff = diff / (currentData.length / 4);
       // If movement is low, consider steady (less sensitive)
-      if (averageDiff < 25) {
+      if (averageDiff < 30) {
         setSteadyTimer(prev => prev + 0.3);
         // Only check OCR if not already checking
         if (!isCheckingOCR) {
@@ -128,11 +130,11 @@ const CameraCapture = ({ onCapture }) => {
           // Use OCR API to check for ID card
           checkOCRForText(boxBase64).then(isIdCard => {
             if (isIdCard) {
-              setBorderColor('green');
+              setBorderColor('border-green-500');
               setIsBoxGreen(true);
               setGreenTimer(prev => prev + 0.3);
             } else {
-              setBorderColor('black');
+              setBorderColor('border-gray-500');
               setIsBoxGreen(false);
               setGreenTimer(0);
             }
@@ -143,7 +145,7 @@ const CameraCapture = ({ onCapture }) => {
         }
       } else {
         setSteadyTimer(0);
-        setBorderColor('black');
+        setBorderColor('border-gray-500');
         setIsBoxGreen(false);
         setGreenTimer(0);
       }
@@ -178,8 +180,10 @@ const CameraCapture = ({ onCapture }) => {
       // Heuristic: check non-space chars + word count
       const nonSpaceChars = text.replace(/\s/g, '').length;
       const words = text.split(/\s+/).filter(Boolean);
+      const keywordMatch = /name|dob|mail|id|employee|card|address/i.test(text);
 
-      return (nonSpaceChars > 10 || words.length >= 5);
+
+      return (nonSpaceChars > 15 || words.length >= 5);
     } catch (err) {
       console.error('Tesseract error:', err);
       return false;
@@ -194,14 +198,14 @@ const CameraCapture = ({ onCapture }) => {
         <p className="text-lg text-slate-600">Capture your photo to check in</p>
       </div>
 
-      <div className="w-full max-w-xl space-y-6">
+      <div className="w-full max-w-2xl space-y-6 mt-[-40px]">
         {/* Error Message */}
         {error && (
           <div className="text-red-600 text-center font-medium">{error}</div>
         )}
 
         {/* Video Container */}
-        <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg bg-white">
+        <div className="relative h-[420px] w-full rounded-xl overflow-hidden shadow-lg bg-white">
           <video
             ref={videoRef}
             autoPlay
@@ -216,10 +220,9 @@ const CameraCapture = ({ onCapture }) => {
             style={{
               top: '25%',
               left: '22%',
-              width: '50%',
-              height: '50%',
+              width: '70%',
+              height: '45%',
               transition: 'border 0.3s',
-              border: `5px solid ${borderColor}`,
               pointerEvents: 'none',
               display: 'flex',
               alignItems: 'center',
@@ -229,9 +232,15 @@ const CameraCapture = ({ onCapture }) => {
               color: borderColor === 'border-green-500' ? 'green' : 'black',
             }}
           >
-            {borderColor === 'border-green-500'
-              ? `Auto-capturing in ${Math.max(0, Math.ceil(3 - greenTimer))}s...`
-              : 'Align your ID card inside the box'}
+            <div className={`absolute ${borderColor} ...`}>
+              {isBoxGreen ? (
+                <span>
+                  Auto-capturing in {Math.max(0, Math.ceil(3 - greenTimer))}s...
+                </span>
+              ) : (
+                <span>Align your ID card inside the box</span>
+              )}
+            </div>
           </div>
         </div>
 
