@@ -3,7 +3,7 @@ export function generateVCard(visitor) {
 BEGIN:VCARD
 VERSION:3.0
 FN:${visitor.name}
-ORG:${visitor.company || ''}
+ORG:${visitor.name || ''}
 EMAIL:${visitor.email || ''}
 TEL:${visitor.phone || ''}
 ADR:;;${visitor.address || ''}
