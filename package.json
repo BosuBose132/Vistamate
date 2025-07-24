@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.20.7",
+    "@tailwindcss/postcss": "^4.1.11",
     "bootstrap": "^5.3.7",
     "meteor-node-stubs": "^1.2.5",
     "openai": "^5.8.3",
+    "postcss-load-config": "^6.0.1",
     "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -26,5 +28,10 @@
       "server": "server/main.js"
     },
     "testModule": "tests/main.js"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11"
   }
 }

@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 .bg-primary {
   background-color: #403f3f !important;
 }
@@ -12,6 +14,7 @@
   border-color: #427a5b;
 }
 
-h2, p {
+h2,
+p {
   font-family: 'Helvetica Neue', Arial, sans-serif;
 }
