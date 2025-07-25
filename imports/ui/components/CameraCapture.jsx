@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import './camera.css';
+import '../styles/camera.css';
 import Tesseract from 'tesseract.js';
 import { Meteor } from 'meteor/meteor';
 

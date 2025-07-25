@@ -1,9 +1,9 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Meteor } from 'meteor/meteor';
-import { App } from '/imports/ui/App';
+import { App } from '/imports/ui/pages/App';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '/client/main.css';
+import '/imports/ui/styles/tailwind.css';
 
 Meteor.startup(() => {
   const container = document.getElementById('react-target');
