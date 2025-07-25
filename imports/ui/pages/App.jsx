@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import WelcomePage from './WelcomePage';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
-import CameraCapture from './CameraCapture';
-import SurveyForm from './SurveyForm';
+import CameraCapture from '../components/CameraCapture';
+import SurveyForm from '../components/SurveyForm';
 
 
 

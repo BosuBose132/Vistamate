@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Survey } from 'survey-react-ui';
 import 'survey-core/survey-core.css';
-import { generateVCard } from '../../utils/vcard';
+import { generateVCard } from '../utils/vcard.js';
 import { QRCodeSVG } from 'qrcode.react';
 
 
