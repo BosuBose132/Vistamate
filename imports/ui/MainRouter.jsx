@@ -6,8 +6,8 @@ import { useTracker } from 'meteor/react-meteor-data';
 // Pages
 import WelcomePage from './pages/WelcomePage';
 import App from './pages/App';
-import AdminPage from './pages/AdminPage';
-import LoginPage from './pages/LoginPage';
+import Admin from './pages/Admin';
+import Login from './pages/Login';
 
 const ProtectedRoute = ({ children }) => {
     const user = useTracker(() => Meteor.user());
@@ -21,10 +21,10 @@ const MainRouter = () => (
             <Route path="/checkin" element={<App />} />
             <Route path="/admin" element={
                 <ProtectedRoute>
-                    <AdminPage />
+                    <Admin />
                 </ProtectedRoute>
             } />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Login />} />
         </Routes>
     </BrowserRouter>
 );

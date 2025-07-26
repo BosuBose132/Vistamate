@@ -1,7 +1,7 @@
 // /imports/ui/pages/AdminPage.jsx
 import React from 'react';
 
-const AdminPage = () => {
+const Admin = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300 px-4 py-6">
             {/* Header */}
@@ -44,4 +44,4 @@ const AdminPage = () => {
     );
 };
 
-export default AdminPage;
+export default Admin;
