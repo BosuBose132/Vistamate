@@ -1,8 +1,10 @@
 // WelcomePage.js
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
-const WelcomePage = ({ onStart }) => {
+const WelcomePage = () => {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6 bg-gradient-to-br from-slate-100 to-slate-300">
       {/* Logo
@@ -20,7 +22,7 @@ const WelcomePage = ({ onStart }) => {
 
       {/* Start Button */}
       <button
-        onClick={onStart}
+        onClick={() => navigate('/checkin')}
         className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200"
       >
         Start Check-In

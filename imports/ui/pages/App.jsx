@@ -8,16 +8,14 @@ import SurveyForm from '../components/SurveyForm';
 
 
 export const App = () => {
-  const [started, setStarted] = useState(false);
+
   const [capturedImage, setCapturedImage] = useState(null);
   const [ocrResult, setOcrResult] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  if (!started) {
-    return <WelcomePage onStart={() => setStarted(true)} />;
-  }
+
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
