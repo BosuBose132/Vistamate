@@ -3,14 +3,15 @@ import { Survey } from 'survey-react-ui';
 import 'survey-core/survey-core.css';
 import { generateVCard } from '../utils/vcard.js';
 import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
 
 
 
-
-const SurveyForm = ({ surveyModel, onReturnHome }) => {
+const SurveyForm = ({ surveyModel }) => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
   const [visitorData, setVisitorData] = useState(null);
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -50,7 +51,7 @@ const SurveyForm = ({ surveyModel, onReturnHome }) => {
           </button>
           <button
             className="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg font-medium transition"
-            onClick={onReturnHome}
+            onClick={() => navigate('/')}
           >
             Return to Home
           </button>

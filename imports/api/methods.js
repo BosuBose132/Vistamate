@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import OpenAI from 'openai';
 import { Visitors } from './collections';
+import { Accounts } from 'meteor/accounts-base';
+import { Roles } from 'meteor/alanning:roles';
 
 const { checkAndCreateVisitor } = require('visitor-npm-app');
 
@@ -12,14 +14,14 @@ Meteor.methods({
       name: String,
       company: String,
       email: String,
-       phone: String,
-       address: Match.Optional(String),
-       dob: Match.Optional(String),
-      
+      phone: String,
+      address: Match.Optional(String),
+      dob: Match.Optional(String),
+
     });
 
     return await checkAndCreateVisitor(data, Visitors);
-   },
+  },
 
   async 'visitors.processOCR'(base64ImageData) {
     check(base64ImageData, String);
@@ -56,5 +58,16 @@ Meteor.methods({
       console.error('OpenAI OCR failed:', err);
       throw new Meteor.Error('openai-ocr-failed', 'OpenAI OCR failed: ' + err.message);
     }
+  },
+
+  createInitialAdmin({ email, password }) {
+    const existingUser = Accounts.findUserByEmail(email);
+    if (existingUser) {
+      return { status: 'exists' };
+    }
+
+    const userId = Accounts.createUser({ email, password });
+    Roles.addUsersToRoles(userId, ['admin']);
+    return { status: 'created' };
   }
 });
