@@ -77,7 +77,7 @@ const CameraCapture = ({ onCapture }) => {
 
   // If greenTimer reaches 3, auto-capture
   useEffect(() => {
-    if (greenTimer >= 2 && !hasCaptured) {
+    if (greenTimer >= 0.5 && !hasCaptured) {
       handleCapture(videoRef, canvasRef, onCapture);
       setHasCaptured(true);
       setGreenTimer(0);
@@ -107,7 +107,6 @@ const CameraCapture = ({ onCapture }) => {
     };
     const boxImage = ctx.getImageData(box.x, box.y, box.w, box.h);
 
-    // Movement detection (simple diff)
     const currentData = boxImage.data;
     if (lastFrameData) {
       let diff = 0;
@@ -115,28 +114,31 @@ const CameraCapture = ({ onCapture }) => {
         diff += Math.abs(currentData[i] - lastFrameData[i]);
       }
       const averageDiff = diff / (currentData.length / 4);
-      // If movement is low, consider steady (less sensitive)
       if (averageDiff < 30) {
         setSteadyTimer(prev => prev + 0.3);
-        // Only check OCR if not already checking
         if (!isCheckingOCR) {
           setIsCheckingOCR(true);
-          // Convert box region to base64
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = box.w;
           tempCanvas.height = box.h;
           tempCanvas.getContext('2d').putImageData(boxImage, 0, 0);
           const boxBase64 = tempCanvas.toDataURL('image/png');
-          // Use OCR API to check for ID card
+
           checkOCRForText(boxBase64).then(isIdCard => {
             if (isIdCard) {
+              if (!isBoxGreen) {
+                setIsBoxGreen(true);
+                setGreenTimer(0); // Fresh timer start
+              } else {
+                setGreenTimer(prev => prev + 0.3); // Accumulate if already green
+              }
               setBorderColor('border-green-500');
-              setIsBoxGreen(true);
-              setGreenTimer(prev => prev + 0.3);
             } else {
-              setBorderColor('border-gray-500');
-              setIsBoxGreen(false);
-              setGreenTimer(0);
+              if (greenTimer < 0.5) {
+                setIsBoxGreen(false);
+                setGreenTimer(0);
+                setBorderColor('border-gray-500');
+              }
             }
             setIsCheckingOCR(false);
           });
@@ -153,7 +155,7 @@ const CameraCapture = ({ onCapture }) => {
     setLastFrameData(currentData);
   };
 
-  // Use full frame for manual capture
+
   const captureFrameAsBase64 = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -165,7 +167,7 @@ const CameraCapture = ({ onCapture }) => {
     return canvas.toDataURL('image/png');
   };
 
-  // Use OpenAI OCR API via Meteor method to check if image is an ID card
+
   const checkOCRForText = async (imageBase64) => {
     try {
       const result = await Tesseract.recognize(
@@ -177,13 +179,24 @@ const CameraCapture = ({ onCapture }) => {
       const text = result.data.text.trim();
       console.log("Tesseract OCR result:", text);
 
-      // Heuristic: check non-space chars + word count
+
       const nonSpaceChars = text.replace(/\s/g, '').length;
       const words = text.split(/\s+/).filter(Boolean);
-      const keywordMatch = /name|dob|mail|id|employee|card|address/i.test(text);
+      const keywordMatch = /name|dob|birth|dl|license|state|id|driver|usa|sex|height|address|restrictions/i.test(text);
+      const confidence = result.data.confidence || 0;
 
+      // console.log("------ OCR DEBUG ------");
+      // console.log("Text:", text);
+      // console.log("Confidence:", confidence);
+      // console.log("Word count:", words.length);
+      // console.log("Non-space chars:", nonSpaceChars);
+      // console.log("Keyword Match:", keywordMatch);
 
-      return (nonSpaceChars > 15 || words.length >= 5);
+      // Final detection logic
+      return (
+        (nonSpaceChars >= 30 && words.length >= 5 && confidence >= 25) || // common case
+        (confidence >= 50 && words.length >= 8)                          // strong case fallback
+      );
     } catch (err) {
       console.error('Tesseract error:', err);
       return false;
@@ -192,19 +205,16 @@ const CameraCapture = ({ onCapture }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 bg-gray-50">
-      {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-slate-800">Visitor Check-In</h2>
         <p className="text-lg text-slate-600">Capture your photo to check in</p>
       </div>
 
       <div className="w-full max-w-2xl space-y-6 mt-[-40px]">
-        {/* Error Message */}
         {error && (
           <div className="text-red-600 text-center font-medium">{error}</div>
         )}
 
-        {/* Video Container */}
         <div className="relative h-[420px] w-full rounded-xl overflow-hidden shadow-lg bg-white">
           <video
             ref={videoRef}
@@ -235,7 +245,7 @@ const CameraCapture = ({ onCapture }) => {
             <div className={`absolute ${borderColor} ...`}>
               {isBoxGreen ? (
                 <span>
-                  Auto-capturing in {Math.max(0, Math.ceil(3 - greenTimer))}s...
+                  Auto-capturing, Please wait..
                 </span>
               ) : (
                 <span>Align your ID card inside the box</span>
