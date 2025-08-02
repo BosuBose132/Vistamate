@@ -1,31 +1,24 @@
 import React, { useState } from 'react';
-import WelcomePage from './WelcomePage';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import CameraCapture from '../components/CameraCapture';
 import SurveyForm from '../components/SurveyForm';
-
-
+import 'survey-core/survey-core.css';
+import { LayeredDarkPanelless } from "survey-core/themes";
+import { motion } from 'framer-motion';
 
 export const App = () => {
-
   const [capturedImage, setCapturedImage] = useState(null);
-  const [ocrResult, setOcrResult] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-
-
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
     setCapturedImage(base64);
-
-
     setLoading(true);
-    setError(null);
-    setOcrResult(null);
     setSurveyModel(null);
+    setError(null);
 
     Meteor.call('visitors.processOCR', base64, (err, result) => {
       setLoading(false);
@@ -36,122 +29,92 @@ export const App = () => {
         return;
       }
 
-      console.log('OCR Result:', result);
-      setOcrResult(result);
-
-      if (result) {
-        let ocrJson = {};
-        try {
-          ocrJson = JSON.parse(result.text);
-        } catch (e) {
-          console.error("Failed to parse OCR JSON:", e);
-        }
-
+      try {
+        const ocrJson = JSON.parse(result.text);
         const surveyJson = generateSurveyJsonFromOCR(ocrJson);
-
         const model = new Model(surveyJson);
+        model.applyTheme(LayeredDarkPanelless);
 
         model.onComplete.add((sender) => {
           const finalData = sender.data;
-          console.log('Final submitted data:', finalData);
           Meteor.call('visitors.checkIn', finalData, (err, res) => {
             if (err) {
-              console.error('Error saving visitor:', err);
               alert('Error saving visitor: ' + err.message);
+            } else if (res.status === 'duplicate') {
+              alert('Visitor already exists');
             } else {
-              if (res.status === 'duplicate') {
-                alert('Visitor already exists');
-              } else {
-                alert('Visitor successfully checked in!');
-              }
+              alert('Visitor successfully checked in!');
             }
           });
         });
 
         setSurveyModel(model);
+      } catch (e) {
+        setError('Failed to parse OCR result');
       }
     });
   };
 
-  const handleReturnHome = () => {
-    setStarted(false);
-    setCapturedImage(null);
-    setSurveyModel(null);
-    setOcrResult(null);
-    setLoading(false);
-    setError(null);
-  };
-
-  const generateSurveyJsonFromOCR = (ocrData = {}) => {
-    return {
-      title: "Visitor Registration",
-      showQuestionNumbers: "off",
-      elements: [
-        {
-          type: "text",
-          name: "name",
-          title: "Full Name",
-          isRequired: true,
-          defaultValue: ocrData.name || ""
-        },
-        {
-          type: "text",
-          name: "email",
-          title: "Email",
-          inputType: "email",
-          defaultValue: ocrData.email || ""
-        },
-        {
-          type: "text",
-          name: "phone",
-          title: "Phone Number",
-          defaultValue: ocrData.phone || ""
-        },
-        {
-          type: "text",
-          name: "company",
-          title: "Company / Organization",
-          defaultValue: ocrData.company || ""
-        },
-        {
-          type: "text",
-          name: "address",
-          title: "Address",
-          defaultValue: ocrData.address || ""
-        },
-
-      ]
-    };
-  };
-
+  const generateSurveyJsonFromOCR = (ocrData = {}) => ({
+    title: "Visitor Registration",
+    showQuestionNumbers: "off",
+    elements: [
+      {
+        type: "text",
+        name: "name",
+        title: "Full Name",
+        isRequired: true,
+        defaultValue: ocrData.name || ""
+      },
+      {
+        type: "text",
+        name: "email",
+        title: "Email",
+        inputType: "email",
+        defaultValue: ocrData.email || ""
+      },
+      {
+        type: "text",
+        name: "phone",
+        title: "Phone Number",
+        defaultValue: ocrData.phone || ""
+      },
+      {
+        type: "text",
+        name: "company",
+        title: "Company / Organization",
+        defaultValue: ocrData.company || ""
+      },
+      {
+        type: "text",
+        name: "address",
+        title: "Address",
+        defaultValue: ocrData.address || ""
+      },
+    ]
+  });
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1></h1>
+    <div className="min-h-screen w-full flex flex-row md:flex-row items-start justify-center gap-6 px-4 py-6 bg-gradient-to-b from-slate-900 to-slate-800">
 
-      {loading && <p>Processing OCR... please wait.</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {/* CAMERA */}
+      <div className="w-full md:w-1/2 flex justify-center items-start">
+        <CameraCapture onCapture={handleCapture} />
+      </div>
 
-      {!surveyModel && (
-        <>
-
-          <CameraCapture onCapture={handleCapture} />
-          {capturedImage && (
-            <div>
-              <h3>Preview:</h3>
-              <img src={capturedImage} alt="Captured" style={{ width: '300px', border: '1px solid #ccc' }} />
-            </div>
-          )}
-        </>
-      )}
+      {/* SURVEY FORM */}
       {surveyModel && (
-        <SurveyForm surveyModel={surveyModel} onReturnHome={handleReturnHome} />
+        <motion.div
+          initial={{ x: '100%', opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="w-full md:w-1/2 flex justify-center items-start"
+        >
+          <SurveyForm surveyModel={surveyModel} />
+        </motion.div>
       )}
     </div>
-  );
-
-
-
+  )
 };
 
 export default App;

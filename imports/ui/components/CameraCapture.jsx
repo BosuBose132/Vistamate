@@ -203,64 +203,65 @@ const CameraCapture = ({ onCapture }) => {
     };
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 bg-gray-50">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800">Visitor Check-In</h2>
-        <p className="text-lg text-slate-600">Capture your photo to check in</p>
-      </div>
 
-      <div className="w-full max-w-2xl space-y-6 mt-[-40px]">
+  return (
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-2 py-8 sm:px-6 md:px-8">
+      <div className="w-full max-w-2xl bg-gray-800/80 rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col items-center">
+        <div className="w-full flex flex-col items-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2 text-center drop-shadow-lg">Visitor Check-In</h2>
+          <p className="text-lg md:text-xl text-gray-300 text-center font-medium">Please align your ID card within the box to check in</p>
+        </div>
+
         {error && (
-          <div className="text-red-600 text-center font-medium">{error}</div>
+          <div className="w-full text-red-400 bg-red-900/40 border border-red-700 rounded-lg py-2 px-4 text-center font-semibold mb-4 animate-pulse">
+            {error}
+          </div>
         )}
 
-        <div className="relative h-[420px] w-full rounded-xl overflow-hidden shadow-lg bg-white">
+        <div className="relative w-full aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden shadow-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl"
           />
           <canvas ref={canvasRef} className="hidden" />
 
           {/* Overlay Box */}
           <div
-            className={`absolute border-4 ${borderColor} rounded-lg transition-all duration-300`}
+            className={`absolute border-4 ${borderColor} rounded-xl transition-all duration-300 flex items-center justify-center pointer-events-none`}
             style={{
-              top: '25%',
-              left: '22%',
+              top: '20%',
+              left: '15%',
               width: '70%',
-              height: '45%',
-              transition: 'border 0.3s',
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
+              height: '60%',
+              boxShadow: borderColor === 'border-green-500' ? '0 0 24px 4px #22c55e88' : '0 0 16px 2px #0008',
+              background: isBoxGreen ? 'rgba(34,197,94,0.07)' : 'rgba(0,0,0,0.10)',
+              borderColor: borderColor === 'border-green-500' ? '#22c55e' : '#64748b',
+              color: borderColor === 'border-green-500' ? '#22c55e' : '#e5e7eb',
+              fontWeight: 600,
               fontSize: '1.1rem',
-              color: borderColor === 'border-green-500' ? 'green' : 'black',
+              zIndex: 10,
             }}
           >
-            <div className={`absolute ${borderColor} ...`}>
+            <div className="w-full text-center flex items-center justify-center">
               {isBoxGreen ? (
-                <span>
-                  Auto-capturing, Please wait..
-                </span>
+                <span className="text-green-400 font-bold animate-pulse">Auto-capturing, Please wait...</span>
               ) : (
-                <span>Align your ID card inside the box</span>
+                <span className="text-gray-200 font-semibold">Align your ID card inside the box</span>
               )}
             </div>
           </div>
         </div>
 
         {/* Capture Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center w-full mt-8">
           <button
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md transition"
+            className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
+            disabled={hasCaptured || isBoxGreen}
           >
-            Capture & Scan
+            {isBoxGreen ? 'Capturing...' : 'Capture & Scan'}
           </button>
         </div>
       </div>
