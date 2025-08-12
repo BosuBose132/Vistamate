@@ -1,4 +1,4 @@
-# survey-checkIn-app
+# survey-checkIn-app ( https://vistamate.opensource.mieweb.org/)  
 
 A smart, modern visitor management system with **automatic camera capture**, **OCR extraction**, and **dynamic forms**.
 
@@ -6,13 +6,13 @@ A smart, modern visitor management system with **automatic camera capture**, **O
 
 ## Features
 
-✨ Camera-based ID card capture  
-✨ Auto-capture with steady hold detection (red/orange/green border feedback)  
-✨ OpenAI Vision integration for OCR  
-✨ Dynamic SurveyJS forms generated from OCR results  
-✨ MongoDB Atlas storage for visitor records  
-✨ Custom NPM package for validation, duplicate checking, and schema support  
-✨ Clean, responsive UI with Bootstrap
+- Camera-based ID card capture
+- Auto-capture with steady hold detection (red/orange/green border feedback)
+- OpenAI Vision integration for OCR
+- Dynamic SurveyJS forms generated from OCR results
+- MongoDB Atlas storage for visitor records
+- Custom NPM package for validation, duplicate checking, and schema support
+- Clean, responsive UI with Bootstrap
 
 ---
 
