@@ -4,7 +4,7 @@ import { Model } from 'survey-core';
 import CameraCapture from '../components/CameraCapture';
 import SurveyForm from '../components/SurveyForm';
 import 'survey-core/survey-core.css';
-import { LayeredDarkPanelless } from "survey-core/themes";
+import { FlatDarkPanelless } from "survey-core/themes";
 import { motion } from 'framer-motion';
 
 export const App = () => {
@@ -33,7 +33,7 @@ export const App = () => {
         const ocrJson = JSON.parse(result.text);
         const surveyJson = generateSurveyJsonFromOCR(ocrJson);
         const model = new Model(surveyJson);
-        model.applyTheme(LayeredDarkPanelless);
+        model.applyTheme(FlatDarkPanelless);
 
         model.onComplete.add((sender) => {
           const finalData = sender.data;
@@ -96,7 +96,6 @@ export const App = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-row md:flex-row items-start justify-center gap-6 px-4 py-6 bg-gradient-to-b from-slate-900 to-slate-800">
-
       {/* CAMERA */}
       <div className="w-full md:w-1/2 flex justify-center items-start">
         <CameraCapture onCapture={handleCapture} />

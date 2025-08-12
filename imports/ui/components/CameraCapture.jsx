@@ -205,6 +205,7 @@ const CameraCapture = ({ onCapture }) => {
 
 
   return (
+
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-2 py-8 sm:px-6 md:px-8">
       <div className="w-full max-w-2xl bg-gray-800/80 rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col items-center">
         <div className="w-full flex flex-col items-center mb-8">
