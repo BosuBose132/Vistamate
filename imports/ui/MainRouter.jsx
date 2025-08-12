@@ -8,6 +8,7 @@ import WelcomePage from './pages/WelcomePage';
 import App from './pages/App';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
+import ThankYou from './pages/ThankYou';
 
 const ProtectedRoute = ({ children }) => {
     const user = useTracker(() => Meteor.user());
@@ -25,6 +26,7 @@ const MainRouter = () => (
                 </ProtectedRoute>
             } />
             <Route path="/login" element={<Login />} />
+            <Route path="/thankyou" element={<ThankYou />} />
         </Routes>
     </BrowserRouter>
 );
