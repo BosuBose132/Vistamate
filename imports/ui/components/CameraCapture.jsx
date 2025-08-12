@@ -77,7 +77,7 @@ const CameraCapture = ({ onCapture }) => {
 
   // If greenTimer reaches 3, auto-capture
   useEffect(() => {
-    if (greenTimer >= 2 && !hasCaptured) {
+    if (greenTimer >= 0.5 && !hasCaptured) {
       handleCapture(videoRef, canvasRef, onCapture);
       setHasCaptured(true);
       setGreenTimer(0);
@@ -107,7 +107,6 @@ const CameraCapture = ({ onCapture }) => {
     };
     const boxImage = ctx.getImageData(box.x, box.y, box.w, box.h);
 
-    // Movement detection (simple diff)
     const currentData = boxImage.data;
     if (lastFrameData) {
       let diff = 0;
@@ -115,28 +114,31 @@ const CameraCapture = ({ onCapture }) => {
         diff += Math.abs(currentData[i] - lastFrameData[i]);
       }
       const averageDiff = diff / (currentData.length / 4);
-      // If movement is low, consider steady (less sensitive)
       if (averageDiff < 30) {
         setSteadyTimer(prev => prev + 0.3);
-        // Only check OCR if not already checking
         if (!isCheckingOCR) {
           setIsCheckingOCR(true);
-          // Convert box region to base64
           const tempCanvas = document.createElement('canvas');
           tempCanvas.width = box.w;
           tempCanvas.height = box.h;
           tempCanvas.getContext('2d').putImageData(boxImage, 0, 0);
           const boxBase64 = tempCanvas.toDataURL('image/png');
-          // Use OCR API to check for ID card
+
           checkOCRForText(boxBase64).then(isIdCard => {
             if (isIdCard) {
+              if (!isBoxGreen) {
+                setIsBoxGreen(true);
+                setGreenTimer(0); // Fresh timer start
+              } else {
+                setGreenTimer(prev => prev + 0.3); // Accumulate if already green
+              }
               setBorderColor('border-green-500');
-              setIsBoxGreen(true);
-              setGreenTimer(prev => prev + 0.3);
             } else {
-              setBorderColor('border-gray-500');
-              setIsBoxGreen(false);
-              setGreenTimer(0);
+              if (greenTimer < 0.5) {
+                setIsBoxGreen(false);
+                setGreenTimer(0);
+                setBorderColor('border-gray-500');
+              }
             }
             setIsCheckingOCR(false);
           });
@@ -153,7 +155,7 @@ const CameraCapture = ({ onCapture }) => {
     setLastFrameData(currentData);
   };
 
-  // Use full frame for manual capture
+
   const captureFrameAsBase64 = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -165,7 +167,7 @@ const CameraCapture = ({ onCapture }) => {
     return canvas.toDataURL('image/png');
   };
 
-  // Use OpenAI OCR API via Meteor method to check if image is an ID card
+
   const checkOCRForText = async (imageBase64) => {
     try {
       const result = await Tesseract.recognize(
@@ -177,80 +179,90 @@ const CameraCapture = ({ onCapture }) => {
       const text = result.data.text.trim();
       console.log("Tesseract OCR result:", text);
 
-      // Heuristic: check non-space chars + word count
+
       const nonSpaceChars = text.replace(/\s/g, '').length;
       const words = text.split(/\s+/).filter(Boolean);
-      const keywordMatch = /name|dob|mail|id|employee|card|address/i.test(text);
+      const keywordMatch = /name|dob|birth|dl|license|state|id|driver|usa|sex|height|address|restrictions/i.test(text);
+      const confidence = result.data.confidence || 0;
 
+      // console.log("------ OCR DEBUG ------");
+      // console.log("Text:", text);
+      // console.log("Confidence:", confidence);
+      // console.log("Word count:", words.length);
+      // console.log("Non-space chars:", nonSpaceChars);
+      // console.log("Keyword Match:", keywordMatch);
 
-      return (nonSpaceChars > 15 || words.length >= 5);
+      // Final detection logic
+      return (
+        (nonSpaceChars >= 30 && words.length >= 5 && confidence >= 25) || // common case
+        (confidence >= 50 && words.length >= 8)                          // strong case fallback
+      );
     } catch (err) {
       console.error('Tesseract error:', err);
       return false;
     };
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 py-10 bg-gray-50">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800">Visitor Check-In</h2>
-        <p className="text-lg text-slate-600">Capture your photo to check in</p>
-      </div>
 
-      <div className="w-full max-w-2xl space-y-6 mt-[-40px]">
-        {/* Error Message */}
+  return (
+
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-2 py-8 sm:px-6 md:px-8">
+      <div className="w-full max-w-2xl bg-gray-800/80 rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col items-center">
+        <div className="w-full flex flex-col items-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2 text-center drop-shadow-lg">Visitor Check-In</h2>
+          <p className="text-lg md:text-xl text-gray-300 text-center font-medium">Please align your ID card within the box to check in</p>
+        </div>
+
         {error && (
-          <div className="text-red-600 text-center font-medium">{error}</div>
+          <div className="w-full text-red-400 bg-red-900/40 border border-red-700 rounded-lg py-2 px-4 text-center font-semibold mb-4 animate-pulse">
+            {error}
+          </div>
         )}
 
-        {/* Video Container */}
-        <div className="relative h-[420px] w-full rounded-xl overflow-hidden shadow-lg bg-white">
+        <div className="relative w-full aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden shadow-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
           <video
             ref={videoRef}
             autoPlay
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl"
           />
           <canvas ref={canvasRef} className="hidden" />
 
           {/* Overlay Box */}
           <div
-            className={`absolute border-4 ${borderColor} rounded-lg transition-all duration-300`}
+            className={`absolute border-4 ${borderColor} rounded-xl transition-all duration-300 flex items-center justify-center pointer-events-none`}
             style={{
-              top: '25%',
-              left: '22%',
+              top: '20%',
+              left: '15%',
               width: '70%',
-              height: '45%',
-              transition: 'border 0.3s',
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
+              height: '60%',
+              boxShadow: borderColor === 'border-green-500' ? '0 0 24px 4px #22c55e88' : '0 0 16px 2px #0008',
+              background: isBoxGreen ? 'rgba(34,197,94,0.07)' : 'rgba(0,0,0,0.10)',
+              borderColor: borderColor === 'border-green-500' ? '#22c55e' : '#64748b',
+              color: borderColor === 'border-green-500' ? '#22c55e' : '#e5e7eb',
+              fontWeight: 600,
               fontSize: '1.1rem',
-              color: borderColor === 'border-green-500' ? 'green' : 'black',
+              zIndex: 10,
             }}
           >
-            <div className={`absolute ${borderColor} ...`}>
+            <div className="w-full text-center flex items-center justify-center">
               {isBoxGreen ? (
-                <span>
-                  Auto-capturing in {Math.max(0, Math.ceil(3 - greenTimer))}s...
-                </span>
+                <span className="text-green-400 font-bold animate-pulse">Auto-capturing, Please wait...</span>
               ) : (
-                <span>Align your ID card inside the box</span>
+                <span className="text-gray-200 font-semibold">Align your ID card inside the box</span>
               )}
             </div>
           </div>
         </div>
 
         {/* Capture Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center w-full mt-8">
           <button
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold text-lg shadow-md transition"
+            className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
             onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
+            disabled={hasCaptured || isBoxGreen}
           >
-            Capture & Scan
+            {isBoxGreen ? 'Capturing...' : 'Capture & Scan'}
           </button>
         </div>
       </div>
