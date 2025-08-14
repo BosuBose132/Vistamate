@@ -14,6 +14,22 @@ const WelcomePage = () => {
           <img src="../../logo.png" alt="Vistamate Logo" className="h-10 w-10 mr-3" />
           <span className="text-xl font-bold text-green-700">Vistamate</span>
         </div>
+        <button className="btn btn-primary" onClick={() => {
+          if (window.__toggleTheme) {
+            window.__toggleTheme();
+          } else {
+            // fallback: flip between vistamate and dark
+            const DEFAULT = 'vistamate';
+            const cur = document.documentElement.getAttribute('data-theme') || DEFAULT;
+            const next = cur === DEFAULT ? 'dark' : DEFAULT;
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('daisy-theme', next); } catch { }
+            console.log('Theme (fallback) ->', next);
+          }
+        }}
+        >
+          Toggle Theme
+        </button>
         <nav className="flex space-x-4">
           <button onClick={() => navigate('/')} className="text-slate-700 hover:text-green-600 font-medium transition">Home</button>
           <button onClick={() => navigate('/login')} className="text-slate-700 hover:text-green-600 font-medium transition">Admin Login</button>

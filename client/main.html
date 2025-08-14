@@ -1,5 +1,42 @@
 <head>
-  <title>Meteor App</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vistamate</title>
+
+  <!-- (Optional) clean system font; remove if you don't want it -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- DaisyUI theme boot script: applies and persists your theme -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4">
+    (function () {
+      const KEY = 'daisy-theme';
+      const DEFAULT = 'vistamate'; // or "light" if you kept that name in your @plugin block
+      const saved = localStorage.getItem(KEY) || DEFAULT;
+      document.documentElement.setAttribute('data-theme', saved);
+
+      window.__setTheme = function (name) {
+        document.documentElement.setAttribute('data-theme', name);
+        localStorage.setItem(KEY, name);
+      };
+
+      // Toggle between your custom theme and a fallback (e.g., "dark")
+      window.__toggleTheme = function () {
+        const cur = document.documentElement.getAttribute('data-theme') || DEFAULT;
+        const next = (cur === DEFAULT) ? 'dark' : DEFAULT;
+        window.__setTheme(next);
+      };
+    })();
+  </script>
+
+  <style>
+    /* Optional: apply Inter globally */
+    html,
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+  </style>
 </head>
 
 <body>
