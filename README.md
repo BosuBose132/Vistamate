@@ -1,4 +1,4 @@
-# survey-checkIn-app ( https://vistamate.opensource.mieweb.org/)  
+# survey-checkIn-app 
 
 A smart, modern visitor management system with **automatic camera capture**, **OCR extraction**, and **dynamic forms**.
 
