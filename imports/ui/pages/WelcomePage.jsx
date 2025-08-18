@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -26,36 +27,12 @@ const WelcomePage = () => {
               <li><button className="btn btn-ghost" onClick={() => navigate('/login')}>Admin Login</button></li>
               <li><button className="btn btn-ghost" onClick={() => navigate('/about')}>About</button></li>
             </ul>
+
           </div>
 
         </div>
-        <div className="navbar-end">
-          <button
-            type="button"
-            aria-label="Toggle theme"
-            onClick={() => {
-              if (window.__toggleTheme) {
-                window.__toggleTheme();
-              } else {
-                const DEFAULT = 'vistamate';
-                const cur = document.documentElement.getAttribute('data-theme') || DEFAULT;
-                const next = cur === DEFAULT ? 'dark' : DEFAULT;
-                document.documentElement.setAttribute('data-theme', next);
-                try { localStorage.setItem('daisy-theme', next); } catch { }
-                console.log('Theme (fallback) ->', next);
-              }
-            }}
-            className="btn absolute top-3 right-4"
-          >
-            <label class="toggle text-base-content">
-              <input type="checkbox" value="synthwave" class="theme-controller" />
-
-              <svg aria-label="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></g></svg>
-
-              <svg aria-label="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></g></svg>
-
-            </label>
-          </button>
+        <div className="absolute top-3 right-4">
+          <ThemeToggle className="ml-2" />
         </div>
       </div>
 
