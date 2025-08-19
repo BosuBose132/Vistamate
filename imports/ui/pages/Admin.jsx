@@ -7,6 +7,11 @@ const Admin = () => {
             {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
+                <nav className="flex gap-2">
+                    <a className="btn btn-sm" href="/admin/stations">Stations</a>
+                    <a className="btn btn-sm" href="/admin/surveys">Surveys</a>
+                    <a className="btn btn-sm" href="/admin/checkins">Check-ins</a>
+                </nav>
                 <button
                     className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-600 transition"
                     onClick={() => document.documentElement.classList.toggle('dark')}
