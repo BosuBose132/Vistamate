@@ -5,8 +5,9 @@ import { Surveys } from '/imports/api/surveys/surveys.collection';
 import { Stations } from '/imports/api/stations/stations.collection';
 
 export default function StationBuilder() {
-    const subSurveys = useSubscribe('surveys.admin')();
-    const subStations = useSubscribe('stations.admin')();
+    const loadingSurveys = useSubscribe('surveys.admin');
+    const loadingStations = useSubscribe('stations.admin');
+
     const surveys = useFind(() => Surveys.find({}, { sort: { createdAt: -1 } }), []);
     const stations = useFind(() => Stations.find({}, { sort: { createdAt: -1 } }), []);
 
@@ -29,8 +30,8 @@ export default function StationBuilder() {
         });
     };
 
-    if (subSurveys || subStations) return <div className="p-8">Loading…</div>;
-
+    const isLoading = loadingSurveys() || loadingStations();
+    if (isLoading) return <div className="p-8">Loading…</div>;
     return (
         <div className="min-h-screen bg-base-200 p-6">
             <div className="navbar bg-base-100 shadow mb-6">

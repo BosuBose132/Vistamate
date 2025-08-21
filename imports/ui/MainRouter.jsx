@@ -9,16 +9,23 @@ import App from './pages/App';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import ThankYou from './pages/ThankYou';
-import StationKiosk from './station/StationKiosk';
+import StationKiosk from '/imports/ui/stations/StationKiosk';
 import StationBuilder from './admin/stations/StationBuilder';
 import SurveyManager from './admin/surveys/SurveyManager';
 import StationDashboard from './admin/dashboard/StationDashboard';
 
 const ProtectedRoute = ({ children }) => {
-    const user = useTracker(() => Meteor.user());
-    return user ? children : <Navigate to="/login" />;
-};
+    const { userId, loggingIn } = useTracker(() => ({
+        userId: Meteor.userId(),
+        loggingIn: Meteor.loggingIn(),
+    }), []);
 
+    if (loggingIn) {
+        return <div className="p-8">Loading…</div>;
+    }
+
+    return userId ? children : <Navigate to="/login" replace />;
+};
 const MainRouter = () => (
     <BrowserRouter>
         <Routes>

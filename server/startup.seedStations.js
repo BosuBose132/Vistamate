@@ -2,10 +2,13 @@ import { Meteor } from 'meteor/meteor';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { v4 as uuidv4 } from 'uuid';
 
-Meteor.startup(() => {
-    ['Lobby', 'Reception', 'Office'].forEach(name => {
-        if (!Stations.findOne({ name })) {
-            Stations.insert({
+Meteor.startup(async () => {
+    const defaults = ['Lobby', 'Reception', 'Office'];
+
+    for (const name of defaults) {
+        const exists = await Stations.findOneAsync({ name });
+        if (!exists) {
+            await Stations.insertAsync({
                 name,
                 location: '',
                 token: uuidv4(),
@@ -19,5 +22,5 @@ Meteor.startup(() => {
                 theme: 'vistamate',
             });
         }
-    });
+    };
 });
