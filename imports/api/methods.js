@@ -16,10 +16,13 @@ Meteor.methods({
       phone: String,
       address: Match.Optional(String),
       dob: Match.Optional(String),
+      stationId: Match.Optional(String),
 
     });
 
-    return await checkAndCreateVisitor(data, Visitors);
+    //return await checkAndCreateVisitor(data, Visitors);
+    const payload = { ...data, createdAt: new Date() };
+    return await checkAndCreateVisitor(payload, Visitors);
   },
 
   async 'visitors.processOCR'(base64ImageData) {
