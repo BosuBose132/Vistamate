@@ -33,6 +33,11 @@ const WelcomePage = () => {
           onClick={() => navigate('/checkin')}
           className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200"
         >
+          <button className="btn btn-accent" onClick={() => {
+            Meteor.call('stations.getDefaultToken', (err, token) => {
+              if (token) navigate(`/s/${token}`); else navigate('/checkin');
+            });
+          }}></button>
           Start Check-In
         </button>
       </main>
