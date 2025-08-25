@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { Roles } from 'meteor/alanning:roles';
+// import { Roles } from 'meteor/alanning:roles';
 import { Stations } from './stations.collection';
+import { isAdminSync } from '/imports/api/_roles.helpers.pub.js';
 
 Meteor.publish('stations.admin', function () {
-    if (!this.userId || !Roles.userIsInRole(this.userId, 'admin')) return this.ready();
+    if (!isAdminSync(this.userId)) return this.ready();
     return Stations.find({}, {
         fields: {
             name: 1, location: 1, token: 1, isActive: 1, createdAt: 1, surveyId: 1,
