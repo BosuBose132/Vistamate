@@ -7,7 +7,9 @@ import 'survey-core/survey-core.css';
 import { FlatDarkPanelless } from "survey-core/themes";
 import { motion } from 'framer-motion';
 
-export const App = () => {
+//export const App = () => {
+export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
+  const { cameraEnabled = true, requirePhoto = false, mobileBehavior = 'toggle', welcomeMessage = '' } = kioskConfig;
   const [capturedImage, setCapturedImage] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,13 +33,21 @@ export const App = () => {
 
       try {
         const ocrJson = JSON.parse(result.text);
-        const surveyJson = generateSurveyJsonFromOCR(ocrJson);
+        // const surveyJson = generateSurveyJsonFromOCR(ocrJson);
+        const surveyJson = assignedSurveyJson
+          ? applyOCRDefaults(assignedSurveyJson, ocrJson)  // use assigned survey if available
+          : generateSurveyJsonFromOCR(ocrJson);
         const model = new Model(surveyJson);
         model.applyTheme(FlatDarkPanelless);
 
         model.onComplete.add((sender) => {
+          if (requirePhoto && !capturedImage) {
+            alert('Please capture a photo before submitting.');
+            return;
+          }
           const finalData = sender.data;
-          Meteor.call('visitors.checkIn', finalData, (err, res) => {
+          //Meteor.call('visitors.checkIn', finalData, (err, res) => {
+          Meteor.call('visitors.checkIn', { ...finalData, stationId }, (err, res) => {
             if (err) {
               alert('Error saving visitor: ' + err.message);
             } else if (res.status === 'duplicate') {

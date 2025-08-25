@@ -1,5 +1,6 @@
 // /imports/ui/pages/AdminPage.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Admin = () => {
     return (
@@ -7,6 +8,11 @@ const Admin = () => {
             {/* Header */}
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
+                <nav className="flex gap-2">
+                    <Link className="btn btn-sm" to="/admin/stations">Stations</Link>
+                    <Link className="btn btn-sm" to="/admin/surveys">Surveys</Link>
+                    <Link className="btn btn-sm" to="/admin/checkins">Check-ins</Link>
+                </nav>
                 <button
                     className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-600 transition"
                     onClick={() => document.documentElement.classList.toggle('dark')}
@@ -40,7 +46,7 @@ const Admin = () => {
                     This section will allow admins to add stations, paste Survey JSON, and view check-ins.
                 </p>
             </section>
-        </div>
+        </div >
     );
 };
 
