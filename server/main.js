@@ -14,7 +14,7 @@ import '/imports/api/surveys/surveys.publications';
 import '/imports/api/visitors/visitors.publications';
 
 import '/server/startup.seedStations';
-import '/server/startup.ensureAdmin';
+//import '/server/startup.ensureAdmin';
 
 
 
