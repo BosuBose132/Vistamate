@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import "tailwindcss";
+
+/* Plugins (v4 style) */
+@plugin "@tailwindcss/forms";
+@plugin "daisyui";
+
+
+@plugin "daisyui/theme" {
+    name: "vistamate";
+    default: false;
+    prefersdark: false;
+    color-scheme: "light";
+    --color-base-100: oklch(98% 0 0);
+    --color-base-200: oklch(97% 0 0);
+    --color-base-300: oklch(92% 0 0);
+    --color-base-content: oklch(20% 0 0);
+    --color-primary: oklch(60% 0.118 184.704);
+    --color-primary-content: oklch(98% 0.014 180.72);
+    --color-secondary: oklch(85% 0.138 181.071);
+    --color-secondary-content: oklch(96% 0.018 272.314);
+    --color-accent: oklch(38% 0.063 188.416);
+    --color-accent-content: oklch(96% 0.018 272.314);
+    --color-neutral: oklch(26% 0 0);
+    --color-neutral-content: oklch(98% 0 0);
+    --color-info: oklch(71% 0.143 215.221);
+    --color-info-content: oklch(98% 0.019 200.873);
+    --color-success: oklch(72% 0.219 149.579);
+    --color-success-content: oklch(98% 0.018 155.826);
+    --color-warning: oklch(79% 0.184 86.047);
+    --color-warning-content: oklch(98% 0.026 102.212);
+    --color-error: oklch(50% 0.213 27.518);
+    --color-error-content: oklch(97% 0.014 343.198);
+    --radius-selector: 1rem;
+    --radius-field: 2rem;
+    --radius-box: 1rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 1;
+    --noise: 0;
+}

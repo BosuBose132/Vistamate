@@ -3,17 +3,14 @@ import { check, Match } from 'meteor/check';
 import { Roles } from 'meteor/alanning:roles';
 import { Surveys } from './surveys.collection';
 
-function assertAdmin(userId) {
-    if (!userId || !Roles.userIsInRole(userId, 'admin')) {
-        throw new Meteor.Error('not-authorized', 'Admin role required.');
-    }
-}
+import { assertAdmin } from '/imports/api/_roles.helpers.js';
+import { assertAdminAsync } from '../_roles.helpers';
 
 Meteor.methods({
     async 'surveys.create'({ name, json }) {
         check(name, String);
         check(json, Match.OneOf(String, Object));
-        assertAdmin(this.userId);
+        await assertAdminAsync(this.userId);
 
         let parsed = json;
         if (typeof json === 'string') {
