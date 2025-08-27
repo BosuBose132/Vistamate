@@ -6,7 +6,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 // Pages
 import WelcomePage from './pages/WelcomePage';
 import App from './pages/App';
-import Admin from './pages/Admin';
+//import Admin from './pages/Admin';
 import Login from './pages/Login';
 import ThankYou from './pages/ThankYou';
 import StationKiosk from '/imports/ui/stations/Stationkiosk';
@@ -34,7 +34,7 @@ const MainRouter = () => (
             <Route path="/s/:token" element={<StationKiosk />} />
             <Route path="/admin" element={
                 <ProtectedRoute>
-                    <Admin />
+                    <StationDashboard />
                 </ProtectedRoute>
             } />
             <Route path="/admin/stations" element={

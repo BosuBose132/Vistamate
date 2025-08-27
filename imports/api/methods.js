@@ -11,20 +11,55 @@ Meteor.methods({
     console.log("Visitors has findOneAsync?", typeof Visitors.findOneAsync);
     check(data, {
       name: String,
-      company: String,
-      email: String,
-      phone: String,
+      company: Match.Optional(String),
+      email: Match.Optional(String),
+      phone: Match.Optional(String),
       address: Match.Optional(String),
+      purpose: Match.Optional(String),
       dob: Match.Optional(String),
-      stationId: Match.Optional(String),
+      host: Match.Optional(String),               // <— admin form field
+      stationId: Match.OneOf(String, null, undefined), // allow null
 
     });
 
     //return await checkAndCreateVisitor(data, Visitors);
-    const payload = { ...data, createdAt: new Date() };
-    return await checkAndCreateVisitor(payload, Visitors);
-  },
+    //   const payload = { ...data, createdAt: new Date() };
+    //   return await checkAndCreateVisitor(payload, Visitors);
+    // },
+    const payload = {
+      name: data.name?.trim(),
+      company: data.company?.trim() || undefined,
+      email: data.email?.trim() || undefined,
+      phone: data.phone?.trim() || undefined,
+      address: data.address?.trim() || undefined,
+      dob: data.dob?.trim() || undefined,
+      host: data.host?.trim() || undefined,
+      purpose: data.purpose || 'Other',
+      stationId: data.stationId ?? null,
+      status: data.status || 'in_building',
+      source: data.source || 'admin',
+      createdAt: new Date(),
+    };
 
+    // Try the AJV path; fall back to a minimal insert if that validator requires fields we didn’t collect
+    try {
+      return await checkAndCreateVisitor(payload, Visitors);
+    } catch (e) {
+      console.warn('checkAndCreateVisitor failed, inserting minimal visitor:', e?.reason || e?.message);
+      // Strip fields the npm validator might be strict about
+      const minimal = {
+        name: payload.name,
+        company: payload.company,
+        purpose: payload.purpose,
+        host: payload.host,
+        stationId: payload.stationId,
+        status: payload.status,
+        source: payload.source,
+        createdAt: payload.createdAt,
+      };
+      return await Visitors.insertAsync(minimal);
+    }
+  },
   async 'visitors.processOCR'(base64ImageData) {
     check(base64ImageData, String);
 

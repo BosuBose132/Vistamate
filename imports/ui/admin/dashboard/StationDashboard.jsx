@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
+import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
+
 
 export default function StationDashboard() {
     const subStations = useSubscribe('stations.admin')();
@@ -35,6 +37,7 @@ export default function StationDashboard() {
             </div>
 
             <div className="card bg-base-100 shadow mb-6">
+                <AdminQuickCheckIn />
                 <div className="card-body">
                     <div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
                         <h2 className="card-title">Visitor Check-in</h2>
