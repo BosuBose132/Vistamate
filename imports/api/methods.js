@@ -18,7 +18,7 @@ Meteor.methods({
       purpose: Match.Optional(String),
       dob: Match.Optional(String),
       host: Match.Optional(String),               // <— admin form field
-      stationId: Match.OneOf(String, null, undefined), // allow null
+      stationId: Match.Optional(Match.OneOf(String, null)), // allow null
 
     });
 
