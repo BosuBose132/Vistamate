@@ -5,7 +5,8 @@ import { Visitors } from '/imports/api/collections';
 import { isAdminSync } from '/imports/api/_roles.helpers.pub.js';
 
 Meteor.publish('visitors.adminToday', function (limit = 1000) {
-    if (!isAdminSync(this.userId)) return this.ready();
+    // TEMP: allow any logged-in user to receive today's visitors
+    //if (!isAdminSync(this.userId)) return this.ready();
     check(limit, Number);
     const start = new Date(); start.setHours(0, 0, 0, 0);
     const end = new Date(); end.setHours(23, 59, 59, 999);

@@ -43,7 +43,17 @@ Meteor.methods({
 
     // Try the AJV path; fall back to a minimal insert if that validator requires fields we didn’t collect
     try {
-      return await checkAndCreateVisitor(payload, Visitors);
+      // return await checkAndCreateVisitor(payload, Visitors);
+      const _id = await checkAndCreateVisitor(payload, Visitors);
+      // Ensure createdAt exists for "today" pub filtering
+      const doc = await Visitors.findOneAsync?.(_id) || Visitors.findOne?.(_id);
+      if (!doc?.createdAt) {
+        await (Visitors.updateAsync ?
+          Visitors.updateAsync(_id, { $set: { createdAt: new Date() } }) :
+          Visitors.update(_id, { $set: { createdAt: new Date() } })
+        );
+      }
+      return _id;
     } catch (e) {
       console.warn('checkAndCreateVisitor failed, inserting minimal visitor:', e?.reason || e?.message);
       // Strip fields the npm validator might be strict about
