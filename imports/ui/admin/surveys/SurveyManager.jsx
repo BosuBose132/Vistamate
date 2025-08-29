@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Surveys } from '/imports/api/surveys/surveys.collection';
+import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function SurveyManager() {
     const sub = useSubscribe('surveys.admin')();
@@ -21,13 +22,7 @@ export default function SurveyManager() {
 
     return (
         <div className="min-h-screen bg-base-200 p-6">
-            <div className="navbar bg-base-100 shadow mb-6">
-                <div className="flex-1"><a href="/admin" className="btn btn-ghost text-xl">Vistamate Admin</a></div>
-                <div className="flex-none gap-2">
-                    <a className="btn btn-sm" href="/admin/stations">Stations</a>
-                    <a className="btn btn-sm" href="/admin/checkins">Check-ins</a>
-                </div>
-            </div>
+            <AdminHeader />
 
             <div className="grid lg:grid-cols-2 gap-6">
                 <div className="card bg-base-100 shadow">

@@ -10,15 +10,13 @@ import { Meteor } from 'meteor/meteor';
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 //import { Link } from 'react-router-dom';
 import ThemeToggle from '/imports/ui/components/ThemeToggle';
+import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function StationDashboard() {
     // 1) Subscriptions:
     //    - stations.admin: for names in the scope dropdown
     //    - visitors.adminToday: ALL today's check-ins (any station + global)
-    const navigate = useNavigate();
-    const onLogout = () => {
-        Meteor.logout(() => navigate('/login'));
-    };
+
     const subStations = useSubscribe('stations.admin');
     const subToday = useSubscribe('visitors.adminToday', 1000);
     const loading = subStations() || subToday();
@@ -59,18 +57,7 @@ export default function StationDashboard() {
     return (
         <div className="min-h-screen bg-base-200 p-6">
             {/* Navbar */}
-            <div className="navbar bg-base-100 shadow mb-6 rounded-xl">
-                <div className="flex-1">
-                    <a href="/admin" className="btn btn-ghost text-xl">Vistamate Admin</a>
-                </div>
-                <div className="flex-none gap-2 items-center">
-                    <NavLink className="btn btn-sm" to="/admin/stations">Stations</NavLink>
-                    <NavLink className="btn btn-sm" to="/admin/surveys">Surveys</NavLink>
-                    <NavLink className="btn btn-sm btn-primary" to="/admin/checkins">Check-ins</NavLink>
-                    <ThemeToggle />
-                    <button className="btn btn-sm btn-outline" onClick={onLogout}>Logout</button>
-                </div>
-            </div>
+            <AdminHeader />
             {/* Scope selector */}
             <div className="mb-4 flex flex-col md:flex-row gap-3 md:items-end">
                 <div className="grow max-w-md">
