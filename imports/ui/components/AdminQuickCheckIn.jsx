@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
-import { ContrastLight, ContrastDark } from 'survey-core/themes';
+import { ModernLight, ModernDark } from 'survey-core/themes';
 // Modern SurveyJS base CSS
 //import 'survey-core/defaultV2.min.css';
 
@@ -41,7 +41,7 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
             const isDark =
                 (dt && dt.toLowerCase().includes('dark')) ||
                 document.documentElement.classList.contains('dark');
-            m.applyTheme(isDark ? ContrastDark : ContrastLight);
+            m.applyTheme(isDark ? ModernDark : ModernLight);
         };
 
         apply(); // initial

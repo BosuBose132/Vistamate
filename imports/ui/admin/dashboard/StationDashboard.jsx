@@ -3,16 +3,22 @@ import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
 import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
 
 
 // /imports/ui/admin/dashboard/StationDashboard.jsx
-import { Link } from 'react-router-dom';
+//import { Link } from 'react-router-dom';
 import ThemeToggle from '/imports/ui/components/ThemeToggle';
 
 export default function StationDashboard() {
     // 1) Subscriptions:
     //    - stations.admin: for names in the scope dropdown
     //    - visitors.adminToday: ALL today's check-ins (any station + global)
+    const navigate = useNavigate();
+    const onLogout = () => {
+        Meteor.logout(() => navigate('/login'));
+    };
     const subStations = useSubscribe('stations.admin');
     const subToday = useSubscribe('visitors.adminToday', 1000);
     const loading = subStations() || subToday();
@@ -55,16 +61,16 @@ export default function StationDashboard() {
             {/* Navbar */}
             <div className="navbar bg-base-100 shadow mb-6 rounded-xl">
                 <div className="flex-1">
-                    <span className="btn btn-ghost text-xl">Visitor Check-ins</span>
+                    <a href="/admin" className="btn btn-ghost text-xl">Vistamate Admin</a>
                 </div>
                 <div className="flex-none gap-2 items-center">
-                    <Link className="btn btn-sm" to="/admin/stations">Stations</Link>
-                    <Link className="btn btn-sm" to="/admin/surveys">Surveys</Link>
-                    <Link className="btn btn-sm btn-primary" to="/admin/checkins">Check-ins</Link>
+                    <NavLink className="btn btn-sm" to="/admin/stations">Stations</NavLink>
+                    <NavLink className="btn btn-sm" to="/admin/surveys">Surveys</NavLink>
+                    <NavLink className="btn btn-sm btn-primary" to="/admin/checkins">Check-ins</NavLink>
                     <ThemeToggle />
+                    <button className="btn btn-sm btn-outline" onClick={onLogout}>Logout</button>
                 </div>
             </div>
-
             {/* Scope selector */}
             <div className="mb-4 flex flex-col md:flex-row gap-3 md:items-end">
                 <div className="grow max-w-md">
