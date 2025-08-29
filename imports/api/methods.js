@@ -2,9 +2,66 @@ import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import OpenAI from 'openai';
 import { Visitors } from './collections';
-
+import { VisitorDirectory } from '/imports/api/visitorDirectory/visitorDirectory.collection';
 
 const { checkAndCreateVisitor } = require('visitor-npm-app');
+
+Meteor.methods({
+  async 'admin.quickCheckIn'(data) {
+    // normalize & defaults
+    const clean = { ...data };
+    if (clean.stationId === undefined || clean.stationId === '') clean.stationId = null;
+    const norm = v => (typeof v === 'string' ? v.trim() : v);
+    clean.name = norm(clean.name);
+    clean.company = norm(clean.company);
+    clean.purpose = clean.purpose || 'Other';
+    clean.host = norm(clean.host);
+
+    check(
+      clean,
+      Match.ObjectIncluding({
+        name: String,
+        company: Match.Optional(String),
+        purpose: Match.Optional(String),
+        host: Match.Optional(String),
+        stationId: Match.Optional(Match.OneOf(String, null)),
+      })
+    );
+
+    // (Optional) deduplicate person in a directory — safe to remove if you don’t want it
+    const normalizeStr = s => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const identityKey = `nameco:${normalizeStr(clean.name)}|${normalizeStr(clean.company)}`;
+    const now = new Date();
+    try {
+      await VisitorDirectory.rawCollection().updateOne(
+        { identityKey },
+        {
+          $setOnInsert: { identityKey, createdAt: now },
+          $set: { name: clean.name, company: clean.company, lastSeenAt: now },
+        },
+        { upsert: true }
+      );
+    } catch (e) {
+      // ignore duplicate key races
+    }
+
+    // Insert the check-in EVENT that your dashboard shows
+    const event = {
+      name: clean.name,
+      company: clean.company,
+      purpose: clean.purpose,
+      host: clean.host,
+      stationId: clean.stationId,     // can be null for Global
+      status: 'in_building',
+      source: 'admin',
+      createdAt: now,
+    };
+
+    return await (Visitors.insertAsync
+      ? Visitors.insertAsync(event)
+      : Promise.resolve(Visitors.insert(event)));
+  },
+});
 
 Meteor.methods({
   async 'visitors.checkIn'(data) {

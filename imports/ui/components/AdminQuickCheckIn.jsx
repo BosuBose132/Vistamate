@@ -11,6 +11,7 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
     const [msg, setMsg] = useState(null);
     const modelRef = useRef(null);
 
+
     const survey = useMemo(() => {
         const json = {
             showQuestionNumbers: 'off',
@@ -74,7 +75,7 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
             };
 
             await new Promise((res, rej) =>
-                Meteor.call('visitors.checkIn', payload, (err, _id) => (err ? rej(err) : res(_id)))
+                Meteor.call('admin.quickCheckIn', payload, (err, _id) => (err ? rej(err) : res(_id)))
             );
 
             setMsg({ type: 'success', text: 'Visitor checked in.' });
