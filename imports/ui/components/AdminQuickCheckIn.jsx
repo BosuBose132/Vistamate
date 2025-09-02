@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import { Survey } from 'survey-react-ui';
-import { ModernLight, ModernDark } from 'survey-core/themes';
+import { LayeredDarkPanelless, LayeredLightPanelless } from 'survey-core/themes';
 // Modern SurveyJS base CSS
 //import 'survey-core/defaultV2.min.css';
 
@@ -41,7 +41,7 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
             const isDark =
                 (dt && dt.toLowerCase().includes('dark')) ||
                 document.documentElement.classList.contains('dark');
-            m.applyTheme(isDark ? ModernDark : ModernLight);
+            m.applyTheme(isDark ? LayeredDarkPanelless : LayeredLightPanelless)
         };
 
         apply(); // initial
@@ -95,7 +95,7 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
                     <span className="text-xs opacity-60">Admin entered</span>
                 </div>
 
-                <div className="sv-root-modern">
+                <div className="sv-root-modern text-base-content">
                     <Survey model={survey} />
                 </div>
 

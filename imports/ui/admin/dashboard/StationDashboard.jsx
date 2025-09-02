@@ -3,13 +3,13 @@ import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
 import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
-import { NavLink, useNavigate } from 'react-router-dom';
+//import { NavLink, useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 
 
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 //import { Link } from 'react-router-dom';
-import ThemeToggle from '/imports/ui/components/ThemeToggle';
+//import ThemeToggle from '/imports/ui/components/ThemeToggle';
 import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function StationDashboard() {
@@ -55,7 +55,7 @@ export default function StationDashboard() {
     if (loading) return <div className="p-8">Loading…</div>;
 
     return (
-        <div className="min-h-screen bg-base-200 p-6">
+        <div className="min-h-screen bg-base-200 text-base-content p-6">
             {/* Navbar */}
             <AdminHeader />
             {/* Scope selector */}
@@ -82,7 +82,7 @@ export default function StationDashboard() {
             />
 
             {/* KPI cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="card-body text-base-content grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <StatCard label="Today's Visitors" value={total} icon="👥" />
                 <StatCard label="Currently In Building" value={inBuilding} icon="🏢" />
                 <StatCard label="Avg. Visit Duration" value={avg} icon="⏱️" />
@@ -90,14 +90,14 @@ export default function StationDashboard() {
 
             {/* Today's visitors table */}
             <div className="card bg-base-100 shadow">
-                <div className="card-body">
+                <div className="card-body text-base-content">
                     <h3 className="card-title">
                         Today’s Visitors {selectedId !== 'ALL' ? `• ${options.find(o => o._id === selectedId)?.name}` : ''}
                     </h3>
 
-                    <div className="overflow-x-auto mt-3">
-                        <table className="table">
-                            <thead>
+                    <div className="mt-3 overflow-x-auto rounded-xl border border-base-300 bg-base-100">
+                        <table className="table table-sm table-zebra text-base-content">
+                            <thead className="bg-base-200">
                                 <tr>
                                     <th>Visitor</th>
                                     <th>Company</th>
@@ -127,7 +127,7 @@ export default function StationDashboard() {
                                         </td>
                                         <td>
                                             {v.status === 'checked_out'
-                                                ? <span className="badge">Checked Out</span>
+                                                ? <span className="badge badge-ghost">Checked Out</span>
                                                 : <span className="badge badge-success">In Building</span>}
                                         </td>
                                     </tr>

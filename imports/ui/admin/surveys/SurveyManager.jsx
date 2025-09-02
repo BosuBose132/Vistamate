@@ -21,7 +21,7 @@ export default function SurveyManager() {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 p-6">
+        <div className="min-h-screen bg-base-200 text-base-content p-6">
             <AdminHeader />
 
             <div className="grid lg:grid-cols-2 gap-6">

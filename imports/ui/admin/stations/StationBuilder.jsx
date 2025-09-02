@@ -34,7 +34,7 @@ export default function StationBuilder() {
     const isLoading = loadingSurveys() || loadingStations();
     if (isLoading) return <div className="p-8">Loading…</div>;
     return (
-        <div className="min-h-screen bg-base-200 p-6">
+        <div className="min-h-screen bg-base-200 text-base-content p-6">
             <AdminHeader />
 
             <div className="card bg-base-100 shadow">
