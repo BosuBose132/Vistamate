@@ -1,274 +1,260 @@
-import React, { useRef, useState, useEffect } from 'react';
-import '../styles/camera.css';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Tesseract from 'tesseract.js';
 import { Meteor } from 'meteor/meteor';
 
+const POLL_MS = 200;
 
+const PHASE = {
+  ALIGN: 'align',
+  STEADY: 'steady',
+  READY: 'ready',        // green box showing
+  CAPTURING: 'capturing',
+  PROCESSING: 'processing', // after capture, waiting for OCR + next step
+};
 
-const handleCapture = (videoRef, canvasRef, onCapture) => {
+const StatusBadge = ({ phase }) => {
+  const map = {
+    [PHASE.ALIGN]: { txt: 'Align your ID', cls: 'badge-ghost' },
+    [PHASE.STEADY]: { txt: 'Hold steady…', cls: 'badge-warning' },
+    [PHASE.READY]: { txt: 'Auto-capturing…', cls: 'badge-success' },
+    [PHASE.CAPTURING]: { txt: 'Capturing…', cls: 'badge-info' },
+    [PHASE.PROCESSING]: { txt: 'Processing OCR…', cls: 'badge-info' },
+  };
+  const { txt, cls } = map[phase] || { txt: 'Ready', cls: 'badge-ghost' };
+  return <span className={`badge ${cls} gap-2`}><LoadingDot phase={phase} />{txt}</span>;
+};
+
+const LoadingDot = ({ phase }) => (
+  <span className={`inline-block h-2 w-2 rounded-full ${phase === PHASE.PROCESSING || phase === PHASE.CAPTURING || phase === PHASE.READY
+    ? 'animate-pulse bg-current'
+    : 'bg-current/60'
+    }`} />
+);
+
+const handleCaptureToBase64 = (videoRef, canvasRef) => {
   const video = videoRef.current;
   const canvas = canvasRef.current;
-
-  if (!video || !canvas) {
-    console.error('Video or canvas not available');
-    return;
-  }
-
+  if (!video || !canvas) return null;
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-  const base64Image = canvas.toDataURL('image/png');
-  console.log('Captured base64:', base64Image);
-
-  if (onCapture) {
-    onCapture(base64Image);
-  }
+  return canvas.toDataURL('image/png');
 };
 
-
-const CameraCapture = ({ onCapture }) => {
+export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+
   const [error, setError] = useState(null);
+  const [phase, setPhase] = useState(PHASE.ALIGN);
+  const [isBoxGreen, setIsBoxGreen] = useState(false);
+  const [greenTimer, setGreenTimer] = useState(0); // seconds amassed while green
+  const [lastFrameData, setLastFrameData] = useState(null);
+  const [isCheckingOCR, setIsCheckingOCR] = useState(false);
   const [hasCaptured, setHasCaptured] = useState(false);
 
-  // Box overlay color: black by default
-  const [borderColor, setBorderColor] = useState('border-black-500');
-  // Timer for steady alignment
-  const [steadyTimer, setSteadyTimer] = useState(0);
-  // Timer for green state
-  const [greenTimer, setGreenTimer] = useState(0);
-  // Last frame for movement detection
-  const [lastFrameData, setLastFrameData] = useState(null);
-  // Whether box is green (ID detected and aligned)
-  const [isBoxGreen, setIsBoxGreen] = useState(false);
-  // For OCR check debounce
-  const [isCheckingOCR, setIsCheckingOCR] = useState(false);
-
+  // camera on
   useEffect(() => {
-    const enableCamera = async () => {
+    (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoRef.current.srcObject = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
       } catch (err) {
         setError('Unable to access camera: ' + err.message);
       }
+    })();
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks?.() || [];
+        tracks.forEach(t => t.stop());
+      }
     };
-    enableCamera();
   }, []);
 
-  // Main interval: check alignment and OCR
+  // main polling loop
   useEffect(() => {
-    const interval = setInterval(() => {
+    const id = setInterval(() => {
       if (hasCaptured) return;
       checkFrameAndOCR();
-    }, 300); // 0.3s for faster response
-    return () => clearInterval(interval);
-  }, [lastFrameData, steadyTimer, greenTimer, isBoxGreen, isCheckingOCR, hasCaptured]);
+    }, POLL_MS);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastFrameData, greenTimer, isBoxGreen, isCheckingOCR, hasCaptured]);
 
-  // Reset green timer if box not green
-  useEffect(() => {
-    if (isBoxGreen) {
-      setGreenTimer(prev => prev + 0.3);
-    }
-  }, [isBoxGreen]);
 
-  // If greenTimer reaches 3, auto-capture
-  useEffect(() => {
-    if (greenTimer >= 0.5 && !hasCaptured) {
-      handleCapture(videoRef, canvasRef, onCapture);
-      setHasCaptured(true);
-      setGreenTimer(0);
-      setIsBoxGreen(false);
-      setBorderColor('border-gray-500');
-      //setSteadyTimer(0);
-    }
-  }, [greenTimer, hasCaptured]);
+  const doCapture = () => {
+    setPhase(PHASE.CAPTURING);
+    const b64 = handleCaptureToBase64(videoRef, canvasRef);
+    if (!b64) return;
+    setHasCaptured(true);
+    setPhase(PHASE.PROCESSING); // show overlay immediately
+    onCapture?.(b64); // parent continues OCR flow
+  };
 
-  // Check alignment and OCR
   const checkFrameAndOCR = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return;
 
-    // Draw current frame
+    // draw frame
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    // Get overlay box region (centered)
-    const box = {
-      x: Math.floor(canvas.width * 0.35),
-      y: Math.floor(canvas.height * 0.20),
-      w: Math.floor(canvas.width * 0.35),
-      h: Math.floor(canvas.height * 0.50)
-    };
-    const boxImage = ctx.getImageData(box.x, box.y, box.w, box.h);
 
-    const currentData = boxImage.data;
+    // box ROI
+    const box = {
+      x: Math.floor(canvas.width * 0.2),
+      y: Math.floor(canvas.height * 0.18),
+      w: Math.floor(canvas.width * 0.6),
+      h: Math.floor(canvas.height * 0.48)
+    };
+    const img = ctx.getImageData(box.x, box.y, box.w, box.h);
+    const current = img.data;
+
+    // movement detection → steady vs align
     if (lastFrameData) {
       let diff = 0;
-      for (let i = 0; i < currentData.length; i += 4) {
-        diff += Math.abs(currentData[i] - lastFrameData[i]);
-      }
-      const averageDiff = diff / (currentData.length / 4);
-      if (averageDiff < 30) {
-        setSteadyTimer(prev => prev + 0.3);
+      for (let i = 0; i < current.length; i += 4) diff += Math.abs(current[i] - lastFrameData[i]);
+      const avg = diff / (current.length / 4);
+      if (avg < 30) {
+        // steady
         if (!isCheckingOCR) {
+          setPhase(PHASE.STEADY);
           setIsCheckingOCR(true);
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = box.w;
-          tempCanvas.height = box.h;
-          tempCanvas.getContext('2d').putImageData(boxImage, 0, 0);
-          const boxBase64 = tempCanvas.toDataURL('image/png');
+          const temp = document.createElement('canvas');
+          temp.width = box.w; temp.height = box.h;
+          temp.getContext('2d').putImageData(img, 0, 0);
+          const b64 = temp.toDataURL('image/png');
 
-          checkOCRForText(boxBase64).then(isIdCard => {
-            if (isIdCard) {
-              if (!isBoxGreen) {
-                setIsBoxGreen(true);
-                setGreenTimer(0); // Fresh timer start
-              } else {
-                setGreenTimer(prev => prev + 0.3); // Accumulate if already green
-              }
-              setBorderColor('border-green-500');
-            } else {
-              if (greenTimer < 0.5) {
-                setIsBoxGreen(false);
-                setGreenTimer(0);
-                setBorderColor('border-gray-500');
-              }
+          const ok = await quickOCRHeuristic(b64);
+          if (ok) {
+            setIsBoxGreen(true);
+            setPhase(PHASE.READY);
+            if (!hasCaptured) {
+              // A tiny debounce (100ms) smooths accidental flicker without feeling slower.
+              setTimeout(() => doCapture(), 100);
             }
-            setIsCheckingOCR(false);
-          });
-        } else if (isBoxGreen) {
-          setGreenTimer(prev => prev + 0.3);
+          } else {
+            setIsBoxGreen(false);
+            setPhase(PHASE.STEADY);
+
+          }
+          setIsCheckingOCR(false);
         }
       } else {
-        setSteadyTimer(0);
-        setBorderColor('border-gray-500');
+        // moving
+        setPhase(PHASE.ALIGN);
         setIsBoxGreen(false);
         setGreenTimer(0);
       }
     }
-    setLastFrameData(currentData);
+    setLastFrameData(current);
   };
 
-
-  const captureFrameAsBase64 = () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return null;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/png');
-  };
-
-
-  const checkOCRForText = async (imageBase64) => {
+  const quickOCRHeuristic = async (b64) => {
     try {
-      const result = await Tesseract.recognize(
-        imageBase64,
-        'eng',
-        { logger: m => console.log(m) }
-      );
-
-      const text = result.data.text.trim();
-      console.log("Tesseract OCR result:", text);
-
-
+      const result = await Tesseract.recognize(b64, 'eng', { logger: () => { } });
+      const text = result.data.text || '';
+      const conf = result.data.confidence || 0;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
       const nonSpaceChars = text.replace(/\s/g, '').length;
-      const words = text.split(/\s+/).filter(Boolean);
-      const keywordMatch = /name|dob|birth|dl|license|state|id|driver|usa|sex|height|address|restrictions/i.test(text);
-      const confidence = result.data.confidence || 0;
-
-      // console.log("------ OCR DEBUG ------");
-      // console.log("Text:", text);
-      // console.log("Confidence:", confidence);
-      // console.log("Word count:", words.length);
-      // console.log("Non-space chars:", nonSpaceChars);
-      // console.log("Keyword Match:", keywordMatch);
-
-      // Final detection logic
-      return (
-        (nonSpaceChars >= 30 && words.length >= 5 && confidence >= 25) || // common case
-        (confidence >= 50 && words.length >= 8)                          // strong case fallback
-      );
-    } catch (err) {
-      console.error('Tesseract error:', err);
+      // light heuristic
+      return ((nonSpaceChars >= 30 && words >= 5 && conf >= 25) || (conf >= 50 && words >= 8));
+    } catch {
       return false;
-    };
+    }
   };
-
 
   return (
-
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-2 py-8 sm:px-6 md:px-8">
-      <div className="w-full max-w-2xl bg-gray-800/80 rounded-2xl shadow-2xl p-6 md:p-10 flex flex-col items-center">
-        <div className="w-full flex flex-col items-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2 text-center drop-shadow-lg">Visitor Check-In</h2>
-          <p className="text-lg md:text-xl text-gray-300 text-center font-medium">Please align your ID card within the box to check in</p>
-        </div>
-
-        {error && (
-          <div className="w-full text-red-400 bg-red-900/40 border border-red-700 rounded-lg py-2 px-4 text-center font-semibold mb-4 animate-pulse">
-            {error}
-          </div>
-        )}
-
-        <div className="relative w-full aspect-[16/9] max-h-[420px] rounded-xl overflow-hidden shadow-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-cover rounded-xl"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-
-          {/* Overlay Box */}
-          <div
-            className={`absolute border-4 ${borderColor} rounded-xl transition-all duration-300 flex items-center justify-center pointer-events-none`}
-            style={{
-              top: '20%',
-              left: '15%',
-              width: '70%',
-              height: '60%',
-              boxShadow: borderColor === 'border-green-500' ? '0 0 24px 4px #22c55e88' : '0 0 16px 2px #0008',
-              background: isBoxGreen ? 'rgba(34,197,94,0.07)' : 'rgba(0,0,0,0.10)',
-              borderColor: borderColor === 'border-green-500' ? '#22c55e' : '#64748b',
-              color: borderColor === 'border-green-500' ? '#22c55e' : '#e5e7eb',
-              fontWeight: 600,
-              fontSize: '1.1rem',
-              zIndex: 10,
-            }}
-          >
-            <div className="w-full text-center flex items-center justify-center">
-              {isBoxGreen ? (
-                <span className="text-green-400 font-bold animate-pulse">Auto-capturing, Please wait...</span>
-              ) : (
-                <span className="text-gray-200 font-semibold">Align your ID card inside the box</span>
-              )}
+    <div className="w-full">
+      {/* Card */}
+      <div className="card bg-base-100 text-base-content shadow-xl mx-auto max-w-3xl">
+        <div className="card-body">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="card-title">Visitor Check-In</h2>
+              <p className="opacity-70">Please align your business card within the box to check in</p>
             </div>
+            <StatusBadge phase={phase} />
           </div>
-        </div>
 
-        {/* Capture Button */}
-        <div className="flex justify-center w-full mt-8">
-          <button
-            className="bg-green-600 hover:bg-green-500 active:bg-green-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={() => handleCapture(videoRef, canvasRef, onCapture)}
-            disabled={hasCaptured || isBoxGreen}
-          >
-            {isBoxGreen ? 'Capturing...' : 'Capture & Scan'}
-          </button>
+          {/* Video area */}
+          <div className="relative mt-4 rounded-2xl overflow-hidden bg-base-200 border border-base-300">
+            <div className="aspect-video w-full">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+
+            {/* Overlay box */}
+            <div
+              className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all`}
+            >
+              <div
+                className={`rounded-2xl px-8 py-16 border-4 transition-all duration-300
+                ${isBoxGreen ? 'border-success/80 shadow-[0_0_24px_4px_rgba(34,197,94,0.35)] bg-success/5' : 'border-base-300 bg-base-300/10'}`}
+                style={{
+                  width: '70%',
+                  height: '60%',
+                }}
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {isBoxGreen
+                    ? <span className="font-semibold text-success animate-pulse">Auto-capturing… hold steady</span>
+                    : <span className="opacity-80">Align your business card inside the box</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Captured/processing overlay */}
+            {hasCaptured && (
+              <div className="absolute inset-0 bg-base-100/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-base-content">
+                {ocrStatus === 'processed' ? (
+                  <>
+                    <div className="text-success">
+                      <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 6L9 17l-5-5" />
+                      </svg>
+                    </div>
+                    <p className="font-semibold">OCR processed — review the form</p>
+                  </>
+                ) : (
+                  <>
+                    <span className="loading loading-spinner loading-lg" />
+                    <p className="font-semibold">Captured — processing OCR…</p>
+                    <p className="text-sm opacity-70">Please wait</p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="alert alert-error mt-4">
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-4 flex justify-center">
+            <button
+              className="btn btn-primary"
+              onClick={doCapture}
+              disabled={hasCaptured || phase === PHASE.CAPTURING || phase === PHASE.PROCESSING}
+            >
+              {hasCaptured ? 'Processing…' : 'Capture & Scan'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
-
-};
-
-export default CameraCapture;
+}

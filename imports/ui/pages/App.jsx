@@ -14,11 +14,13 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const [surveyModel, setSurveyModel] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [ocrStatus, setOcrStatus] = useState('idle'); // 'idle' | 'processing' | 'processed'
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
     setCapturedImage(base64);
     setLoading(true);
+    setOcrStatus('processing');
     setSurveyModel(null);
     setError(null);
 
@@ -59,6 +61,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
         });
 
         setSurveyModel(model);
+        setOcrStatus('processed');
       } catch (e) {
         setError('Failed to parse OCR result');
       }
@@ -105,10 +108,10 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   });
 
   return (
-    <div className="min-h-screen w-full flex flex-row md:flex-row items-start justify-center gap-6 px-4 py-6 bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="min-h-screen w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-10 bg-base-200 text-base-content">
       {/* CAMERA */}
-      <div className="w-full md:w-1/2 flex justify-center items-start">
-        <CameraCapture onCapture={handleCapture} />
+      <div className="w-full md:w-1/2 flex justify-center items-center">
+        <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
       </div>
 
       {/* SURVEY FORM */}
@@ -117,7 +120,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
           initial={{ x: '100%', opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full md:w-1/2 flex justify-center items-start"
+          className="w-full md:w-1/2 flex justify-center items-center md:items-center"
         >
           <SurveyForm surveyModel={surveyModel} />
         </motion.div>
