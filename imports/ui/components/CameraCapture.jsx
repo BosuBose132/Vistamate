@@ -104,12 +104,12 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     // box ROI
-    const box = {
-      x: Math.floor(canvas.width * 0.2),
-      y: Math.floor(canvas.height * 0.18),
-      w: Math.floor(canvas.width * 0.6),
-      h: Math.floor(canvas.height * 0.48)
-    };
+    const ratio = 1.58;
+    const targetW = Math.floor(canvas.width * 0.72);
+    const targetH = Math.floor(targetW / ratio);
+    const x = Math.floor((canvas.width - targetW) / 2);
+    const y = Math.floor((canvas.height - targetH) / 2);
+    const box = { x, y, w: targetW, h: targetH };
     const img = ctx.getImageData(box.x, box.y, box.w, box.h);
     const current = img.data;
 
@@ -128,7 +128,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           temp.getContext('2d').putImageData(img, 0, 0);
           const b64 = temp.toDataURL('image/png');
 
-          const ok = await quickOCRHeuristic(b64);
+          const ok = await isBusinessOrIdCard(b64);
           if (ok) {
             setIsBoxGreen(true);
             setPhase(PHASE.READY);
@@ -153,20 +153,50 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     setLastFrameData(current);
   };
 
-  const quickOCRHeuristic = async (b64) => {
+  const isBusinessOrIdCard = async (b64) => {
     try {
-      const result = await Tesseract.recognize(b64, 'eng', { logger: () => { } });
-      const text = result.data.text || '';
+      // Downscale for speed (~480px width cap)
+      const img = new Image();
+      await new Promise((res) => { img.onload = res; img.src = b64; });
+      const scale = Math.min(480 / img.width, 1);
+      const c = document.createElement('canvas');
+      c.width = Math.floor(img.width * scale);
+      c.height = Math.floor(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      const smallB64 = c.toDataURL('image/png');
+
+      const result = await Tesseract.recognize(smallB64, 'eng', { logger: () => { } });
+      const text = (result.data.text || '').toLowerCase();
       const conf = result.data.confidence || 0;
-      const words = text.trim().split(/\s+/).filter(Boolean).length;
-      const nonSpaceChars = text.replace(/\s/g, '').length;
-      // light heuristic
-      return ((nonSpaceChars >= 30 && words >= 5 && conf >= 25) || (conf >= 50 && words >= 8));
+      const words = text.trim().split(/\s+/).filter(Boolean);
+      const nonSpace = text.replace(/\s/g, '').length;
+
+      // Basic quality gates
+      if (conf < 30 || nonSpace < 25 || words.length < 4) return false;
+
+      // Signals common on business cards
+      const hasEmail = /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/.test(text);
+      const hasPhone = /\b(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b/.test(text);
+      const hasURL = /\b(https?:\/\/)?(www\.)?[a-z0-9-]+\.[a-z]{2,}([\/#?]\S*)?\b/.test(text);
+      const hasAddrKw = /\b(st|street|ave|avenue|rd|road|suite|ste|blvd|lane|ln|drive|dr|india|usa|state)\b/.test(text);
+      const hasCoSuf = /\b(inc|llc|ltd|co\.|corp|technologies|systems|solutions)\b/.test(text);
+      const hasRole = /\b(ceo|cto|engineer|manager|director|founder|sales|marketing)\b/.test(text);
+      const bizSignals = [hasEmail, hasPhone, hasURL, hasAddrKw, hasCoSuf, hasRole].filter(Boolean).length;
+
+      // Signals common on IDs (esp. driver licenses / govt IDs)
+      const idKeywords = /\b(driver|licen[cs]e|dl|id card|identification|dob|date of birth|sex|height|class|restrictions|state|issuer|expires|issue|dmv)\b/.test(text);
+      const hasIdNum = /\b([a-z]?\d{6,}[a-z]?)\b/.test(text); // crude: long alphanum
+      const idSignals = (idKeywords ? 1 : 0) + (hasIdNum ? 1 : 0);
+
+      // Decision: require multiple strong signals
+      const isBusinessCard = bizSignals >= 2;          // e.g., email + phone, or phone + URL, etc.
+      const isIdCard = idSignals >= 2 || (idKeywords && conf >= 45);
+
+      return isBusinessCard || isIdCard;
     } catch {
       return false;
     }
   };
-
   return (
     <div className="w-full">
       {/* Card */}
@@ -201,8 +231,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 className={`rounded-2xl px-8 py-16 border-4 transition-all duration-300
                 ${isBoxGreen ? 'border-success/80 shadow-[0_0_24px_4px_rgba(34,197,94,0.35)] bg-success/5' : 'border-base-300 bg-base-300/10'}`}
                 style={{
-                  width: '70%',
-                  height: '60%',
+                  width: '72%',
+                  aspectRatio: '1.58',
                 }}
               >
                 <div className="w-full h-full flex items-center justify-center">
@@ -255,6 +285,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
