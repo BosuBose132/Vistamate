@@ -6,9 +6,11 @@ import SurveyForm from '../components/SurveyForm';
 import 'survey-core/survey-core.css';
 import { FlatDarkPanelless } from "survey-core/themes";
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 //export const App = () => {
 export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
+  const navigate = useNavigate();
   const { cameraEnabled = true, requirePhoto = false, mobileBehavior = 'toggle', welcomeMessage = '' } = kioskConfig;
   const [capturedImage, setCapturedImage] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
@@ -41,6 +43,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
           : generateSurveyJsonFromOCR(ocrJson);
         const model = new Model(surveyJson);
         model.applyTheme(FlatDarkPanelless);
+        model.showCompletedPage = false;
 
         model.onComplete.add((sender) => {
           if (requirePhoto && !capturedImage) {
@@ -51,11 +54,17 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
           //Meteor.call('visitors.checkIn', finalData, (err, res) => {
           Meteor.call('visitors.checkIn', { ...finalData, stationId }, (err, res) => {
             if (err) {
-              alert('Error saving visitor: ' + err.message);
+              // alert('Error saving visitor: ' + err.message);
+              // ensure the survey can be submitted again if there was an error
+              try { sender.isCompleted = false; } catch { }
             } else if (res.status === 'duplicate') {
-              alert('Visitor already exists');
+              // alert('Visitor already exists');
             } else {
-              alert('Visitor successfully checked in!');
+              // alert('Visitor successfully checked in!');
+              navigate('/thankyou');
+              setSurveyModel(null);
+              setCapturedImage(null);
+              setOcrStatus('idle');
             }
           });
         });
@@ -113,6 +122,9 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
       <div className="w-full md:w-1/2 flex justify-center items-center">
         <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
       </div>
+      {/* Divider: vertical on desktop, horizontal on mobile */}
+      <div className="hidden md:block self-stretch w-px bg-base-300/80 rounded-full" aria-hidden="true" />
+      <div className="md:hidden h-px w-full bg-base-300/80 rounded-full" aria-hidden="true" />
 
       {/* SURVEY FORM */}
       {surveyModel && (
