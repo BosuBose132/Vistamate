@@ -61,7 +61,21 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
               // alert('Visitor already exists');
             } else {
               // alert('Visitor successfully checked in!');
-              navigate('/thankyou');
+              // 1) Build a small summary for the Thank You page
+              const last = {
+                name: `${finalData.firstName || ''} ${finalData.lastName || ''}`.trim() || finalData.name || '',
+                company: finalData.company || '',
+                email: finalData.email || '',
+                phone: finalData.phone || '',
+                visitorId: res?.insertedId || res?._id || '',
+                checkedAt: Date.now(),
+              };
+
+              // 2) Persist for reloads (same tab)
+              try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(last)); } catch { }
+
+              // 3) Navigate and also pass state (works even if storage is empty)
+              navigate('/thankyou', { state: last });
               setSurveyModel(null);
               setCapturedImage(null);
               setOcrStatus('idle');
