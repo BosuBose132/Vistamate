@@ -13,7 +13,6 @@
     "@tailwindcss/postcss": "^4.1.11",
     "bootstrap": "^5.3.7",
     "framer-motion": "^12.23.12",
-    "meteor-node-stubs": "^1.2.5",
     "openai": "^5.8.3",
     "postcss-load-config": "^6.0.1",
     "qrcode.react": "^4.2.0",
