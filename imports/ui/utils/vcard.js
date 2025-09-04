@@ -1,13 +1,12 @@
-export function generateVCard(visitor) {
-  return `
-BEGIN:VCARD
-VERSION:3.0
-FN:${visitor.name}
-ORG:${visitor.name || ''}
-EMAIL:${visitor.email || ''}
-TEL:${visitor.phone || ''}
-ADR:;;${visitor.address || ''}
-END:VCARD
-`.trim();
+export function buildVCard({ name = '', company = '', email = '', phone = '' }) {
+  const lines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    name ? `FN:${name}` : '',
+    company ? `ORG:${company}` : '',
+    email ? `EMAIL;TYPE=INTERNET:${email}` : '',
+    phone ? `TEL;TYPE=CELL:${phone}` : '',
+    'END:VCARD'
+  ].filter(Boolean);
+  return lines.join('\n');
 }
-

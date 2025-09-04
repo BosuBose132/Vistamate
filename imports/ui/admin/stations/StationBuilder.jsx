@@ -3,6 +3,7 @@ import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Surveys } from '/imports/api/surveys/surveys.collection';
 import { Stations } from '/imports/api/stations/stations.collection';
+import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function StationBuilder() {
     const loadingSurveys = useSubscribe('surveys.admin');
@@ -33,14 +34,8 @@ export default function StationBuilder() {
     const isLoading = loadingSurveys() || loadingStations();
     if (isLoading) return <div className="p-8">Loading…</div>;
     return (
-        <div className="min-h-screen bg-base-200 p-6">
-            <div className="navbar bg-base-100 shadow mb-6">
-                <div className="flex-1"><a href="/admin" className="btn btn-ghost text-xl">Vistamate Admin</a></div>
-                <div className="flex-none gap-2">
-                    <a className="btn btn-sm" href="/admin/surveys">Surveys</a>
-                    <a className="btn btn-sm" href="/admin/checkins">Check-ins</a>
-                </div>
-            </div>
+        <div className="min-h-screen bg-base-200 text-base-content p-6">
+            <AdminHeader />
 
             <div className="card bg-base-100 shadow">
                 <div className="card-body space-y-6">

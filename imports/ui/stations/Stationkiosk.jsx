@@ -7,8 +7,9 @@ import App from '../pages/App';
 
 export default function StationKiosk() {
     const { token } = useParams();
-    const sub = useSubscribe('stations.byToken', token)();
+    const subStation = useSubscribe('stations.byToken', token)();
     const station = useFind(() => Stations.findOne({ token }), [token]);
+    const subSurvey = station?.surveyId ? useSubscribe('surveys.byId', station.surveyId)() : false;
     const survey = station?.surveyId
         ? useFind(() => Surveys.findOne(station.surveyId), [station?.surveyId])
         : null;
@@ -18,14 +19,23 @@ export default function StationKiosk() {
         if (station?.name) document.title = `Vistamate • ${station.name}`;
     }, [station?.theme, station?.name]);
 
-    if (sub) return <div className="p-8">Loading station…</div>;
+    if (subStation || (station?.surveyId && subSurvey)) return <div className="p-8">Loading station…</div>;
     if (!station) return <div className="p-8">Station not found or disabled.</div>;
+
+    // Survey JSON can be stored as object or string; normalize to object
+    let assignedSurveyJson = null;
+    if (survey?.json) {
+        assignedSurveyJson = typeof survey.json === 'string' ? safeParseJSON(survey.json) : survey.json;
+    }
 
     return (
         <App
             stationId={station._id}
             kioskConfig={station}
-            assignedSurveyJson={survey?.json}
+            assignedSurveyJson={assignedSurveyJson}
         />
     );
+}
+function safeParseJSON(s) {
+    try { return JSON.parse(s); } catch { return null; }
 }

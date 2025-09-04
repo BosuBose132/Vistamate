@@ -2,8 +2,8 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Meteor } from 'meteor/meteor';
 import MainRouter from '/imports/ui/MainRouter';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import '/imports/ui/styles/tailwind.css';
+import 'survey-core/survey-core.css';
 
 
 Meteor.startup(() => {
