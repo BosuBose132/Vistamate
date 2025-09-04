@@ -1,7 +1,7 @@
 // /imports/ui/pages/WelcomePage.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 
 const WelcomePage = () => {
@@ -10,31 +10,58 @@ const WelcomePage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-base-200 text-base-content">
       {/* NAVBAR */}
-      <div className="navbar bg-base-100 shadow-sm">
-        <div className="container mx-auto px-4">
+
+      <header className="navbar bg-base-100 shadow-sm border-b border-base-300/40">
+        <div className="max-w-7xl mx-auto w-full h-16 px-6 flex items-center">
+          {/* start: logo (links to Welcome) */}
           <div className="navbar-start">
             <Link to="/" className="inline-flex items-center">
-              <img
-                src="/VistamateLogo.png"
-                alt="Vistamate"
-                className="h-44 w-auto mr-2"
-              />
+              <img src="/VistaMate.png" alt="Vistamate" className="h-40 w-auto" />
             </Link>
           </div>
-          <div className="navbar-center hidden md:flex">
-            <ul className="menu menu-horizontal px-1">
-              <li><button className="btn btn-ghost" onClick={() => navigate('/')}>Home</button></li>
-              <li><button className="btn btn-ghost" onClick={() => navigate('/login')}>Admin Login</button></li>
-              <li><button className="btn btn-ghost" onClick={() => navigate('/about')}>About</button></li>
+          {/* end: nav + theme toggle (active pill like admin) */}
+          <div className="navbar-end gap-2">
+            <ul className="menu menu-horizontal px-0 gap-1">
+              <li>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    `btn btn-ghost btn-sm ${isActive ? 'btn-active text-primary' : ''}`
+                  }
+                >
+                  Home
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    `btn btn-ghost btn-sm ${isActive ? 'btn-active text-primary' : ''}`
+                  }
+                >
+                  Admin Login
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/about"
+                  className={({ isActive }) =>
+                    `btn btn-ghost btn-sm ${isActive ? 'btn-active text-primary' : ''}`
+                  }
+                >
+                  About
+                </NavLink>
+              </li>
             </ul>
-
+            <div className="absolute top-3 right-4">
+              <ThemeToggle className="ml-2" />
+            </div>
           </div>
+        </div>
+      </header>
 
-        </div>
-        <div className="absolute top-3 right-4">
-          <ThemeToggle className="ml-2" />
-        </div>
-      </div>
+
+
 
 
       {/* HERO */}
