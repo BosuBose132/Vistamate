@@ -1,37 +1,26 @@
 import { Meteor } from 'meteor/meteor';
-import { LinksCollection } from '/imports/api/links';
+import '/imports/api/methods';
+import { Roles } from 'meteor/alanning:roles';
+import '/imports/api/adminSetup';
 
-async function insertLink({ title, url }) {
-  await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
-}
+import '/imports/api/stations/stations.collection';
+import '/imports/api/stations/stations.methods';
+import '/imports/api/stations/stations.publications';
 
-Meteor.startup(async () => {
-  // If the Links collection is empty, add some data.
-  if (await LinksCollection.find().countAsync() === 0) {
-    await insertLink({
-      title: 'Do the Tutorial',
-      url: 'https://www.meteor.com/tutorials/react/creating-an-app',
-    });
+import '/imports/api/surveys/surveys.collection';
+import '/imports/api/surveys/surveys.methods';
+import '/imports/api/surveys/surveys.publications';
 
-    await insertLink({
-      title: 'Follow the Guide',
-      url: 'https://guide.meteor.com',
-    });
+import '/imports/api/visitors/visitors.publications';
 
-    await insertLink({
-      title: 'Read the Docs',
-      url: 'https://docs.meteor.com',
-    });
+import '/server/startup.seedStations';
+//import '/server/startup.ensureAdmin';
+import '/server/startup.indexes';
 
-    await insertLink({
-      title: 'Discussions',
-      url: 'https://forums.meteor.com',
-    });
-  }
 
-  // We publish the entire Links collection to all clients.
-  // In order to be fetched in real-time to the clients
-  Meteor.publish("links", function () {
-    return LinksCollection.find();
-  });
+
+
+global.Roles = Roles;
+Meteor.startup(() => {
+  console.log("Vistamate server started.");
 });
