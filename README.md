@@ -5,7 +5,7 @@ It uses **AI OCR (OpenAI)**, **SurveyJS forms**, and **DaisyUI theming** to deli
 
 ---
 
-## ✨ Features
+## Features
 
 ### Visitor Flow (Kiosk)
 - **Camera-based auto-capture**: Detects ID or business cards and captures automatically.
@@ -54,7 +54,7 @@ It uses **AI OCR (OpenAI)**, **SurveyJS forms**, and **DaisyUI theming** to deli
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Meteor 3** (backend + pub/sub reactivity)
 - **React 18** (UI)
@@ -67,7 +67,7 @@ It uses **AI OCR (OpenAI)**, **SurveyJS forms**, and **DaisyUI theming** to deli
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js + npm
