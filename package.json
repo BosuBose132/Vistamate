@@ -21,8 +21,8 @@
     "react-dom": "^18.2.0",
     "react-router": "^7.7.1",
     "react-router-dom": "^6.15.0",
-    "survey-core": "^2.2.3",
-    "survey-react-ui": "^2.2.3",
+    "survey-core": "^2.3.4",
+    "survey-react-ui": "^2.3.4",
     "tesseract.js": "^6.0.1",
     "uuid": "^11.1.0",
     "visitor-npm-app": "^1.0.15"
@@ -35,7 +35,9 @@
     "testModule": "tests/main.js"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
     "autoprefixer": "^10.4.21",
+    "daisyui": "^5.1.6",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11"
   }
