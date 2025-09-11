@@ -1,6 +1,4 @@
 // /imports/ui/pages/AdminPage.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Admin = () => {
     return (

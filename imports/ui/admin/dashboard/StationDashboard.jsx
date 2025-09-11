@@ -1,16 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
-import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
 //import { NavLink, useNavigate } from 'react-router-dom';
-import { Meteor } from 'meteor/meteor';
 
 
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 //import { Link } from 'react-router-dom';
 //import ThemeToggle from '/imports/ui/components/ThemeToggle';
-import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function StationDashboard() {
     // 1) Subscriptions:
@@ -148,19 +145,19 @@ export default function StationDashboard() {
     );
 }
 
-function StatCard({ label, value, icon }) {
-    return (
-        <div className="card bg-base-100 shadow">
-            <div className="card-body">
-                <div className="flex items-center justify-between">
-                    <div className="text-sm opacity-70">{label}</div>
-                    <div className="text-xl">{icon}</div>
-                </div>
-                <div className="text-3xl font-bold mt-1">{value}</div>
-            </div>
-        </div>
-    );
-}
+// function StatCard({ label, value, icon }) {
+//     return (
+//         <div className="card bg-base-100 shadow">
+//             <div className="card-body">
+//                 <div className="flex items-center justify-between">
+//                     <div className="text-sm opacity-70">{label}</div>
+//                     <div className="text-xl">{icon}</div>
+//                 </div>
+//                 <div className="text-3xl font-bold mt-1">{value}</div>
+//             </div>
+//         </div>
+//     );
+// }
 
 function averageDuration(list) {
     if (!list.length) return '0m';
