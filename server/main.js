@@ -17,7 +17,7 @@ import '/server/startup.seedStations';
 //import '/server/startup.ensureAdmin';
 import '/server/startup.indexes';
 
-
+var glob_bad;
 
 
 global.Roles = Roles;
