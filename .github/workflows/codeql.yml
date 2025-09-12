@@ -15,11 +15,11 @@ on:
   push:
     paths-ignore:
       - '**/*.md'
-    branches: [ "main" ]
+    branches: [ "develop", "main" ]
   pull_request:
     paths-ignore:
       - '**/*.md'
-    branches: [ "main" ]
+    branches: [ "develop","main" ]
   schedule:
     - cron: '35 19 * * 5'
 
