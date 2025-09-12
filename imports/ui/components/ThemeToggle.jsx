@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function ThemeToggle({ className = '' }) {
     const getIsDark = () =>
@@ -20,7 +20,9 @@ function ThemeToggle({ className = '' }) {
     const onChange = (e) => {
         const next = e.target.checked ? 'dark' : 'vistamate'; // your two themes
         document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem('daisy-theme', next); } catch { }
+        try { localStorage.setItem('daisy-theme', next); } catch {
+            // ignore storage errors (private mode, quota exceeded, etc.)
+        }
         setIsDark(next === 'dark');
     };
 

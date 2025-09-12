@@ -1,6 +1,5 @@
 // /imports/ui/pages/ThankYou.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { buildVCard } from '/imports/ui/utils/vcard';
 
@@ -8,13 +7,15 @@ export default function ThankYou() {
     const navigate = useNavigate();
     const { state } = useLocation(); // data passed via navigate('/thankyou', { state })
     const [info, setInfo] = useState(null);
-    const [seconds, setSeconds] = useState(8); // auto-return countdown (seconds)
+    //const [seconds, setSeconds] = useState(8); // auto-return countdown (seconds)
 
     // Load visitor summary (prefer router state, then sessionStorage)
     useEffect(() => {
         if (state && typeof state === 'object') {
             setInfo(state);
-            try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(state)); } catch { }
+            try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(state)); } catch {
+                // ignore storage errors (private mode, quota exceeded, etc.)
+            }
             return;
         }
         try {

@@ -1,6 +1,5 @@
 // /imports/ui/components/SurveyForm.jsx
-import React, { useEffect } from 'react';
-import { Survey } from 'survey-react-ui';
+import { useEffect } from 'react';
 
 // Use the modern base CSS once in your app (e.g., main.jsx):
 // import 'survey-core/defaultV2.min.css';

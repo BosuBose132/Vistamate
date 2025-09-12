@@ -8,7 +8,7 @@ Meteor.startup(async () => {
             { identityKey: 1 },
             { unique: true, sparse: true }
         );
-    } catch (e) {
+    } catch {
         // ignore “already exists”
     }
 });

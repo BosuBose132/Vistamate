@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import OpenAI from 'openai';
+
 import { Visitors } from './collections';
 import { VisitorDirectory } from '/imports/api/visitorDirectory/visitorDirectory.collection';
 
@@ -41,7 +42,7 @@ Meteor.methods({
         },
         { upsert: true }
       );
-    } catch (e) {
+    } catch {
       // ignore duplicate key races
     }
 

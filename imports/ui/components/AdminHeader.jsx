@@ -1,7 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
-import ThemeToggle from '/imports/ui/components/ThemeToggle';
 
 export default function AdminHeader() {
     const navigate = useNavigate();

@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 //import { Roles } from 'meteor/alanning:roles';
 import { v4 as uuidv4 } from 'uuid';
+
 import { Stations } from './stations.collection';
 import { assertAdminAsync } from '/imports/api/_roles.helpers.js';
 
@@ -62,7 +63,7 @@ Meteor.methods({
 
     async 'stations.toggle'({ _id, isActive }) {
         check(_id, String); check(isActive, Boolean);
-        assertAdmin(this.userId);
+        await assertAdminAsync(this.userId);
         Stations.updateAsync(_id, { $set: { isActive } });
     },
 

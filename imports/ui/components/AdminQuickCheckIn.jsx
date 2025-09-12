@@ -1,7 +1,6 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
-import { Survey } from 'survey-react-ui';
 import { LayeredDarkPanelless, LayeredLightPanelless } from 'survey-core/themes';
 // Modern SurveyJS base CSS
 //import 'survey-core/defaultV2.min.css';

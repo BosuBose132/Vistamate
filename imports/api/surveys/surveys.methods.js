@@ -1,9 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-import { Roles } from 'meteor/alanning:roles';
-import { Surveys } from './surveys.collection';
 
-import { assertAdmin } from '/imports/api/_roles.helpers.js';
+import { Surveys } from './surveys.collection';
 import { assertAdminAsync } from '../_roles.helpers';
 
 Meteor.methods({
