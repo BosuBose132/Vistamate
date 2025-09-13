@@ -1,0 +1,44 @@
+name: Test Build
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Use the Meteor binary directly to avoid PATH/login-shell quirks
+      METEOR: ~/.meteor/meteor
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20   # If your local build only works on 18, change to '18'
+
+      # Optional but speeds up runs a lot
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install Meteor
+        run: |
+          curl https://install.meteor.com/ | sh
+          $HOME/.meteor/meteor --version
+
+      - name: Install NPM dependencies
+        run: $METEOR npm ci
+
+      # If you need extra environment for building, add it here (e.g., export VAR=...)
+      - name: Test Meteor build (server bundle)
+        run: $METEOR build ../build-output --directory --server-only
