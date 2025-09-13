@@ -1,0 +1,41 @@
+name: Test Build
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js (for tooling only; we’ll use meteor’s npm to match versions)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Meteor
+        run: curl https://install.meteor.com/ | sh
+
+      # 👇 Make the meteor CLI available to the rest of the job
+      - name: Add Meteor to PATH
+        run: echo "$HOME/.meteor" >> "$GITHUB_PATH"
+
+      # optional, but nice to verify CI env
+      - name: Show Meteor version
+        run: meteor --version
+
+      # some packages need build tools in CI
+      - name: Install system build deps
+        run: sudo apt-get update && sudo apt-get install -y build-essential python3
+
+      # Use meteor’s bundled npm to avoid Node version mismatches
+      - name: Install NPM dependencies
+        run: meteor npm ci
+
+      - name: Test Meteor build (server bundle)
+        run: meteor build ../build-output --directory --server-only
