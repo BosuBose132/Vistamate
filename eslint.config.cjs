@@ -57,9 +57,11 @@ export default [
         rules: {
             // React
             'react/prop-types': 'off',
-
+            'react/react-in-jsx-scope': 'off',
             "unused-imports/no-unused-imports": "error",
-
+            'unused-imports/no-unused-imports': 'warn',
+            // If you keep old React import for JSX, silence the “unused React” warning:
+            'no-unused-vars': ['warn', { varsIgnorePattern: '^React$' }],
             // Hooks correctness
             'react-hooks/rules-of-hooks': 'error',
             'react-hooks/exhaustive-deps': 'warn',

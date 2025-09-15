@@ -1,3 +1,6 @@
+import React from 'react';
+import ThemeToggle from '/imports/ui/components/ThemeToggle';
+import { NavLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 

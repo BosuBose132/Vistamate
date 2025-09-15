@@ -1,3 +1,4 @@
+import React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
 
@@ -11,24 +12,24 @@ const PHASE = {
   PROCESSING: 'processing', // after capture, waiting for OCR + next step
 };
 
-// const StatusBadge = ({ phase }) => {
-//   const map = {
-//     [PHASE.ALIGN]: { txt: 'Align your ID', cls: 'badge-ghost' },
-//     [PHASE.STEADY]: { txt: 'Hold steady…', cls: 'badge-warning' },
-//     [PHASE.READY]: { txt: 'Auto-capturing…', cls: 'badge-success' },
-//     [PHASE.CAPTURING]: { txt: 'Capturing…', cls: 'badge-info' },
-//     [PHASE.PROCESSING]: { txt: 'Processing OCR…', cls: 'badge-info' },
-//   };
-//   const { txt, cls } = map[phase] || { txt: 'Ready', cls: 'badge-ghost' };
-//   return <span className={`badge ${cls} gap-2`}><LoadingDot phase={phase} />{txt}</span>;
-// };
+const StatusBadge = ({ phase }) => {
+  const map = {
+    [PHASE.ALIGN]: { txt: 'Align your ID', cls: 'badge-ghost' },
+    [PHASE.STEADY]: { txt: 'Hold steady…', cls: 'badge-warning' },
+    [PHASE.READY]: { txt: 'Auto-capturing…', cls: 'badge-success' },
+    [PHASE.CAPTURING]: { txt: 'Capturing…', cls: 'badge-info' },
+    [PHASE.PROCESSING]: { txt: 'Processing OCR…', cls: 'badge-info' },
+  };
+  const { txt, cls } = map[phase] || { txt: 'Ready', cls: 'badge-ghost' };
+  return <span className={`badge ${cls} gap-2`}><LoadingDot phase={phase} />{txt}</span>;
+};
 
-// const LoadingDot = ({ phase }) => (
-//   <span className={`inline-block h-2 w-2 rounded-full ${phase === PHASE.PROCESSING || phase === PHASE.CAPTURING || phase === PHASE.READY
-//     ? 'animate-pulse bg-current'
-//     : 'bg-current/60'
-//     }`} />
-// );
+const LoadingDot = ({ phase }) => (
+  <span className={`inline-block h-2 w-2 rounded-full ${phase === PHASE.PROCESSING || phase === PHASE.CAPTURING || phase === PHASE.READY
+    ? 'animate-pulse bg-current'
+    : 'bg-current/60'
+    }`} />
+);
 
 const handleCaptureToBase64 = (videoRef, canvasRef) => {
   const video = videoRef.current;

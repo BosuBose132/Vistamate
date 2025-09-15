@@ -1,4 +1,6 @@
 // /imports/ui/pages/ThankYou.jsx
+import React from 'react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { buildVCard } from '/imports/ui/utils/vcard';

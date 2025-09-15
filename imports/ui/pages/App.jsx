@@ -1,3 +1,8 @@
+import React from 'react';
+import CameraCapture from '../components/CameraCapture';
+import SurveyForm from '../components/SurveyForm';
+import { motion } from 'framer-motion';
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
@@ -23,8 +28,8 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const { requirePhoto = false } = kioskConfig;
   const [capturedImage, setCapturedImage] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
-  const [setLoading] = useState(false);
-  const [setError] = useState(null);
+  const [loading, setLoading] = useState(false);     // <- value + setter
+  const [error, setError] = useState(null);
   const [ocrStatus, setOcrStatus] = useState('idle'); // 'idle' | 'processing' | 'processed'
 
   const handleCapture = (base64) => {
