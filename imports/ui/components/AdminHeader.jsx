@@ -48,9 +48,7 @@ export default function AdminHeader() {
                 </div>
 
                 {/* CENTER: absolutely centered title (stays on the same line) */}
-                <div className="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg md:text-xl font-semibold pointer-events-none">
-                    Vistamate Admin
-                </div>
+
 
                 {/* RIGHT: theme toggle + logout, pushed to far right */}
                 <div className="flex items-center gap-2 ml-auto whitespace-nowrap">
