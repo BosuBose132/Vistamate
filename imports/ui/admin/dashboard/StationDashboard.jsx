@@ -77,9 +77,9 @@ export default function StationDashboard() {
 
             {/* KPI cards */}
             <div className="card-body text-base-content grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <StatCard label="Today's Visitors" value={total} icon="👥" />
-                <StatCard label="Currently In Building" value={inBuilding} icon="🏢" />
-                <StatCard label="Avg. Visit Duration" value={avg} icon="⏱️" />
+                <StatCard title="Today's Visitors" value={total} icon="👥" />
+                <StatCard title="Currently In Building" value={inBuilding} icon="🏢" />
+                <StatCard title="Avg. Visit Duration" value={avg} icon="⏱️" />
             </div>
 
             {/* Today's visitors table */}
