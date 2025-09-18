@@ -17,6 +17,9 @@ export default function AdminHeader() {
                     <a href="/" className="btn btn-ghost px-1" title="Go to Welcome">
                         <img src="/VistamateLogo.png" alt="Vistamate" className="h-36 w-auto" />
                     </a>
+                    <NavLink to="/admin" end className={({ isActive }) =>
+                        `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
+                    }>Dashboard</NavLink>
                     <NavLink
                         to="/admin/checkins"
                         className={({ isActive }) =>
