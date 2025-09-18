@@ -73,14 +73,7 @@ export default function StationDashboard() {
                 </div>
             </div>
 
-            {/* Quick admin check-in (SurveyJS) */}
-            <AdminQuickCheckIn
-                // When scope is "All" or "Global", we pass null → saves as Global.
-                // When a specific station is selected, we pass its _id.
-                defaultStationId={
-                    selectedId === 'ALL' || selectedId === 'GLOBAL' ? null : selectedId
-                }
-            />
+
 
             {/* KPI cards */}
             <div className="card-body text-base-content grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
