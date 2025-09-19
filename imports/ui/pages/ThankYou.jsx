@@ -47,12 +47,12 @@ export default function ThankYou() {
     const qrPayload = useMemo(() => {
         if (!info) return '';
         const vcard = buildVCard({
-            fullName: info.name,
-            company: info.company,
-            phone: info.phone,
-            email: info.email,
+            fullName: info.name || '',
+            company: info.company || '',
+            phone: info.phone || '',
+            email: info.email || '',
         });
-        return `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`;
+        // return `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`;
     }, [info]);
 
     // vCard (download as .vcf)
