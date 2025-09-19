@@ -1,7 +1,7 @@
 # Vistamate — Smart Visitor Check-in & Admin Suite
 
 <p align="center">
-  <img src="/VistaMate.png" alt="Vistamate Logo" width="200" />
+  <img src="public/VistaMate.png" alt="Vistamate Logo" width="200" />
 </p>
 
 <p align="center">
