@@ -1,9 +1,10 @@
 // /imports/ui/pages/ThankYou.jsx
 import React from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import { buildVCard } from '/imports/ui/utils/vcard';
 
 export default function ThankYou() {
     const navigate = useNavigate();
@@ -43,13 +44,22 @@ export default function ThankYou() {
     //     return () => clearInterval(timer);
     // }, [navigate]);
 
-    // QR payload (JSON now; swap to a verify URL if you have one)
-    const vcfUrl = useMemo(() => {
-        if (!info?.visitorId) return '';
-        // Meteor.absoluteUrl builds a full URL based on ROOT_URL
-        return Meteor.absoluteUrl(`vcards/${info.visitorId}.vcf`);
-    }, [info?.visitorId]);
+    // Build vCard text for QR + a Blob URL for direct download
+    const vcardText = useMemo(() => {
+        if (!info) return '';
+        return buildVCard({
+            name: info.name || '',
+            company: info.company || '',
+            email: info.email || '',
+            phone: info.phone || '',
+        });
+    }, [info]);
 
+    const vcardDownloadUrl = useMemo(() => {
+        if (!vcardText) return '';
+        const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8' });
+        return URL.createObjectURL(blob);
+    }, [vcardText]);
 
 
 
@@ -88,8 +98,8 @@ export default function ThankYou() {
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-[200px,1fr] gap-6 items-center">
                         <div className="mx-auto">
                             <div className="bg-base-200 p-3 rounded-xl shadow-inner">
-                                <QRCodeCanvas
-                                    value={qrPayload}
+                                <QRCodeSVG
+                                    value={vcardText || ' '}
                                     size={typeof window !== 'undefined' && window.innerWidth >= 768 ? 200 : 170}
                                     includeMargin
                                 />
@@ -118,9 +128,9 @@ export default function ThankYou() {
                             </div>
 
                             <div className="flex flex-wrap gap-2 pt-2">
-                                {vcfUrl && (
+                                {vcardDownloadUrl && (
                                     <a
-                                        href={vcfUrl}
+                                        href={vcardDownloadUrl}
                                         download={`${(info.name || 'visitor').replace(/\s+/g, '_')}.vcf`}
                                         className="btn btn-outline btn-sm"
                                     >

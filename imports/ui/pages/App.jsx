@@ -76,12 +76,14 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
             } else {
               // alert('Visitor successfully checked in!');
               // 1) Build a small summary for the Thank You page
+              const insertedId =
+                typeof res === 'string' ? res : (res?.insertedId || res?._id || '');
               const last = {
                 name: `${finalData.firstName || ''} ${finalData.lastName || ''}`.trim() || finalData.name || '',
                 company: finalData.company || '',
                 email: finalData.email || '',
                 phone: finalData.phone || '',
-                visitorId: res?.insertedId || res?._id || '',
+                visitorId: insertedId,
                 checkedAt: Date.now(),
               };
 
