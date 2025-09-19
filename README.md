@@ -1,8 +1,25 @@
 # Vistamate — Smart Visitor Check-in & Admin Suite
 
-Vistamate is a **Meteor + React visitor management system** that makes visitor check-ins fast, smart, and secure.  
-It uses **AI OCR (OpenAI)**, **SurveyJS forms**, and **DaisyUI theming** to deliver a smooth visitor experience while giving admins real-time dashboards, kiosk management, and survey customization.
+<p align="center">
+  <img src="/VistaMate.png" alt="Vistamate Logo" width="200" />
+</p>
 
+<p align="center">
+  <b>Fast, smart, and secure visitor management with AI OCR, kiosk check-ins, and real-time dashboards.</b>
+</p>
+
+---
+
+![Meteor](https://img.shields.io/badge/Meteor-3.0-orange?logo=meteor&logoColor=white)
+![React](https://img.shields.io/badge/React-18-blue?logo=react)
+![MongoDB](https://img.shields.io/badge/MongoDB-green?logo=mongodb)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?logo=tailwind-css&logoColor=white)
+![DaisyUI](https://img.shields.io/badge/DaisyUI-themed-5A0EF8)
+![SurveyJS](https://img.shields.io/badge/SurveyJS-dynamic-blueviolet)
+![Framer Motion](https://img.shields.io/badge/Framer%20Motion-animations-ff69b4)
+![OpenAI OCR](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai)
+
+---
 ---
 
 ## Features
@@ -89,6 +106,9 @@ Create a settings.json in the project root:
   "admin": { "email": "admin@example.com", "password": "StrongPass123!" }
 }
 
+Code Quality
+npm run lint
+
 Run the app
 meteor --settings settings.json
 
@@ -105,6 +125,22 @@ Admin-only routes & pubs:
 /admin, /admin/stations, /admin/surveys, /admin/checkins
 
 stations.admin, visitors.adminToday, surveys.admin
+
+----
+
+Project Structure
+
+vistamate/
+├── imports/
+│   ├── api/          # Meteor collections, methods, publications
+│   ├── ui/           # React components & pages
+│   └── startup/      # Server/client startup scripts
+├── public/           # Static assets
+├── client/           # Meteor client entry
+├── server/           # Meteor server entry
+├── package.json
+├── tailwind.config.js
+└── README.md
 
 ----
 
@@ -135,6 +171,21 @@ Admins can also add manual visitors under Global
 
 ---
 
+## ✅ CI / GitHub Actions
+
+This repo uses GitHub Actions to keep code quality high:
+
+- **ESLint** – Lints JS/JSX on every PR and push to `develop`/`main`.
+- **CodeQL** – GitHub’s static analysis for JavaScript security.
+- **Test Build (Meteor)** – Installs Meteor and runs a lightweight build to catch breaking changes early.
+
+### Status
+- Lint: ![lint](https://github.com/BosuBose132/Vistamate/blob/develop/eslint.config.cjs/badge.svg)
+- CodeQL: ![codeql](https://github.com/BosuBose132/Vistamate/blob/develop/.github/workflows/codeql.yml/badge.svg)
+- Build: ![build](https://github.com/BosuBose132/Vistamate/blob/develop/.github/workflows/test-build.yml/badge.svg)
+
+---
+
 Built with Meteor, React, Tailwind, SurveyJS, DaisyUI, Framer Motion
 
 AI OCR powered by OpenAI GPT-4o
@@ -142,5 +193,5 @@ AI OCR powered by OpenAI GPT-4o
 
 ---
 
-⚡ Would you like me to also make a **shorter “visitor-facing README”** (only showing the check-in experience, no dev setup) that you can display on your **Welcome page** for first-time users?
+
 
