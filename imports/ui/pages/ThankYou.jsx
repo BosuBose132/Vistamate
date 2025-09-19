@@ -3,7 +3,7 @@ import React from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { buildVCard } from '/imports/ui/utils/vcard';
+import { Meteor } from 'meteor/meteor';
 
 export default function ThankYou() {
     const navigate = useNavigate();
@@ -44,29 +44,14 @@ export default function ThankYou() {
     // }, [navigate]);
 
     // QR payload (JSON now; swap to a verify URL if you have one)
-    const qrPayload = useMemo(() => {
-        if (!info) return '';
-        const vcard = buildVCard({
-            fullName: info.name || '',
-            company: info.company || '',
-            phone: info.phone || '',
-            email: info.email || '',
-        });
-        // return `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`;
-    }, [info]);
+    const vcfUrl = useMemo(() => {
+        if (!info?.visitorId) return '';
+        // Meteor.absoluteUrl builds a full URL based on ROOT_URL
+        return Meteor.absoluteUrl(`vcards/${info.visitorId}.vcf`);
+    }, [info?.visitorId]);
 
-    // vCard (download as .vcf)
-    const vcardBlobUrl = useMemo(() => {
-        if (!info) return '';
-        const vc = buildVCard({
-            name: info.name || '',
-            company: info.company || '',
-            email: info.email || '',
-            phone: info.phone || '',
-        });
-        const blob = new Blob([vc], { type: 'text/vcard;charset=utf-8' });
-        return URL.createObjectURL(blob);
-    }, [info]);
+
+
 
     // Fallback UI if no data was found
     if (!info) {
@@ -133,9 +118,10 @@ export default function ThankYou() {
                             </div>
 
                             <div className="flex flex-wrap gap-2 pt-2">
-                                {vcardBlobUrl && (
+                                {vcfUrl && (
                                     <a
-                                        href={qrPayload} download={`${info.name || 'visitor'}.vcf`}
+                                        href={vcfUrl}
+                                        download={`${(info.name || 'visitor').replace(/\s+/g, '_')}.vcf`}
                                         className="btn btn-outline btn-sm"
                                     >
                                         Download vCard
