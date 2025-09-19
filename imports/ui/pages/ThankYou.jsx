@@ -45,15 +45,14 @@ export default function ThankYou() {
 
     // QR payload (JSON now; swap to a verify URL if you have one)
     const qrPayload = useMemo(() => {
-        if (!info) return 'vistamate://checkin';
-        return JSON.stringify({
-            t: 'vistamate.checkin',
-            id: info.visitorId || null,
-            n: info.name || '',
-            c: info.company || '',
-            ts: info.checkedAt || Date.now(),
-            v: 1
+        if (!info) return '';
+        const vcard = buildVCard({
+            fullName: info.name,
+            company: info.company,
+            phone: info.phone,
+            email: info.email,
         });
+        return `data:text/vcard;charset=utf-8,${encodeURIComponent(vcard)}`;
     }, [info]);
 
     // vCard (download as .vcf)
@@ -136,8 +135,7 @@ export default function ThankYou() {
                             <div className="flex flex-wrap gap-2 pt-2">
                                 {vcardBlobUrl && (
                                     <a
-                                        href={vcardBlobUrl}
-                                        download={`vistamate-${(info.name || 'visitor').replace(/\s+/g, '-')}.vcf`}
+                                        href={qrPayload} download={`${info.name || 'visitor'}.vcf`}
                                         className="btn btn-outline btn-sm"
                                     >
                                         Download vCard
