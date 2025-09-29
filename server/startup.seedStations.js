@@ -23,4 +23,4 @@ Meteor.startup(async () => {
             });
         }
     };
-});
+}); 
