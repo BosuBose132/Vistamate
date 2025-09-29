@@ -1,16 +1,17 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
+import AdminHeader from '/imports/ui/components/AdminHeader';
+import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
+import StatCard from '/imports/ui/components/StatCard';
+import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
-import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
 //import { NavLink, useNavigate } from 'react-router-dom';
-import { Meteor } from 'meteor/meteor';
 
 
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 //import { Link } from 'react-router-dom';
 //import ThemeToggle from '/imports/ui/components/ThemeToggle';
-import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function StationDashboard() {
     // 1) Subscriptions:
@@ -72,20 +73,13 @@ export default function StationDashboard() {
                 </div>
             </div>
 
-            {/* Quick admin check-in (SurveyJS) */}
-            <AdminQuickCheckIn
-                // When scope is "All" or "Global", we pass null → saves as Global.
-                // When a specific station is selected, we pass its _id.
-                defaultStationId={
-                    selectedId === 'ALL' || selectedId === 'GLOBAL' ? null : selectedId
-                }
-            />
+
 
             {/* KPI cards */}
             <div className="card-body text-base-content grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <StatCard label="Today's Visitors" value={total} icon="👥" />
-                <StatCard label="Currently In Building" value={inBuilding} icon="🏢" />
-                <StatCard label="Avg. Visit Duration" value={avg} icon="⏱️" />
+                <StatCard title="Today's Visitors" value={total} icon="👥" />
+                <StatCard title="Currently In Building" value={inBuilding} icon="🏢" />
+                <StatCard title="Avg. Visit Duration" value={avg} icon="⏱️" />
             </div>
 
             {/* Today's visitors table */}
@@ -148,19 +142,19 @@ export default function StationDashboard() {
     );
 }
 
-function StatCard({ label, value, icon }) {
-    return (
-        <div className="card bg-base-100 shadow">
-            <div className="card-body">
-                <div className="flex items-center justify-between">
-                    <div className="text-sm opacity-70">{label}</div>
-                    <div className="text-xl">{icon}</div>
-                </div>
-                <div className="text-3xl font-bold mt-1">{value}</div>
-            </div>
-        </div>
-    );
-}
+// function StatCard({ label, value, icon }) {
+//     return (
+//         <div className="card bg-base-100 shadow">
+//             <div className="card-body">
+//                 <div className="flex items-center justify-between">
+//                     <div className="text-sm opacity-70">{label}</div>
+//                     <div className="text-xl">{icon}</div>
+//                 </div>
+//                 <div className="text-3xl font-bold mt-1">{value}</div>
+//             </div>
+//         </div>
+//     );
+// }
 
 function averageDuration(list) {
     if (!list.length) return '0m';

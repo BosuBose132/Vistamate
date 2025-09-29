@@ -1,7 +1,8 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Meteor } from 'meteor/meteor';
 import ThemeToggle from '/imports/ui/components/ThemeToggle';
+import { NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
 
 export default function AdminHeader() {
     const navigate = useNavigate();
@@ -16,6 +17,9 @@ export default function AdminHeader() {
                     <a href="/" className="btn btn-ghost px-1" title="Go to Welcome">
                         <img src="/VistamateLogo.png" alt="Vistamate" className="h-36 w-auto" />
                     </a>
+                    <NavLink to="/admin" end className={({ isActive }) =>
+                        `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
+                    }>Dashboard</NavLink>
                     <NavLink
                         to="/admin/checkins"
                         className={({ isActive }) =>
@@ -44,9 +48,7 @@ export default function AdminHeader() {
                 </div>
 
                 {/* CENTER: absolutely centered title (stays on the same line) */}
-                <div className="absolute left-1/2 -translate-x-1/2 text-base sm:text-lg md:text-xl font-semibold pointer-events-none">
-                    Vistamate Admin
-                </div>
+
 
                 {/* RIGHT: theme toggle + logout, pushed to far right */}
                 <div className="flex items-center gap-2 ml-auto whitespace-nowrap">

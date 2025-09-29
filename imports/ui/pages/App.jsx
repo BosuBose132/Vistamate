@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
-import { Meteor } from 'meteor/meteor';
-import { Model } from 'survey-core';
+import React from 'react';
 import CameraCapture from '../components/CameraCapture';
 import SurveyForm from '../components/SurveyForm';
-import 'survey-core/survey-core.css';
-import { FlatDarkPanelless } from "survey-core/themes";
 import { motion } from 'framer-motion';
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
+import { Model } from 'survey-core';
+import { FlatDarkPanelless } from 'survey-core/themes';
+import 'survey-core/survey-core.css';
+
+function applyOCRDefaults(parsed) {
+  return {
+    name: parsed?.name ?? '',
+    email: parsed?.email ?? '',
+    phone: parsed?.phone ?? '',
+    company: parsed?.company ?? '',
+    dob: parsed?.dob ?? '',
+    address: parsed?.address ?? '',
+  };
+}
+
 
 //export const App = () => {
 export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const navigate = useNavigate();
-  const { cameraEnabled = true, requirePhoto = false, mobileBehavior = 'toggle', welcomeMessage = '' } = kioskConfig;
+  const { requirePhoto = false } = kioskConfig;
   const [capturedImage, setCapturedImage] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);     // <- value + setter
   const [error, setError] = useState(null);
   const [ocrStatus, setOcrStatus] = useState('idle'); // 'idle' | 'processing' | 'processed'
 
@@ -44,7 +58,6 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
         const model = new Model(surveyJson);
         model.applyTheme(FlatDarkPanelless);
         model.showCompletedPage = false;
-
         model.onComplete.add((sender) => {
           if (requirePhoto && !capturedImage) {
             alert('Please capture a photo before submitting.');
@@ -56,23 +69,28 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
             if (err) {
               // alert('Error saving visitor: ' + err.message);
               // ensure the survey can be submitted again if there was an error
-              try { sender.isCompleted = false; } catch { }
+              try { sender.isCompleted = false; } catch { //ignore
+              }
             } else if (res.status === 'duplicate') {
               // alert('Visitor already exists');
             } else {
               // alert('Visitor successfully checked in!');
               // 1) Build a small summary for the Thank You page
+              const insertedId =
+                typeof res === 'string' ? res : (res?.insertedId || res?._id || '');
               const last = {
                 name: `${finalData.firstName || ''} ${finalData.lastName || ''}`.trim() || finalData.name || '',
                 company: finalData.company || '',
                 email: finalData.email || '',
                 phone: finalData.phone || '',
-                visitorId: res?.insertedId || res?._id || '',
+                visitorId: insertedId,
                 checkedAt: Date.now(),
               };
 
               // 2) Persist for reloads (same tab)
-              try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(last)); } catch { }
+              try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(last)); } catch {
+                // ignore storage errors (private mode, quota exceeded, etc.)
+              }
 
               // 3) Navigate and also pass state (works even if storage is empty)
               navigate('/thankyou', { state: last });
@@ -85,7 +103,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
         setSurveyModel(model);
         setOcrStatus('processed');
-      } catch (e) {
+      } catch {
         setError('Failed to parse OCR result');
       }
     });

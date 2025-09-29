@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor';
-import { Roles } from 'meteor/alanning:roles';
 import { check } from 'meteor/check';
 import { Visitors } from '/imports/api/collections';
-import { isAdminSync } from '/imports/api/_roles.helpers.pub.js';
 
 Meteor.publish('visitors.adminToday', function (limit = 1000) {
     // TEMP: allow any logged-in user to receive today's visitors

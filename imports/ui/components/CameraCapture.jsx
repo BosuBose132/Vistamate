@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
-import { Meteor } from 'meteor/meteor';
 
 const POLL_MS = 200;
 
@@ -56,18 +56,28 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
   // camera on
   useEffect(() => {
+    // Snapshot the element once so cleanup uses a stable reference
+    const el = videoRef.current;
+    let mounted = true;
+
     (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        if (mounted && el) el.srcObject = stream;
       } catch (err) {
         setError('Unable to access camera: ' + err.message);
       }
     })();
+
     return () => {
-      if (videoRef.current?.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks?.() || [];
+      mounted = false;
+      if (el && el.srcObject) {
+        const tracks = typeof el.srcObject.getTracks === 'function'
+          ? el.srcObject.getTracks()
+          : [];
         tracks.forEach(t => t.stop());
+        // optional: clear the srcObject to release the element
+        el.srcObject = null;
       }
     };
   }, []);
@@ -177,7 +187,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       // Signals common on business cards
       const hasEmail = /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/.test(text);
       const hasPhone = /\b(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b/.test(text);
-      const hasURL = /\b(https?:\/\/)?(www\.)?[a-z0-9-]+\.[a-z]{2,}([\/#?]\S*)?\b/.test(text);
+      const hasURL = /\b(https?:\/\/)?(www\.)?[a-z0-9-]+\.[a-z]{2,}([/#?]\S*)?\b/.test(text);
       const hasAddrKw = /\b(st|street|ave|avenue|rd|road|suite|ste|blvd|lane|ln|drive|dr|india|usa|state)\b/.test(text);
       const hasCoSuf = /\b(inc|llc|ltd|co\.|corp|technologies|systems|solutions)\b/.test(text);
       const hasRole = /\b(ceo|cto|engineer|manager|director|founder|sales|marketing)\b/.test(text);

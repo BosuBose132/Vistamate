@@ -1,27 +1,35 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
+
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Surveys } from '/imports/api/surveys/surveys.collection';
-import App from '../pages/App';
 
 export default function StationKiosk() {
     const { token } = useParams();
     const subStation = useSubscribe('stations.byToken', token)();
     const station = useFind(() => Stations.findOne({ token }), [token]);
-    const subSurvey = station?.surveyId ? useSubscribe('surveys.byId', station.surveyId)() : false;
-    const survey = station?.surveyId
-        ? useFind(() => Surveys.findOne(station.surveyId), [station?.surveyId])
-        : null;
-
+    const surveyId = station?.surveyId
+    const subSurvey = useSubscribe('surveys.byId', surveyId);
+    const survey = useFind(
+        () => (surveyId ? Surveys.findOne(surveyId) : undefined),
+        [surveyId]
+    );
     useEffect(() => {
         if (station?.theme) document.documentElement.setAttribute('data-theme', station.theme);
         if (station?.name) document.title = `Vistamate • ${station.name}`;
     }, [station?.theme, station?.name]);
 
-    if (subStation || (station?.surveyId && subSurvey)) return <div className="p-8">Loading station…</div>;
-    if (!station) return <div className="p-8">Station not found or disabled.</div>;
+    const stationReady = subStation();
+    const surveyReady = !surveyId || subSurvey();
 
+    if (!stationReady || !station) {
+        return <div className="p-8">Loading station…</div>;
+    }
+
+    if (surveyId && (!surveyReady || !survey)) {
+        return <div className="p-8">Loading survey…</div>;
+    }
     // Survey JSON can be stored as object or string; normalize to object
     let assignedSurveyJson = null;
     if (survey?.json) {

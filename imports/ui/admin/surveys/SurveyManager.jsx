@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import AdminHeader from '/imports/ui/components/AdminHeader';   // Navbar   
+
+import { useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Surveys } from '/imports/api/surveys/surveys.collection';
-import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function SurveyManager() {
     const sub = useSubscribe('surveys.admin')();

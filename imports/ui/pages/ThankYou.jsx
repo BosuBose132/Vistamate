@@ -1,20 +1,24 @@
 // /imports/ui/pages/ThankYou.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import React from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
 import { buildVCard } from '/imports/ui/utils/vcard';
 
 export default function ThankYou() {
     const navigate = useNavigate();
     const { state } = useLocation(); // data passed via navigate('/thankyou', { state })
     const [info, setInfo] = useState(null);
-    const [seconds, setSeconds] = useState(8); // auto-return countdown (seconds)
+    //const [seconds, setSeconds] = useState(8); // auto-return countdown (seconds)
 
     // Load visitor summary (prefer router state, then sessionStorage)
     useEffect(() => {
         if (state && typeof state === 'object') {
             setInfo(state);
-            try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(state)); } catch { }
+            try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(state)); } catch {
+                // ignore storage errors (private mode, quota exceeded, etc.)
+            }
             return;
         }
         try {
@@ -40,31 +44,24 @@ export default function ThankYou() {
     //     return () => clearInterval(timer);
     // }, [navigate]);
 
-    // QR payload (JSON now; swap to a verify URL if you have one)
-    const qrPayload = useMemo(() => {
-        if (!info) return 'vistamate://checkin';
-        return JSON.stringify({
-            t: 'vistamate.checkin',
-            id: info.visitorId || null,
-            n: info.name || '',
-            c: info.company || '',
-            ts: info.checkedAt || Date.now(),
-            v: 1
-        });
-    }, [info]);
-
-    // vCard (download as .vcf)
-    const vcardBlobUrl = useMemo(() => {
+    // Build vCard text for QR + a Blob URL for direct download
+    const vcardText = useMemo(() => {
         if (!info) return '';
-        const vc = buildVCard({
+        return buildVCard({
             name: info.name || '',
             company: info.company || '',
             email: info.email || '',
             phone: info.phone || '',
         });
-        const blob = new Blob([vc], { type: 'text/vcard;charset=utf-8' });
-        return URL.createObjectURL(blob);
     }, [info]);
+
+    const vcardDownloadUrl = useMemo(() => {
+        if (!vcardText) return '';
+        const blob = new Blob([vcardText], { type: 'text/vcard;charset=utf-8' });
+        return URL.createObjectURL(blob);
+    }, [vcardText]);
+
+
 
     // Fallback UI if no data was found
     if (!info) {
@@ -101,8 +98,8 @@ export default function ThankYou() {
                     <div className="mt-6 grid grid-cols-1 md:grid-cols-[200px,1fr] gap-6 items-center">
                         <div className="mx-auto">
                             <div className="bg-base-200 p-3 rounded-xl shadow-inner">
-                                <QRCodeCanvas
-                                    value={qrPayload}
+                                <QRCodeSVG
+                                    value={vcardText || ' '}
                                     size={typeof window !== 'undefined' && window.innerWidth >= 768 ? 200 : 170}
                                     includeMargin
                                 />
@@ -131,10 +128,10 @@ export default function ThankYou() {
                             </div>
 
                             <div className="flex flex-wrap gap-2 pt-2">
-                                {vcardBlobUrl && (
+                                {vcardDownloadUrl && (
                                     <a
-                                        href={vcardBlobUrl}
-                                        download={`vistamate-${(info.name || 'visitor').replace(/\s+/g, '-')}.vcf`}
+                                        href={vcardDownloadUrl}
+                                        download={`${(info.name || 'visitor').replace(/\s+/g, '_')}.vcf`}
                                         className="btn btn-outline btn-sm"
                                     >
                                         Download vCard
