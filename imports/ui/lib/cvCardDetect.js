@@ -48,16 +48,30 @@ export function detectAndWarpCard(canvas, debug = false) {
         const contours = new cv.MatVector(), hierarchy = new cv.Mat();
         cv.findContours(closed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-        // simple candidate (just existence) — robust pick/warp will be STEP 3
-        const quad = pickFirstQuad(contours, src.cols, src.rows);
+        const { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
+        if (!bestQuad) {
+            cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+            return null;
+        }
 
+        // warp to canonical card size
+        const warped = warpToCard(src, bestQuad);
+        const roiB64 = matToBase64(warped);
+
+        // optional debug overlay (draw the quad on source)
         let debugB64 = null;
-        if (debug) debugB64 = matToBase64(edges); // quick look at edges
+        if (debug) {
+            const overlay = src.clone();
+            const cv = globalThis.cv;
+            const cvp = cv.matFromArray(4, 1, cv.CV_32SC2, bestQuad.flat());
+            cv.polylines(overlay, [cvp], true, new cv.Scalar(0, 255, 0, 255), 3);
+            debugB64 = matToBase64(overlay);
+            cvp.delete(); overlay.delete();
+        }
 
-        cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+        cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu, warped]);
+        return { roiB64, score: bestScore, debugB64 };
 
-        // Indicate presence without ROI yet (roiB64 remains null in STEP 2)
-        return quad ? { roiB64: null, score: 0, debugB64 } : null;
     } finally {
         src.delete();
     }
@@ -93,4 +107,60 @@ function pickFirstQuad(contours, w, h) {
         approx.delete();
     }
     return null;
+}
+function orderCorners(pts) {
+    // return [tl, tr, br, bl]
+    const s = pts.map(p => p[0] + p[1]);
+    const d = pts.map(p => p[0] - p[1]);
+    const tl = pts[s.indexOf(Math.min(...s))];
+    const br = pts[s.indexOf(Math.max(...s))];
+    const tr = pts[d.indexOf(Math.max(...d))];
+    const bl = pts[d.indexOf(Math.min(...d))];
+    return [tl, tr, br, bl];
+}
+
+function warpToCard(src, quad) {
+    const cv = globalThis.cv;
+    const dst = new cv.Mat();
+    const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, quad.flat());
+    const dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, WARP_W, 0, WARP_W, WARP_H, 0, WARP_H]);
+    const M = cv.getPerspectiveTransform(srcTri, dstTri);
+    cv.warpPerspective(src, dst, M, new cv.Size(WARP_W, WARP_H), cv.INTER_LINEAR, cv.BORDER_REPLICATE);
+    srcTri.delete(); dstTri.delete(); M.delete();
+    return dst;
+}
+
+function pickBestQuad(contours, w, h) {
+    const cv = globalThis.cv;
+    const imgArea = w * h;
+    let best = null, bestScore = -1;
+
+    for (let i = 0; i < contours.size(); i++) {
+        const cnt = contours.get(i);
+        const peri = cv.arcLength(cnt, true);
+        const approx = new cv.Mat();
+        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+
+        if (approx.rows === 4) {
+            const area = cv.contourArea(approx);
+            if (area < imgArea * MIN_AREA_FRAC) { approx.delete(); continue; }
+
+            const quad = toPointArray(approx);
+            const [tl, tr, br, bl] = orderCorners(quad);
+
+            const widthA = dist(tr, tl), widthB = dist(br, bl);
+            const heightA = dist(bl, tl), heightB = dist(br, tr);
+            const width = (widthA + widthB) / 2;
+            const height = (heightA + heightB) / 2;
+            const ratio = width / height;
+
+            const areaScore = Math.min(1, area / (imgArea * 0.5));
+            const ratioScore = 1 - Math.min(1, Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL));
+            const score = areaScore * 0.6 + ratioScore * 0.4;
+
+            if (score > bestScore) { bestScore = score; best = [tl, tr, br, bl]; }
+        }
+        approx.delete();
+    }
+    return { bestQuad: best, bestScore };
 }
