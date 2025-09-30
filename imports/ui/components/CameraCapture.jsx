@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRef, useState, useEffect } from 'react';
-import Tesseract from 'tesseract.js';
+import useOpenCV from '/imports/ui/hooks/useOpenCV';
+import { detectAndWarpCard } from '/imports/ui/lib/cvCardDetect';
 
 const POLL_MS = 200;
 
@@ -45,6 +46,7 @@ const handleCaptureToBase64 = (videoRef, canvasRef) => {
 export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const { ready: cvReady } = useOpenCV();
 
   const [error, setError] = useState(null);
   const [phase, setPhase] = useState(PHASE.ALIGN);
@@ -102,10 +104,17 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     onCapture?.(b64); // parent continues OCR flow
   };
 
+  const doCaptureWithROI = (roiB64) => {
+    setPhase(PHASE.CAPTURING);
+    setHasCaptured(true);
+    setPhase(PHASE.PROCESSING);
+    onCapture?.(roiB64 || handleCaptureToBase64(videoRef, canvasRef));
+  };
+
   const checkFrameAndOCR = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!cvReady) return; // wait until OpenCV runtime is ready
 
     // draw frame
     canvas.width = video.videoWidth;
@@ -136,9 +145,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           const temp = document.createElement('canvas');
           temp.width = box.w; temp.height = box.h;
           temp.getContext('2d').putImageData(img, 0, 0);
-          const b64 = temp.toDataURL('image/png');
-
-          const ok = await isBusinessOrIdCard(b64);
+          const result = detectAndWarpCard(temp, /*debug*/ false);
+          const ok = Boolean(result && result.roiB64);
           if (ok) {
             setIsBoxGreen(true);
             setPhase(PHASE.READY);
@@ -163,50 +171,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     setLastFrameData(current);
   };
 
-  const isBusinessOrIdCard = async (b64) => {
-    try {
-      // Downscale for speed (~480px width cap)
-      const img = new Image();
-      await new Promise((res) => { img.onload = res; img.src = b64; });
-      const scale = Math.min(480 / img.width, 1);
-      const c = document.createElement('canvas');
-      c.width = Math.floor(img.width * scale);
-      c.height = Math.floor(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      const smallB64 = c.toDataURL('image/png');
 
-      const result = await Tesseract.recognize(smallB64, 'eng', { logger: () => { } });
-      const text = (result.data.text || '').toLowerCase();
-      const conf = result.data.confidence || 0;
-      const words = text.trim().split(/\s+/).filter(Boolean);
-      const nonSpace = text.replace(/\s/g, '').length;
-
-      // Basic quality gates
-      if (conf < 30 || nonSpace < 25 || words.length < 4) return false;
-
-      // Signals common on business cards
-      const hasEmail = /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/.test(text);
-      const hasPhone = /\b(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b/.test(text);
-      const hasURL = /\b(https?:\/\/)?(www\.)?[a-z0-9-]+\.[a-z]{2,}([/#?]\S*)?\b/.test(text);
-      const hasAddrKw = /\b(st|street|ave|avenue|rd|road|suite|ste|blvd|lane|ln|drive|dr|india|usa|state)\b/.test(text);
-      const hasCoSuf = /\b(inc|llc|ltd|co\.|corp|technologies|systems|solutions)\b/.test(text);
-      const hasRole = /\b(ceo|cto|engineer|manager|director|founder|sales|marketing)\b/.test(text);
-      const bizSignals = [hasEmail, hasPhone, hasURL, hasAddrKw, hasCoSuf, hasRole].filter(Boolean).length;
-
-      // Signals common on IDs (esp. driver licenses / govt IDs)
-      const idKeywords = /\b(driver|licen[cs]e|dl|id card|identification|dob|date of birth|sex|height|class|restrictions|state|issuer|expires|issue|dmv)\b/.test(text);
-      const hasIdNum = /\b([a-z]?\d{6,}[a-z]?)\b/.test(text); // crude: long alphanum
-      const idSignals = (idKeywords ? 1 : 0) + (hasIdNum ? 1 : 0);
-
-      // Decision: require multiple strong signals
-      const isBusinessCard = bizSignals >= 2;          // e.g., email + phone, or phone + URL, etc.
-      const isIdCard = idSignals >= 2 || (idKeywords && conf >= 45);
-
-      return isBusinessCard || isIdCard;
-    } catch {
-      return false;
-    }
-  };
   return (
     <div className="w-full">
       {/* Card */}
