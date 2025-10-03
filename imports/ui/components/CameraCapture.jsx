@@ -47,6 +47,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const { ready: cvReady } = useOpenCV();
+  const [videoReady, setVideoReady] = useState(false);
 
   const [error, setError] = useState(null);
   const [phase, setPhase] = useState(PHASE.ALIGN);
@@ -55,6 +56,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const [lastFrameData, setLastFrameData] = useState(null);
   const [isCheckingOCR, setIsCheckingOCR] = useState(false);
   const [hasCaptured, setHasCaptured] = useState(false);
+  const [steadyCount, setSteadyCount] = useState(0); // consecutive steady polls
 
   // camera on
   useEffect(() => {
@@ -66,6 +68,12 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (mounted && el) el.srcObject = stream;
+        const onMeta = () => setVideoReady(true);
+        el.addEventListener('loadedmetadata', onMeta, { once: true });
+        // If metadata already loaded (rare), set immediately
+        if (el.readyState >= 1 && el.videoWidth && el.videoHeight) setVideoReady(true);
+        // store for cleanup
+        el.__onMeta = onMeta;
       } catch (err) {
         setError('Unable to access camera: ' + err.message);
       }
@@ -80,6 +88,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
         tracks.forEach(t => t.stop());
         // optional: clear the srcObject to release the element
         el.srcObject = null;
+        if (el.__onMeta) el.removeEventListener('loadedmetadata', el.__onMeta);
       }
     };
   }, []);
@@ -115,7 +124,10 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!cvReady) return; // wait until OpenCV runtime is ready
-
+    if (!cvReady) return;          // OpenCV not ready
+    if (!video || !canvas) return; // refs not bound yet
+    if (!videoReady) return;       // wait for metadata
+    if (!video.videoWidth || !video.videoHeight) return; // redundant safety
     // draw frame
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -142,22 +154,25 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
         if (!isCheckingOCR) {
           setPhase(PHASE.STEADY);
           setIsCheckingOCR(true);
-          const temp = document.createElement('canvas');
-          temp.width = box.w; temp.height = box.h;
-          temp.getContext('2d').putImageData(img, 0, 0);
-          const result = detectAndWarpCard(temp, /*debug*/ false);
+          const result = detectAndWarpCard(canvas, /*debug*/ true);
+
+          if (result?.debugB64) {
+            const dbg = document.getElementById('cv-debug');
+            if (dbg) dbg.src = result.debugB64;
+          }
           const ok = Boolean(result && result.roiB64);
           if (ok) {
             setIsBoxGreen(true);
             setPhase(PHASE.READY);
-            if (!hasCaptured) {
-              // A tiny debounce (100ms) smooths accidental flicker without feeling slower.
-              setTimeout(() => doCapture(), 100);
+            setSteadyCount((c) => c + 1);
+            // require 2 consecutive READY frames before capturing (≈ 2 * POLL_MS)
+            if (!hasCaptured && steadyCount >= 1) {
+              setTimeout(() => doCaptureWithROI(result.roiB64), 80);
             }
           } else {
             setIsBoxGreen(false);
             setPhase(PHASE.STEADY);
-
+            setSteadyCount(0);
           }
           setIsCheckingOCR(false);
         }
@@ -166,6 +181,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
         setPhase(PHASE.ALIGN);
         setIsBoxGreen(false);
         setGreenTimer(0);
+        setSteadyCount(0);
       }
     }
     setLastFrameData(current);
@@ -197,7 +213,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               />
               <canvas ref={canvasRef} className="hidden" />
             </div>
-
+            {/* Debug image — OpenCV overlay */}
+            <img id="cv-debug" alt="cv debug" className="mt-2 max-w-xs" />
             {/* Overlay box */}
             <div
               className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all`}

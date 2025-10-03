@@ -1,6 +1,6 @@
 export const CARD_RATIO = 1.58;          // typical business card W/H
-export const RATIO_TOL = 0.35;          // tolerate variation (IDs differ)
-export const MIN_AREA_FRAC = 0.05;       // candidate must be ≥5% of frame
+export const RATIO_TOL = 0.80;          // tolerate variation (IDs differ)
+export const MIN_AREA_FRAC = 0.01;
 export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
@@ -38,22 +38,28 @@ export function detectAndWarpCard(canvas, debug = false) {
         const meanBrightness = cv.mean(otsu)[0];
         const low = Math.max(30, Math.min(120, meanBrightness * 0.6));
         const high = Math.max(60, Math.min(200, low * 2.0));
-        cv.Canny(blur, edges, low, high);
+        cv.Canny(blur, edges, 50, 150)
 
         // close small gaps
         const kernel = cv.Mat.ones(3, 3, cv.CV_8U);
         cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
-
+        cv.dilate(closed, closed, kernel);
         // find external contours
         const contours = new cv.MatVector(), hierarchy = new cv.Mat();
         cv.findContours(closed, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-        const { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
+        console.debug('[cv] contours:', contours.size(), 'img:', src.cols, 'x', src.rows);
+        let { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
         if (!bestQuad) {
-            cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
-            return null;
+            // Fallback: rectangular bounding box of the largest contour
+            const fb = pickRectFallback(contours, src.cols, src.rows);
+            bestQuad = fb.bestQuad;
+            bestScore = fb.bestScore;
+            console.debug('[cv] using RECT fallback?', !!bestQuad, 'score:', bestScore);
+            if (!bestQuad) {
+                cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+                return null;
+            }
         }
-
         // warp to canonical card size
         const warped = warpToCard(src, bestQuad);
         const roiB64 = matToBase64(warped);
@@ -94,7 +100,7 @@ function pickFirstQuad(contours, w, h) {
         const cnt = contours.get(i);
         const peri = cv.arcLength(cnt, true);
         const approx = new cv.Mat();
-        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+        cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
 
         if (approx.rows === 4) {
             const area = cv.contourArea(approx);
@@ -139,7 +145,7 @@ function pickBestQuad(contours, w, h) {
         const cnt = contours.get(i);
         const peri = cv.arcLength(cnt, true);
         const approx = new cv.Mat();
-        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+        cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
 
         if (approx.rows === 4) {
             const area = cv.contourArea(approx);
@@ -163,4 +169,26 @@ function pickBestQuad(contours, w, h) {
         approx.delete();
     }
     return { bestQuad: best, bestScore };
+}
+function pickRectFallback(contours, w, h) {
+    const cv = globalThis.cv;
+    const imgArea = w * h;
+    let maxArea = 0, bestRect = null;
+
+    for (let i = 0; i < contours.size(); i++) {
+        const cnt = contours.get(i);
+        const rect = cv.boundingRect(cnt); // {x,y,width,height}
+        const area = rect.width * rect.height;
+        if (area > imgArea * MIN_AREA_FRAC && area > maxArea) {
+            maxArea = area;
+            bestRect = rect;
+        }
+    }
+    if (!bestRect) return { bestQuad: null, bestScore: -1 };
+
+    // Axis-aligned quad from bounding rect
+    const { x, y, width, height } = bestRect;
+    const quad = [[x, y], [x + width, y], [x + width, y + height], [x, y + height]];
+    const score = Math.min(1, maxArea / (imgArea * 0.5)); // area-only score
+    return { bestQuad: quad, bestScore: score };
 }
