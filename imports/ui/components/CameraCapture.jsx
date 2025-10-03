@@ -1,7 +1,6 @@
 import React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
-import { detectAndWarpCard } from '/imports/ui/lib/cvCardDetect';
 import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
 
 const POLL_MS = 200;
@@ -137,6 +136,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const checkFrameAndOCR = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+
     if (!cvReady) return; // wait until OpenCV runtime is ready
     if (!cvReady) return; // OpenCV not ready
     if (!video || !canvas) return; // refs not bound yet
@@ -193,10 +193,10 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           setIsCheckingOCR(true);
           const result = detectAndWarpCard(canvas, /*debug*/ true);
 
-          if (result?.debugB64) {
-            const dbg = document.getElementById('cv-debug');
-            if (dbg) dbg.src = result.debugB64;
-          }
+          if (result?.debugB64 && dbg) dbg.src = result.debugB64;
+
+          console.log('[cv] detect result:', !!result, result?.score);
+
           const ok = Boolean(result && result.roiB64);
           if (ok) {
             setIsBoxGreen(true);
