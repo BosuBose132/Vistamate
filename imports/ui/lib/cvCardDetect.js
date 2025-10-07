@@ -239,6 +239,34 @@ function pickBestQuad(contours, w, h) {
   }
   return { bestQuad: best, bestScore };
 }
+
+function pickMinAreaRectFallback(contours, w, h) {
+  const cv = globalThis.cv;
+  const imgArea = w * h;
+  let best = null,
+    maxArea = 0;
+
+  for (let i = 0; i < contours.size(); i++) {
+    const cnt = contours.get(i);
+    const mr = cv.minAreaRect(cnt); // rotated rectangle
+    const area = mr.size.width * mr.size.height;
+    if (area > imgArea * MIN_AREA_FRAC && area > maxArea) {
+      maxArea = area;
+      best = mr;
+    }
+  }
+  if (!best) return { bestQuad: null, bestScore: -1 };
+
+  const pts = cv.RotatedRect.points(best); // 4 corner points
+  const quad = [
+    [pts[0].x, pts[0].y],
+    [pts[1].x, pts[1].y],
+    [pts[2].x, pts[2].y],
+    [pts[3].x, pts[3].y],
+  ];
+  const score = Math.min(1, maxArea / (imgArea * 0.5));
+  return { bestQuad: quad, bestScore: score };
+}
 // Debug probe: count contours on a canvas, return edges image
 export function probeContours(canvas) {
   const cv = globalThis.cv;
