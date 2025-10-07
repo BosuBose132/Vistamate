@@ -256,6 +256,19 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 className="w-full h-full object-cover"
               />
               <canvas ref={canvasRef} className="hidden" />
+              <button
+                className="btn btn-sm mt-2"
+                onClick={() => {
+                  setIsBoxGreen(true);
+                  setPhase(PHASE.READY);
+                  setTimeout(() => {
+                    setIsBoxGreen(false);
+                    setPhase(PHASE.ALIGN);
+                  }, 1500);
+                }}
+              >
+                Force Green (1.5s)
+              </button>
             </div>
             {/* Debug image — OpenCV overlay */}
             <img id="cv-debug" alt="cv debug" className="mt-2 max-w-xs" />
