@@ -137,7 +137,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
-    if (!cvReady) return; // wait until OpenCV runtime is ready
     if (!cvReady) return; // OpenCV not ready
     if (!video || !canvas) return; // refs not bound yet
     if (!videoReady) return; // wait for metadata
@@ -181,47 +180,54 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const current = img.data;
 
     // movement detection → steady vs align
-    if (lastFrameData) {
+    if (!lastFrameData) {
+      // First frame: seed lastFrameData and wait for next poll
+      setLastFrameData(current);
+      return;
+    }
+    {
       let diff = 0;
       for (let i = 0; i < current.length; i += 4)
         diff += Math.abs(current[i] - lastFrameData[i]);
       const avg = diff / (current.length / 4);
-      if (avg < 30) {
+      console.log('[cam] motion avg:', Math.round(avg));
+      if (true) {
         // steady
         if (!isCheckingOCR) {
           setPhase(PHASE.STEADY);
           setIsCheckingOCR(true);
-          const result = detectAndWarpCard(canvas, /*debug*/ true);
+          try {
+            const result = detectAndWarpCard(canvas, /*debug*/ true);
+            if (result?.debugB64 && dbg) dbg.src = result.debugB64;
+            console.log(
+              '[cv] detect result:',
+              !!result,
+              'score:',
+              result?.score
+            );
 
-          if (result?.debugB64 && dbg) dbg.src = result.debugB64;
-
-          console.log('[cv] detect result:', !!result, result?.score);
-
-          const ok = Boolean(result && result.roiB64);
-          if (ok) {
-            setIsBoxGreen(true);
-            setPhase(PHASE.READY);
-            setSteadyCount((c) => c + 1);
-            // require 2 consecutive READY frames before capturing (≈ 2 * POLL_MS)
-            if (!hasCaptured && steadyCount >= 1) {
-              setTimeout(() => doCaptureWithROI(result.roiB64), 80);
+            const ok = Boolean(result && result.roiB64);
+            if (ok) {
+              setIsBoxGreen(true);
+              setPhase(PHASE.READY);
+              setSteadyCount((c) => {
+                const next = c + 1;
+                if (!hasCaptured && next >= 2) {
+                  setTimeout(() => doCaptureWithROI(result.roiB64), 80);
+                }
+                return next;
+              });
+            } else {
+              setIsBoxGreen(false);
+              setPhase(PHASE.STEADY);
+              setSteadyCount(0);
             }
-          } else {
-            setIsBoxGreen(false);
-            setPhase(PHASE.STEADY);
-            setSteadyCount(0);
+          } finally {
+            setIsCheckingOCR(false);
           }
-          setIsCheckingOCR(false);
         }
-      } else {
-        // moving
-        setPhase(PHASE.ALIGN);
-        setIsBoxGreen(false);
-        setGreenTimer(0);
-        setSteadyCount(0);
       }
     }
-    setLastFrameData(current);
   };
 
   return (
