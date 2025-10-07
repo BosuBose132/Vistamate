@@ -1,6 +1,6 @@
 export const CARD_RATIO = 1.58; // typical business card W/H
 export const RATIO_TOL = 0.8; // tolerate variation (IDs differ)
-export const MIN_AREA_FRAC = 0.01;
+export const MIN_AREA_FRAC = 0.005;
 export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
@@ -10,7 +10,10 @@ export function dist(a, b) {
     dy = a[1] - b[1];
   return Math.hypot(dx, dy);
 }
-
+export function centroid(quad) {
+  const [a, b, c, d] = quad;
+  return [(a[0] + b[0] + c[0] + d[0]) / 4, (a[1] + b[1] + c[1] + d[1]) / 4];
+}
 export function matToBase64(mat) {
   // Receives an OpenCV Mat, draws to a temp canvas, returns dataURL
   const cv = globalThis.cv;
@@ -27,7 +30,79 @@ export function cleanup(mats) {
     } catch {}
   }
 }
+function pickBestQuad(contours, w, h) {
+  const cv = globalThis.cv;
+  const imgArea = w * h;
+  let best = null,
+    bestScore = -1;
 
+  for (let i = 0; i < contours.size(); i++) {
+    const cnt = contours.get(i);
+    const peri = cv.arcLength(cnt, true);
+    const approx = new cv.Mat();
+    cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
+
+    if (approx.rows === 4) {
+      const area = cv.contourArea(approx);
+      if (area < imgArea * MIN_AREA_FRAC) {
+        approx.delete();
+        continue;
+      }
+
+      const quad = toPointArray(approx);
+      const [tl, tr, br, bl] = orderCorners(quad);
+
+      const widthA = dist(tr, tl),
+        widthB = dist(br, bl);
+      const heightA = dist(bl, tl),
+        heightB = dist(br, tr);
+      const width = (widthA + widthB) / 2;
+      const height = (heightA + heightB) / 2;
+      const ratio = width / height;
+
+      const areaScore = Math.min(1, area / (imgArea * 0.5));
+      const ratioScore =
+        1 -
+        Math.min(1, Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL));
+      const score = areaScore * 0.6 + ratioScore * 0.4;
+
+      if (score > bestScore) {
+        bestScore = score;
+        best = [tl, tr, br, bl];
+      }
+    }
+    approx.delete();
+  }
+  return { bestQuad: best, bestScore };
+}
+
+function pickMinAreaRectFallback(contours, w, h) {
+  const cv = globalThis.cv;
+  const imgArea = w * h;
+  let best = null,
+    maxArea = 0;
+
+  for (let i = 0; i < contours.size(); i++) {
+    const cnt = contours.get(i);
+    const mr = cv.minAreaRect(cnt); // rotated rectangle
+    const area = mr.size.width * mr.size.height;
+    if (area > imgArea * MIN_AREA_FRAC && area > maxArea) {
+      maxArea = area;
+      best = mr;
+    }
+  }
+  if (!best) return { bestQuad: null, bestScore: -1 };
+
+  const pts = cv.RotatedRect.points(best); // 4 corner points
+  const quad = [
+    [pts[0].x, pts[0].y],
+    [pts[1].x, pts[1].y],
+    [pts[2].x, pts[2].y],
+    [pts[3].x, pts[3].y],
+  ];
+  const score = Math.min(1, maxArea / (imgArea * 0.5));
+  return { bestQuad: quad, bestScore: score };
+}
 export function detectAndWarpCard(canvas, debug = false) {
   const cv = globalThis.cv;
   if (!cv || !canvas) return null;
@@ -75,7 +150,7 @@ export function detectAndWarpCard(canvas, debug = false) {
     let { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
     if (!bestQuad) {
       // Fallback: rectangular bounding box of the largest contour
-      const fb = pickRectFallback(contours, src.cols, src.rows);
+      const fb = pickMinAreaRectFallback(contours, src.cols, src.rows);
       bestQuad = fb.bestQuad;
       bestScore = fb.bestScore;
       console.debug(
@@ -116,7 +191,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       otsu,
       warped,
     ]);
-    return { roiB64, score: bestScore, debugB64 };
+    return { roiB64, score: bestScore, debugB64, quad: bestQuad };
   } finally {
     src.delete();
   }
