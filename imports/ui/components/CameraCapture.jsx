@@ -1,7 +1,11 @@
 import React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
-import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
+import {
+  detectAndWarpCard,
+  probeContours,
+  centroid,
+} from '/imports/ui/lib/cvCardDetect';
 
 const POLL_MS = 200;
 
@@ -205,8 +209,16 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               'score:',
               result?.score
             );
+            if (result?.roiB64) {
+              const out = document.getElementById('cv-roi');
+              if (out) out.src = result.roiB64;
+            }
 
-            const ok = Boolean(result && result.roiB64);
+            let ok = Boolean(result && result.roiB64);
+            if (ok && result.quad) {
+              const [cx, cy] = centroid(result.quad);
+              ok = cx >= x && cx <= x + targetW && cy >= y && cy <= y + targetH;
+            }
             if (ok) {
               setIsBoxGreen(true);
               setPhase(PHASE.READY);
@@ -256,6 +268,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 className="w-full h-full object-cover"
               />
               <canvas ref={canvasRef} className="hidden" />
+              <img id="cv-roi" alt="cv roi" className="mt-2 max-w-xs" />
               <button
                 className="btn btn-sm mt-2"
                 onClick={() => {
