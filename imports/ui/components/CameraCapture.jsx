@@ -89,6 +89,11 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const [isCheckingOCR, setIsCheckingOCR] = useState(false);
   const [hasCaptured, setHasCaptured] = useState(false);
   const [steadyCount, setSteadyCount] = useState(0); // consecutive steady polls
+  const [dbg, setDbg] = useState({
+    cvReady: false,
+    videoReady: false,
+    probe: 0,
+  });
 
   // camera on
   useEffect(() => {
@@ -171,10 +176,21 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
     // Quick visibility probe (full frame)
     const probe = probeContours(canvas);
-    if ((window.__probeOnce ?? 0) < 20) {
+    const probeCount =
+      probe && typeof probe.count === 'number' ? probe.count : 0;
+    setDbg({ cvReady, videoReady, probe: probeCount });
+    console.log(
+      '[cv] probe count=',
+      probeCount,
+      'cvReady=',
+      cvReady,
+      'videoReady=',
+      videoReady
+    );
+    if ((window.__probeOnce ?? 0) < 10) {
       console.log(
         '[cv] probe contours:',
-        probe.count,
+        probeCount,
         'vw/vh:',
         video.videoWidth,
         video.videoHeight
@@ -185,7 +201,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     if (probe.debugB64 && dbg) dbg.src = probe.debugB64;
 
     // TEMP: force green if enough contours are found
-    if (probe.count > 20) {
+    if (probeCount > 6) {
       setIsBoxGreen(true);
       setPhase(PHASE.READY);
     } else {
@@ -233,27 +249,27 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             }
 
             let ok = Boolean(result && result.roiB64);
-            if (ok && result.quad) {
-              const quadBox = bboxOfQuad(result.quad);
-              // give a bit of leeway around overlay (±50 px)
-              const M = 50;
-              const gateBox = {
-                x: x - M,
-                y: y - M,
-                w: targetW + 2 * M,
-                h: targetH + 2 * M,
-              };
-              const overlap = iouRect(quadBox, gateBox);
-              console.log(
-                '[gate] quadBox:',
-                quadBox,
-                'gateBox:',
-                gateBox,
-                'IoU:',
-                overlap.toFixed(2)
-              );
-              ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
-            }
+            // if (ok && result.quad) {
+            //   const quadBox = bboxOfQuad(result.quad);
+            //   // give a bit of leeway around overlay (±50 px)
+            //   const M = 50;
+            //   const gateBox = {
+            //     x: x - M,
+            //     y: y - M,
+            //     w: targetW + 2 * M,
+            //     h: targetH + 2 * M,
+            //   };
+            //   const overlap = iouRect(quadBox, gateBox);
+            //   console.log(
+            //     '[gate] quadBox:',
+            //     quadBox,
+            //     'gateBox:',
+            //     gateBox,
+            //     'IoU:',
+            //     overlap.toFixed(2)
+            //   );
+            //   ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
+            // }
             if (ok) {
               setIsBoxGreen(true);
               setPhase(PHASE.READY);
@@ -380,6 +396,12 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 )}
               </div>
             )}
+          </div>
+
+          <div className="text-xs opacity-70 mt-2">
+            <span className="mr-3">cvReady: {String(dbg.cvReady)}</span>
+            <span className="mr-3">videoReady: {String(dbg.videoReady)}</span>
+            <span className="mr-3">probe: {dbg.probe}</span>
           </div>
 
           {/* Error */}
