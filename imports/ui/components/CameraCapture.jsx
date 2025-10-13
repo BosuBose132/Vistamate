@@ -46,6 +46,24 @@ const LoadingDot = ({ phase }) => (
   />
 );
 
+const bboxOfQuad = (quad) => {
+  const xs = quad.map((p) => p[0]),
+    ys = quad.map((p) => p[1]);
+  const minX = Math.min(...xs),
+    maxX = Math.max(...xs);
+  const minY = Math.min(...ys),
+    maxY = Math.max(...ys);
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+};
+
+const iouRect = (a, b) => {
+  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  const inter = ix * iy;
+  const union = a.w * a.h + b.w * b.h - inter;
+  return union > 0 ? inter / union : 0;
+};
+
 const handleCaptureToBase64 = (videoRef, canvasRef) => {
   const video = videoRef.current;
   const canvas = canvasRef.current;
@@ -167,7 +185,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     if (probe.debugB64 && dbg) dbg.src = probe.debugB64;
 
     // TEMP: force green if enough contours are found
-    if (probe.count > 50) {
+    if (probe.count > 20) {
       setIsBoxGreen(true);
       setPhase(PHASE.READY);
     } else {
@@ -175,7 +193,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     }
     // box ROI
     const ratio = 1.58;
-    const targetW = Math.floor(canvas.width * 0.72);
+    const targetW = Math.floor(canvas.width * 0.8);
     const targetH = Math.floor(targetW / ratio);
     const x = Math.floor((canvas.width - targetW) / 2);
     const y = Math.floor((canvas.height - targetH) / 2);
@@ -216,8 +234,25 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
             let ok = Boolean(result && result.roiB64);
             if (ok && result.quad) {
-              const [cx, cy] = centroid(result.quad);
-              ok = cx >= x && cx <= x + targetW && cy >= y && cy <= y + targetH;
+              const quadBox = bboxOfQuad(result.quad);
+              // give a bit of leeway around overlay (±50 px)
+              const M = 50;
+              const gateBox = {
+                x: x - M,
+                y: y - M,
+                w: targetW + 2 * M,
+                h: targetH + 2 * M,
+              };
+              const overlap = iouRect(quadBox, gateBox);
+              console.log(
+                '[gate] quadBox:',
+                quadBox,
+                'gateBox:',
+                gateBox,
+                'IoU:',
+                overlap.toFixed(2)
+              );
+              ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
             }
             if (ok) {
               setIsBoxGreen(true);
