@@ -259,6 +259,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               setPhase(PHASE.READY);
               setSteadyCount((c) => {
                 const next = c + 1;
+                console.log('[steady] count:', next);
                 if (!hasCaptured && next >= 2) {
                   setTimeout(() => doCaptureWithROI(result.roiB64), 80);
                 }
