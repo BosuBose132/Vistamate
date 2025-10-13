@@ -1,6 +1,6 @@
 export const CARD_RATIO = 1.58; // typical business card W/H
-export const RATIO_TOL = 0.8; // tolerate variation (IDs differ)
-export const MIN_AREA_FRAC = 0.005;
+export const RATIO_TOL = 0.6; // tolerate variation (IDs differ)
+export const MIN_AREA_FRAC = 0.0025;
 export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
@@ -124,7 +124,7 @@ export function detectAndWarpCard(canvas, debug = false) {
     const low = Math.max(30, Math.min(120, meanBrightness * 0.6));
     const high = Math.max(60, Math.min(200, low * 2.0));
     // Fixed Canny thresholds (more stable for testing)
-    cv.Canny(blur, edges, 50, 150);
+    cv.Canny(blur, edges, 50, 120);
 
     // Close small gaps and thicken edges slightly
     const kernel = cv.Mat.ones(3, 3, cv.CV_8U);
