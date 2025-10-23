@@ -255,12 +255,25 @@ export function detectAndWarpCard(canvas, debug = false) {
     let debugB64 = null;
     if (debug) {
       const overlay = src.clone();
-      const cv = globalThis.cv;
-      const cvp = cv.matFromArray(4, 1, cv.CV_32SC2, bestQuad.flat());
-      cv.polylines(overlay, [cvp], true, new cv.Scalar(0, 255, 0, 255), 3);
-      debugB64 = matToBase64(overlay);
-      cvp.delete();
-      overlay.delete();
+      // Build points Mat (4x1xCV_32SC2) and wrap in a MatVector as OpenCV.js expects
+      const arr = new Int32Array(flatQuad); // [x1,y1,x2,y2,x3,y3,x4,y4]
+      const pts = cv.matFromArray(4, 1, cv.CV_32SC2, arr);
+      const vec = new cv.MatVector();
+      try {
+        vec.push_back(pts);
+        cv.polylines(
+          overlay,
+          vec, // MUST be a MatVector, not a JS array
+          true,
+          new cv.Scalar(0, 255, 0, 255),
+          3
+        );
+        debugB64 = matToBase64(overlay);
+      } finally {
+        vec.delete();
+        pts.delete();
+        overlay.delete();
+      }
     }
 
     console.log(
