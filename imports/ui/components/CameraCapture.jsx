@@ -345,12 +345,9 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               <button
                 className="btn btn-sm mt-2"
                 onClick={() => {
+                  // Visual hint only—does NOT change phase or trigger capture
                   setIsBoxGreen(true);
-                  setPhase(PHASE.READY);
-                  setTimeout(() => {
-                    setIsBoxGreen(false);
-                    setPhase(PHASE.ALIGN);
-                  }, 1500);
+                  setTimeout(() => setIsBoxGreen(false), 1200);
                 }}
               >
                 Force Green (1.5s)
