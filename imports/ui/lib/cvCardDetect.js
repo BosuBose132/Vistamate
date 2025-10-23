@@ -104,7 +104,9 @@ function pickMinAreaRectFallback(contours, w, h) {
   return { bestQuad: quad, bestScore: score };
 }
 export function detectAndWarpCard(canvas, debug = false) {
+  console.log('[cv] detect: start');
   const cv = globalThis.cv;
+
   if (!cv || !canvas) return null;
   const src = cv.imread(canvas);
   try {
@@ -126,6 +128,16 @@ export function detectAndWarpCard(canvas, debug = false) {
     // Fixed Canny thresholds (more stable for testing)
     cv.Canny(blur, edges, 35, 110);
 
+    const edgeNonZero = cv.countNonZero(edges);
+    console.log(
+      '[cv] detect: src',
+      src.cols,
+      'x',
+      src.rows,
+      '| edges(nonZero)=',
+      edgeNonZero
+    );
+
     // Close small gaps and thicken edges slightly
     const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
@@ -141,6 +153,12 @@ export function detectAndWarpCard(canvas, debug = false) {
       cv.RETR_LIST,
       cv.CHAIN_APPROX_SIMPLE
     );
+    const contourCount =
+      typeof contours.size === 'function'
+        ? contours.size()
+        : contours.length ?? 0;
+    console.log('[cv] detect: contours =', contourCount);
+
     console.debug(
       '[cv] contours:',
       contours.size(),
@@ -162,10 +180,73 @@ export function detectAndWarpCard(canvas, debug = false) {
         bestScore
       );
       if (!bestQuad) {
-        cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
-        return null;
+        // ADDED: LAST-DITCH FALLBACK – center crop to ensure ROI is never empty
+        try {
+          const CARD_RATIO = 1.58; // keep in sync with your constants
+          const cx = Math.floor(src.cols * 0.5);
+          const cy = Math.floor(src.rows * 0.5);
+          const ww = Math.floor(src.cols * 0.6);
+          const hh = Math.floor(ww / CARD_RATIO);
+          const x0 = Math.max(0, cx - Math.floor(ww / 2));
+          const y0 = Math.max(0, cy - Math.floor(hh / 2));
+          const rect = new cv.Rect(
+            x0,
+            y0,
+            Math.min(ww, src.cols - x0),
+            Math.min(hh, src.rows - y0)
+          );
+          const roi = src.roi(rect);
+          const roiB64 = matToBase64(roi);
+          roi.delete();
+
+          // Optional: show the edge map as debug when we fallback
+          const debugB64 = debug ? matToBase64(closed) : null;
+
+          console.warn(
+            '[cv] detect: NO quad found – using center-crop fallback'
+          );
+          cleanup([
+            gray,
+            blur,
+            edges,
+            closed,
+            kernel,
+            contours,
+            hierarchy,
+            otsu,
+          ]);
+          console.log('[cv] detect: ROI b64 length', roiB64?.length || 0);
+          return { roiB64, score: 0, debugB64, quad: null };
+        } catch (e) {
+          console.error('[cv] detect: fallback failed', e);
+          cleanup([
+            gray,
+            blur,
+            edges,
+            closed,
+            kernel,
+            contours,
+            hierarchy,
+            otsu,
+          ]);
+          return null;
+        }
       }
     }
+    // --- SAFETY: validate and flatten bestQuad before warp ---
+    if (!Array.isArray(bestQuad) || bestQuad.length !== 4) {
+      console.error('[cv] detect: invalid bestQuad shape', bestQuad);
+      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+      return null;
+    }
+    // Ensure points are numeric tuples [[x,y],...]
+    const flatQuad = bestQuad.flat().map((v) => Number(v));
+    if (flatQuad.length !== 8 || flatQuad.some(isNaN)) {
+      console.error('[cv] detect: bad quad data', flatQuad);
+      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+      return null;
+    }
+
     // warp to canonical card size
     const warped = warpToCard(src, bestQuad);
     const roiB64 = matToBase64(warped);
@@ -181,6 +262,13 @@ export function detectAndWarpCard(canvas, debug = false) {
       cvp.delete();
       overlay.delete();
     }
+
+    console.log(
+      '[cv] detect: ROI b64 length',
+      roiB64?.length || 0,
+      '| score:',
+      bestScore
+    );
 
     cleanup([
       gray,
@@ -284,7 +372,7 @@ export function probeContours(canvas) {
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
     cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
     cv.Canny(blur, edges, 50, 150); // fixed, forgiving
-    const kernel = cv.Mat.ones(3, 3, cv.CV_8U);
+    const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
     cv.dilate(closed, closed, kernel);
 

@@ -321,6 +321,27 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               />
               <canvas ref={canvasRef} className="hidden" />
               <img id="cv-roi" alt="cv roi" className="mt-2 max-w-xs" />
+
+              {/* Debug thumbnails (kept small to avoid layout shift) */}
+              <div className="absolute bottom-2 left-2 flex gap-2 items-end pointer-events-none">
+                <div className="bg-base-100/70 rounded p-1 shadow pointer-events-auto">
+                  <div className="text-[10px] opacity-70 px-1">ROI</div>
+                  <img
+                    id="cv-roi"
+                    alt="cv roi"
+                    className="max-w-[140px] rounded"
+                  />
+                </div>
+                <div className="bg-base-100/70 rounded p-1 shadow pointer-events-auto">
+                  <div className="text-[10px] opacity-70 px-1">Edges</div>
+                  <img
+                    id="cv-debug"
+                    alt="cv debug"
+                    className="max-w-[140px] rounded"
+                  />
+                </div>
+              </div>
+
               <button
                 className="btn btn-sm mt-2"
                 onClick={() => {
@@ -339,7 +360,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             <img id="cv-debug" alt="cv debug" className="mt-2 max-w-xs" />
             {/* Overlay box */}
             <div
-              className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all`}
+              className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none transition-all`}
             >
               <div
                 className={`rounded-2xl px-8 py-16 border-4 transition-all duration-300
@@ -349,7 +370,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                     : 'border-base-300 bg-base-300/10'
                 }`}
                 style={{
-                  width: '72%',
+                  width: '80%',
                   aspectRatio: '1.58',
                 }}
               >
