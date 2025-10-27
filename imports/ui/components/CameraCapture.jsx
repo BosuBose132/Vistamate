@@ -13,6 +13,33 @@ const PHASE = {
   PROCESSING: 'processing', // after capture, waiting for OCR + next step
 };
 
+// ---- Loose card-shape helpers ----
+const CARD_RATIO = 1.58; // business/ID card width/height
+const RATIO_TOL = 0.4; // ±40% tolerance (loose)
+const MIN_AREA_FRAC_UI = 0.01; // ≥1% of frame (loose)
+const MIN_IOU = 0.08; // ≥8% overlap with overlay (loose)
+
+const dot = (ax, ay, bx, by) => ax * bx + ay * by;
+const len = (ax, ay) => Math.hypot(ax, ay) || 1e-6;
+const angleCos = (p, q, r) => {
+  // cos(angle at q) between vectors q->p and q->r
+  const ux = p[0] - q[0],
+    uy = p[1] - q[1];
+  const vx = r[0] - q[0],
+    vy = r[1] - q[1];
+  return dot(ux, uy, vx, vy) / (len(ux, uy) * len(vx, vy));
+};
+const rightAngleScore = (quad) => {
+  // 1.0 is perfect rectangle (all corners ~90°), 0.0 is bad
+  const coses = [
+    Math.abs(angleCos(quad[3], quad[0], quad[1])),
+    Math.abs(angleCos(quad[0], quad[1], quad[2])),
+    Math.abs(angleCos(quad[1], quad[2], quad[3])),
+    Math.abs(angleCos(quad[2], quad[3], quad[0])),
+  ];
+  const scores = coses.map((c) => 1 - Math.min(1, c)); // map |cos|→[0..1]
+  return (scores[0] + scores[1] + scores[2] + scores[3]) / 4;
+};
 const StatusBadge = ({ phase }) => {
   const map = {
     [PHASE.ALIGN]: { txt: 'Align your ID', cls: 'badge-ghost' },
@@ -218,10 +245,22 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               'score:',
               result?.score
             );
-            let ok = Boolean(result && result.roiB64);
-            if (ok && result.quad) {
-              const quadBox = bboxOfQuad(result.quad);
-              // give a bit of leeway around overlay (±50 px)
+            // Loose quad-based gating: still requires a quad, but very forgiving
+            let ok = Boolean(result?.roiB64 && result?.quad);
+            if (ok) {
+              const quad = result.quad;
+              const box = bboxOfQuad(quad);
+              const areaFrac = (box.w * box.h) / (canvas.width * canvas.height);
+              const ratio = box.w / Math.max(1, box.h);
+              const ratioOk =
+                Math.abs(ratio - CARD_RATIO) <= CARD_RATIO * RATIO_TOL; // ±40%
+              const areaOk = areaFrac >= MIN_AREA_FRAC_UI; // ≥1%
+
+              // right angles (loose): accept avg ≥ 0.60
+              const angScore = rightAngleScore(quad); // 0..1
+              const anglesOk = angScore >= 0.6;
+
+              // Position gate with margin (loose IoU)
               const M = 50;
               const gateBox = {
                 x: x - M,
@@ -229,16 +268,21 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 w: targetW + 2 * M,
                 h: targetH + 2 * M,
               };
-              const overlap = iouRect(quadBox, gateBox);
-              console.log(
-                '[gate] quadBox:',
-                quadBox,
-                'gateBox:',
-                gateBox,
-                'IoU:',
-                overlap.toFixed(2)
-              );
-              ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
+              const overlap = iouRect(box, gateBox);
+              const posOk = overlap >= MIN_IOU; // ≥8%
+
+              console.log('[gate-loose]', {
+                ratio: ratio.toFixed(2),
+                ratioOk,
+                areaFrac: areaFrac.toFixed(3),
+                areaOk,
+                angScore: angScore.toFixed(2),
+                anglesOk,
+                IoU: overlap.toFixed(2),
+                posOk,
+              });
+
+              ok = ratioOk && areaOk && anglesOk && posOk;
             }
             if (ok) {
               setIsBoxGreen(true);
