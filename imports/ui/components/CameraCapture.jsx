@@ -249,27 +249,27 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             }
 
             let ok = Boolean(result && result.roiB64);
-            // if (ok && result.quad) {
-            //   const quadBox = bboxOfQuad(result.quad);
-            //   // give a bit of leeway around overlay (±50 px)
-            //   const M = 50;
-            //   const gateBox = {
-            //     x: x - M,
-            //     y: y - M,
-            //     w: targetW + 2 * M,
-            //     h: targetH + 2 * M,
-            //   };
-            //   const overlap = iouRect(quadBox, gateBox);
-            //   console.log(
-            //     '[gate] quadBox:',
-            //     quadBox,
-            //     'gateBox:',
-            //     gateBox,
-            //     'IoU:',
-            //     overlap.toFixed(2)
-            //   );
-            //   ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
-            // }
+            if (ok && result.quad) {
+              const quadBox = bboxOfQuad(result.quad);
+              // give a bit of leeway around overlay (±50 px)
+              const M = 50;
+              const gateBox = {
+                x: x - M,
+                y: y - M,
+                w: targetW + 2 * M,
+                h: targetH + 2 * M,
+              };
+              const overlap = iouRect(quadBox, gateBox);
+              console.log(
+                '[gate] quadBox:',
+                quadBox,
+                'gateBox:',
+                gateBox,
+                'IoU:',
+                overlap.toFixed(2)
+              );
+              ok = overlap >= 0.15; // ~15% overlap is enough to count as “in the box”
+            }
             if (ok) {
               setIsBoxGreen(true);
               setPhase(PHASE.READY);
@@ -277,13 +277,17 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 const next = c + 1;
                 console.log('[steady] count:', next);
                 if (!hasCaptured && next >= 2) {
-                  setTimeout(() => doCaptureWithROI(result.roiB64), 80);
+                  setTimeout(
+                    () => doCaptureWithROI(result?.roiB64 || null),
+                    80
+                  );
                 }
                 return next;
               });
             } else {
               setIsBoxGreen(false);
-              setPhase(PHASE.STEADY);
+              setPhase(PHASE.ALIGN);
+              m;
               setSteadyCount(0);
             }
           } finally {
