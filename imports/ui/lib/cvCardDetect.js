@@ -1,11 +1,9 @@
-// --- constants (kept) ---
 export const CARD_RATIO = 1.58; // typical business card W/H
 export const RATIO_TOL = 0.6; // detector tolerance (shape score, not UI gate)
 export const MIN_AREA_FRAC = 0.0018; // min quad area vs frame
 export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
-// --- small utils (kept) ---
 export function matToBase64(mat) {
   const cv = globalThis.cv;
   const png = new cv.Mat();
@@ -28,7 +26,7 @@ export function cleanup(list) {
   }
 }
 
-// --- geometry helpers used by UI gating (kept) ---
+// --- geometry helpers used by UI gating ---
 export function bboxOfQuad(quad) {
   const xs = quad.map((p) => p[0]),
     ys = quad.map((p) => p[1]);
@@ -166,7 +164,7 @@ export function warpToCard(src, quad) {
   return out;
 }
 
-// --- lightweight probe for UI edges preview (kept) ---
+// --- lightweight probe for UI edges preview ---
 export function probeContours(canvas) {
   const cv = globalThis.cv;
   const src = cv.imread(canvas);
@@ -186,7 +184,7 @@ export function probeContours(canvas) {
   }
 }
 
-// --- main detector (kept) ---
+// --- main detector ---
 export function detectAndWarpCard(canvas, debug = false) {
   const cv = globalThis.cv;
   if (!cv || !canvas) return null;
@@ -222,7 +220,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       bestScore = fb.bestScore;
     }
     if (!bestQuad) {
-      // last-ditch (kept): center crop so UX never blocks; this does not imply “valid card”
+      // last-ditch : center crop so UX never blocks; this does not imply “valid card”
       const cx = Math.floor(src.cols * 0.5),
         cy = Math.floor(src.rows * 0.5);
       const ww = Math.floor(src.cols * 0.6),

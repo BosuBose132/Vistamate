@@ -1,11 +1,7 @@
 import React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
-import {
-  detectAndWarpCard,
-  probeContours,
-  centroid,
-} from '/imports/ui/lib/cvCardDetect';
+import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
 
 const POLL_MS = 200;
 
@@ -84,16 +80,10 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const [error, setError] = useState(null);
   const [phase, setPhase] = useState(PHASE.ALIGN);
   const [isBoxGreen, setIsBoxGreen] = useState(false);
-  const [greenTimer, setGreenTimer] = useState(0); // seconds amassed while green
   const [lastFrameData, setLastFrameData] = useState(null);
   const [isCheckingOCR, setIsCheckingOCR] = useState(false);
   const [hasCaptured, setHasCaptured] = useState(false);
   const [steadyCount, setSteadyCount] = useState(0); // consecutive steady polls
-  const [dbg, setDbg] = useState({
-    cvReady: false,
-    videoReady: false,
-    probe: 0,
-  });
 
   // camera on
   useEffect(() => {
@@ -142,7 +132,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     }, POLL_MS);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastFrameData, greenTimer, isBoxGreen, isCheckingOCR, hasCaptured]);
+  }, [hasCaptured]);
 
   const doCapture = () => {
     setPhase(PHASE.CAPTURING);
@@ -178,35 +168,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const probe = probeContours(canvas);
     const probeCount =
       probe && typeof probe.count === 'number' ? probe.count : 0;
-    setDbg({ cvReady, videoReady, probe: probeCount });
-    console.log(
-      '[cv] probe count=',
-      probeCount,
-      'cvReady=',
-      cvReady,
-      'videoReady=',
-      videoReady
-    );
-    if ((window.__probeOnce ?? 0) < 10) {
-      console.log(
-        '[cv] probe contours:',
-        probeCount,
-        'vw/vh:',
-        video.videoWidth,
-        video.videoHeight
-      );
-      window.__probeOnce = (window.__probeOnce || 0) + 1;
-    }
-    const dbg = document.getElementById('cv-debug');
-    if (probe.debugB64 && dbg) dbg.src = probe.debugB64;
 
-    // TEMP: force green if enough contours are found
-    if (probeCount > 6) {
-      setIsBoxGreen(true);
-      setPhase(PHASE.READY);
-    } else {
-      setIsBoxGreen(false);
-    }
     // box ROI
     const ratio = 1.58;
     const targetW = Math.floor(canvas.width * 0.8);
@@ -217,6 +179,17 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const img = ctx.getImageData(box.x, box.y, box.w, box.h);
     const current = img.data;
 
+    // debug
+    console.log(
+      '[cv] probe count=',
+      probeCount,
+      'cvReady=',
+      cvReady,
+      'videoReady=',
+      videoReady
+    );
+    const dbgImg = document.getElementById('cv-debug');
+    if (probe.debugB64 && dbgImg) dbgImg.src = probe.debugB64;
     // movement detection → steady vs align
     if (!lastFrameData) {
       // First frame: seed lastFrameData and wait for next poll
@@ -236,18 +209,15 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           setIsCheckingOCR(true);
           try {
             const result = detectAndWarpCard(canvas, /*debug*/ true);
-            if (result?.debugB64 && dbg) dbg.src = result.debugB64;
+            if (result?.debugB64 && dbgImg) dbgImg.src = result.debugB64;
             console.log(
               '[cv] detect result:',
               !!result,
+              'hasROI:',
+              !!result?.roiB64,
               'score:',
               result?.score
             );
-            if (result?.roiB64) {
-              const out = document.getElementById('cv-roi');
-              if (out) out.src = result.roiB64;
-            }
-
             let ok = Boolean(result && result.roiB64);
             if (ok && result.quad) {
               const quadBox = bboxOfQuad(result.quad);
@@ -287,7 +257,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             } else {
               setIsBoxGreen(false);
               setPhase(PHASE.ALIGN);
-              m;
               setSteadyCount(0);
             }
           } finally {
@@ -321,44 +290,21 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 ref={videoRef}
                 autoPlay
                 playsInline
+                muted
                 className="w-full h-full object-cover"
               />
               <canvas ref={canvasRef} className="hidden" />
-              <img id="cv-roi" alt="cv roi" className="mt-2 max-w-xs" />
-
-              {/* Debug thumbnails (kept small to avoid layout shift) */}
-              <div className="absolute bottom-2 left-2 flex gap-2 items-end pointer-events-none">
-                <div className="bg-base-100/70 rounded p-1 shadow pointer-events-auto">
-                  <div className="text-[10px] opacity-70 px-1">ROI</div>
-                  <img
-                    id="cv-roi"
-                    alt="cv roi"
-                    className="max-w-[140px] rounded"
-                  />
-                </div>
-                <div className="bg-base-100/70 rounded p-1 shadow pointer-events-auto">
-                  <div className="text-[10px] opacity-70 px-1">Edges</div>
-                  <img
-                    id="cv-debug"
-                    alt="cv debug"
-                    className="max-w-[140px] rounded"
-                  />
-                </div>
+              {/* Edges preview only (kept for operator feedback) */}
+              <div className="absolute bottom-2 left-2 pointer-events-none bg-base-100/70 rounded p-1 shadow">
+                <div className="text-[10px] opacity-70 px-1">Edges</div>
+                <img
+                  id="cv-debug"
+                  alt="cv debug"
+                  className="max-w-[140px] rounded"
+                />
               </div>
-
-              <button
-                className="btn btn-sm mt-2"
-                onClick={() => {
-                  // Visual hint only—does NOT change phase or trigger capture
-                  setIsBoxGreen(true);
-                  setTimeout(() => setIsBoxGreen(false), 1200);
-                }}
-              >
-                Force Green (1.5s)
-              </button>
             </div>
-            {/* Debug image — OpenCV overlay */}
-            <img id="cv-debug" alt="cv debug" className="mt-2 max-w-xs" />
+
             {/* Overlay box */}
             <div
               className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none transition-all`}
@@ -418,12 +364,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 )}
               </div>
             )}
-          </div>
-
-          <div className="text-xs opacity-70 mt-2">
-            <span className="mr-3">cvReady: {String(dbg.cvReady)}</span>
-            <span className="mr-3">videoReady: {String(dbg.videoReady)}</span>
-            <span className="mr-3">probe: {dbg.probe}</span>
           </div>
 
           {/* Error */}
