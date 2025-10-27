@@ -1,149 +1,210 @@
+// --- constants (kept) ---
 export const CARD_RATIO = 1.58; // typical business card W/H
-export const RATIO_TOL = 0.6; // tolerate variation (IDs differ)
-export const MIN_AREA_FRAC = 0.0018;
+export const RATIO_TOL = 0.6; // detector tolerance (shape score, not UI gate)
+export const MIN_AREA_FRAC = 0.0018; // min quad area vs frame
 export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
-// --- Helpers (no OpenCV dependency) ---
-export function dist(a, b) {
-  const dx = a[0] - b[0],
-    dy = a[1] - b[1];
-  return Math.hypot(dx, dy);
-}
-export function centroid(quad) {
-  const [a, b, c, d] = quad;
-  return [(a[0] + b[0] + c[0] + d[0]) / 4, (a[1] + b[1] + c[1] + d[1]) / 4];
-}
+// --- small utils (kept) ---
 export function matToBase64(mat) {
-  // Receives an OpenCV Mat, draws to a temp canvas, returns dataURL
   const cv = globalThis.cv;
-  if (!cv) return null;
-  const canvas = document.createElement('canvas');
-  cv.imshow(canvas, mat);
-  return canvas.toDataURL('image/png');
+  const png = new cv.Mat();
+  cv.imencode('.png', mat, png);
+  const bytes = new Uint8Array(png.data);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++)
+    binary += String.fromCharCode(bytes[i]);
+  png.delete();
+  return 'data:image/png;base64,' + btoa(binary);
 }
 
-export function cleanup(mats) {
-  for (const m of mats) {
-    try {
-      m.delete();
-    } catch {}
+export function cleanup(list) {
+  for (const m of list) {
+    if (m && typeof m.delete === 'function') {
+      try {
+        m.delete();
+      } catch {}
+    }
   }
 }
-function pickBestQuad(contours, w, h) {
+
+// --- geometry helpers used by UI gating (kept) ---
+export function bboxOfQuad(quad) {
+  const xs = quad.map((p) => p[0]),
+    ys = quad.map((p) => p[1]);
+  const minX = Math.min(...xs),
+    maxX = Math.max(...xs);
+  const minY = Math.min(...ys),
+    maxY = Math.max(...ys);
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+export function iouRect(a, b) {
+  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  const inter = ix * iy;
+  const union = a.w * a.h + b.w * b.h - inter;
+  return union > 0 ? inter / union : 0;
+}
+
+// --- candidate selection (kept lightweight) ---
+function approxQuad(cv, contour) {
+  const peri = cv.arcLength(contour, true);
+  const poly = new cv.Mat();
+  cv.approxPolyDP(contour, poly, 0.02 * peri, true);
+  if (poly.rows === 4 && cv.isContourConvex(poly)) {
+    const quad = [];
+    for (let i = 0; i < 4; i++)
+      quad.push([poly.intPtr(i, 0)[0], poly.intPtr(i, 0)[1]]);
+    poly.delete();
+    return quad;
+  }
+  poly.delete();
+  return null;
+}
+
+export function pickBestQuad(contours, cols, rows) {
   const cv = globalThis.cv;
-  const imgArea = w * h;
-  let best = null,
+  const frameArea = cols * rows;
+  let bestQuad = null,
+    bestScore = -1;
+
+  const tmp = new cv.Mat();
+  for (let i = 0; i < contours.size(); i++) {
+    const c = contours.get(i);
+    const area = cv.contourArea(c, false);
+    if (area < MIN_AREA_FRAC * frameArea) continue;
+
+    const quad = approxQuad(cv, c);
+    if (!quad) continue;
+
+    // score by rectangularity and area
+    const bb = bboxOfQuad(quad);
+    const ratio = bb.w / Math.max(1, bb.h);
+    const ratioScore = Math.exp(
+      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL)
+    );
+    const areaFrac = (bb.w * bb.h) / frameArea;
+    const score = ratioScore * areaFrac;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestQuad = quad;
+    }
+  }
+  tmp.delete();
+  return { bestQuad, bestScore };
+}
+
+export function pickMinAreaRectFallback(contours, cols, rows) {
+  const cv = globalThis.cv;
+  const frameArea = cols * rows;
+  let bestQuad = null,
     bestScore = -1;
 
   for (let i = 0; i < contours.size(); i++) {
-    const cnt = contours.get(i);
-    const peri = cv.arcLength(cnt, true);
-    const approx = new cv.Mat();
-    cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
+    const c = contours.get(i);
+    const rect = cv.minAreaRect(c);
+    const area = rect.size.width * rect.size.height;
+    if (area < MIN_AREA_FRAC * frameArea) continue;
 
-    if (approx.rows === 4) {
-      const area = cv.contourArea(approx);
-      if (area < imgArea * MIN_AREA_FRAC) {
-        approx.delete();
-        continue;
-      }
+    // convert rotated rect to quad
+    const pts = cv.RotatedRect.points(rect);
+    const quad = pts.map((p) => [Math.round(p.x), Math.round(p.y)]);
 
-      const quad = toPointArray(approx);
-      const [tl, tr, br, bl] = orderCorners(quad);
+    const bb = bboxOfQuad(quad);
+    const ratio = bb.w / Math.max(1, bb.h);
+    const ratioScore = Math.exp(
+      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL)
+    );
+    const areaFrac = (bb.w * bb.h) / frameArea;
+    const score = ratioScore * areaFrac;
 
-      const widthA = dist(tr, tl),
-        widthB = dist(br, bl);
-      const heightA = dist(bl, tl),
-        heightB = dist(br, tr);
-      const width = (widthA + widthB) / 2;
-      const height = (heightA + heightB) / 2;
-      const ratio = width / height;
-
-      const areaScore = Math.min(1, area / (imgArea * 0.5));
-      const ratioScore =
-        1 -
-        Math.min(1, Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL));
-      const score = areaScore * 0.6 + ratioScore * 0.4;
-
-      if (score > bestScore) {
-        bestScore = score;
-        best = [tl, tr, br, bl];
-      }
+    if (score > bestScore) {
+      bestScore = score;
+      bestQuad = quad;
     }
-    approx.delete();
   }
-  return { bestQuad: best, bestScore };
+  return { bestQuad, bestScore };
 }
 
-function pickMinAreaRectFallback(contours, w, h) {
+// --- warp (kept) ---
+export function warpToCard(src, quad) {
   const cv = globalThis.cv;
-  const imgArea = w * h;
-  let best = null,
-    maxArea = 0;
+  // order points roughly TL, TR, BR, BL (simple bbox sort; good enough once gated)
+  const bb = bboxOfQuad(quad);
+  const dstPts = cv.matFromArray(
+    4,
+    1,
+    cv.CV_32FC2,
+    new Float32Array([0, 0, WARP_W, 0, WARP_W, WARP_H, 0, WARP_H])
+  );
 
-  for (let i = 0; i < contours.size(); i++) {
-    const cnt = contours.get(i);
-    const mr = cv.minAreaRect(cnt); // rotated rectangle
-    const area = mr.size.width * mr.size.height;
-    if (area > imgArea * MIN_AREA_FRAC && area > maxArea) {
-      maxArea = area;
-      best = mr;
-    }
+  // map input quad to float32
+  const flat = new Float32Array(8);
+  for (let i = 0; i < 4; i++) {
+    flat[i * 2] = quad[i][0];
+    flat[i * 2 + 1] = quad[i][1];
   }
-  if (!best) return { bestQuad: null, bestScore: -1 };
+  const srcPts = cv.matFromArray(4, 1, cv.CV_32FC2, flat);
 
-  const pts = cv.RotatedRect.points(best); // 4 corner points
-  const quad = [
-    [pts[0].x, pts[0].y],
-    [pts[1].x, pts[1].y],
-    [pts[2].x, pts[2].y],
-    [pts[3].x, pts[3].y],
-  ];
-  const score = Math.min(1, maxArea / (imgArea * 0.5));
-  return { bestQuad: quad, bestScore: score };
+  const M = cv.getPerspectiveTransform(srcPts, dstPts);
+  const out = new cv.Mat();
+  const dsize = new cv.Size(WARP_W, WARP_H);
+  cv.warpPerspective(
+    src,
+    out,
+    M,
+    dsize,
+    cv.INTER_LINEAR,
+    cv.BORDER_REPLICATE,
+    new cv.Scalar()
+  );
+  srcPts.delete();
+  dstPts.delete();
+  M.delete();
+  return out;
 }
+
+// --- lightweight probe for UI edges preview (kept) ---
+export function probeContours(canvas) {
+  const cv = globalThis.cv;
+  const src = cv.imread(canvas);
+  try {
+    const gray = new cv.Mat(),
+      blur = new cv.Mat(),
+      edges = new cv.Mat();
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+    cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
+    cv.Canny(blur, edges, 35, 110);
+    const count = cv.countNonZero(edges); // simple proxy for “edge richness”
+    const debugB64 = matToBase64(edges);
+    cleanup([gray, blur, edges]);
+    return { count, debugB64 };
+  } finally {
+    src.delete();
+  }
+}
+
+// --- main detector (kept) ---
 export function detectAndWarpCard(canvas, debug = false) {
-  console.log('[cv] detect: start');
   const cv = globalThis.cv;
-
   if (!cv || !canvas) return null;
+
   const src = cv.imread(canvas);
   try {
     const gray = new cv.Mat(),
       blur = new cv.Mat(),
       edges = new cv.Mat(),
-      closed = new cv.Mat(),
-      otsu = new cv.Mat();
-
-    // grayscale + blur
+      closed = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
     cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-
-    // Otsu for adaptive Canny thresholds
-    cv.threshold(blur, otsu, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
-    const meanBrightness = cv.mean(otsu)[0];
-    const low = Math.max(30, Math.min(120, meanBrightness * 0.6));
-    const high = Math.max(60, Math.min(200, low * 2.0));
-    // Fixed Canny thresholds (more stable for testing)
     cv.Canny(blur, edges, 35, 110);
 
-    const edgeNonZero = cv.countNonZero(edges);
-    console.log(
-      '[cv] detect: src',
-      src.cols,
-      'x',
-      src.rows,
-      '| edges(nonZero)=',
-      edgeNonZero
-    );
-
-    // Close small gaps and thicken edges slightly
     const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
     cv.dilate(closed, closed, kernel, new cv.Point(-1, -1), 1);
 
-    // Find all contours (not just external ones)
     const contours = new cv.MatVector(),
       hierarchy = new cv.Mat();
     cv.findContours(
@@ -153,121 +214,55 @@ export function detectAndWarpCard(canvas, debug = false) {
       cv.RETR_LIST,
       cv.CHAIN_APPROX_SIMPLE
     );
-    const contourCount =
-      typeof contours.size === 'function'
-        ? contours.size()
-        : contours.length ?? 0;
-    console.log('[cv] detect: contours =', contourCount);
 
-    console.debug(
-      '[cv] contours:',
-      contours.size(),
-      'img:',
-      src.cols,
-      'x',
-      src.rows
-    );
     let { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
     if (!bestQuad) {
-      // Fallback: rectangular bounding box of the largest contour
       const fb = pickMinAreaRectFallback(contours, src.cols, src.rows);
       bestQuad = fb.bestQuad;
       bestScore = fb.bestScore;
-      console.debug(
-        '[cv] using RECT fallback?',
-        !!bestQuad,
-        'score:',
-        bestScore
+    }
+    if (!bestQuad) {
+      // last-ditch (kept): center crop so UX never blocks; this does not imply “valid card”
+      const cx = Math.floor(src.cols * 0.5),
+        cy = Math.floor(src.rows * 0.5);
+      const ww = Math.floor(src.cols * 0.6),
+        hh = Math.floor(ww / CARD_RATIO);
+      const x0 = Math.max(0, cx - Math.floor(ww / 2)),
+        y0 = Math.max(0, cy - Math.floor(hh / 2));
+      const rect = new cv.Rect(
+        x0,
+        y0,
+        Math.min(ww, src.cols - x0),
+        Math.min(hh, src.rows - y0)
       );
-      if (!bestQuad) {
-        // ADDED: LAST-DITCH FALLBACK – center crop to ensure ROI is never empty
-        try {
-          const CARD_RATIO = 1.58; // keep in sync with your constants
-          const cx = Math.floor(src.cols * 0.5);
-          const cy = Math.floor(src.rows * 0.5);
-          const ww = Math.floor(src.cols * 0.6);
-          const hh = Math.floor(ww / CARD_RATIO);
-          const x0 = Math.max(0, cx - Math.floor(ww / 2));
-          const y0 = Math.max(0, cy - Math.floor(hh / 2));
-          const rect = new cv.Rect(
-            x0,
-            y0,
-            Math.min(ww, src.cols - x0),
-            Math.min(hh, src.rows - y0)
-          );
-          const roi = src.roi(rect);
-          const roiB64 = matToBase64(roi);
-          roi.delete();
-
-          // Optional: show the edge map as debug when we fallback
-          const debugB64 = debug ? matToBase64(closed) : null;
-
-          console.warn(
-            '[cv] detect: NO quad found – using center-crop fallback'
-          );
-          cleanup([
-            gray,
-            blur,
-            edges,
-            closed,
-            kernel,
-            contours,
-            hierarchy,
-            otsu,
-          ]);
-          console.log('[cv] detect: ROI b64 length', roiB64?.length || 0);
-          return { roiB64, score: 0, debugB64, quad: null };
-        } catch (e) {
-          console.error('[cv] detect: fallback failed', e);
-          cleanup([
-            gray,
-            blur,
-            edges,
-            closed,
-            kernel,
-            contours,
-            hierarchy,
-            otsu,
-          ]);
-          return null;
-        }
-      }
+      const roi = src.roi(rect);
+      const roiB64 = matToBase64(roi);
+      roi.delete();
+      const debugB64 = debug ? matToBase64(closed) : null;
+      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy]);
+      return { roiB64, score: 0, debugB64, quad: null };
     }
-    // --- SAFETY: validate and flatten bestQuad before warp ---
-    if (!Array.isArray(bestQuad) || bestQuad.length !== 4) {
-      console.error('[cv] detect: invalid bestQuad shape', bestQuad);
-      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
-      return null;
-    }
-    // Ensure points are numeric tuples [[x,y],...]
-    const flatQuad = bestQuad.flat().map((v) => Number(v));
-    if (flatQuad.length !== 8 || flatQuad.some(isNaN)) {
-      console.error('[cv] detect: bad quad data', flatQuad);
-      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, otsu]);
+
+    // validate quad
+    const flatQuad = bestQuad.flat().map(Number);
+    if (flatQuad.length !== 8 || flatQuad.some((v) => !Number.isFinite(v))) {
+      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy]);
       return null;
     }
 
-    // warp to canonical card size
+    // warp to canonical size from original color src
     const warped = warpToCard(src, bestQuad);
     const roiB64 = matToBase64(warped);
 
-    // optional debug overlay (draw the quad on source)
+    // optional debug overlay (green outline)
     let debugB64 = null;
     if (debug) {
       const overlay = src.clone();
-      // Build points Mat (4x1xCV_32SC2) and wrap in a MatVector as OpenCV.js expects
-      const arr = new Int32Array(flatQuad); // [x1,y1,x2,y2,x3,y3,x4,y4]
-      const pts = cv.matFromArray(4, 1, cv.CV_32SC2, arr);
+      const pts = cv.matFromArray(4, 1, cv.CV_32SC2, new Int32Array(flatQuad));
       const vec = new cv.MatVector();
       try {
         vec.push_back(pts);
-        cv.polylines(
-          overlay,
-          vec, // MUST be a MatVector, not a JS array
-          true,
-          new cv.Scalar(0, 255, 0, 255),
-          3
-        );
+        cv.polylines(overlay, vec, true, new cv.Scalar(0, 255, 0, 255), 3);
         debugB64 = matToBase64(overlay);
       } finally {
         vec.delete();
@@ -276,162 +271,9 @@ export function detectAndWarpCard(canvas, debug = false) {
       }
     }
 
-    console.log(
-      '[cv] detect: ROI b64 length',
-      roiB64?.length || 0,
-      '| score:',
-      bestScore
-    );
-
-    cleanup([
-      gray,
-      blur,
-      edges,
-      closed,
-      kernel,
-      contours,
-      hierarchy,
-      otsu,
-      warped,
-    ]);
+    cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, warped]);
     return { roiB64, score: bestScore, debugB64, quad: bestQuad };
   } finally {
     src.delete();
   }
-}
-
-function toPointArray(mat) {
-  const pts = [];
-  for (let i = 0; i < mat.rows; i++) {
-    const x = mat.intPtr(i, 0)[0],
-      y = mat.intPtr(i, 0)[1];
-    pts.push([x, y]);
-  }
-  return pts;
-}
-
-function pickFirstQuad(contours, w, h) {
-  const cv = globalThis.cv;
-  const imgArea = w * h;
-
-  for (let i = 0; i < contours.size(); i++) {
-    const cnt = contours.get(i);
-    const peri = cv.arcLength(cnt, true);
-    const approx = new cv.Mat();
-    cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
-
-    if (approx.rows === 4) {
-      const area = cv.contourArea(approx);
-      if (area >= imgArea * MIN_AREA_FRAC) {
-        const quad = toPointArray(approx);
-        approx.delete();
-        return quad; // unordered 4 points; good enough to confirm presence
-      }
-    }
-    approx.delete();
-  }
-  return null;
-}
-function orderCorners(pts) {
-  // return [tl, tr, br, bl]
-  const s = pts.map((p) => p[0] + p[1]);
-  const d = pts.map((p) => p[0] - p[1]);
-  const tl = pts[s.indexOf(Math.min(...s))];
-  const br = pts[s.indexOf(Math.max(...s))];
-  const tr = pts[d.indexOf(Math.max(...d))];
-  const bl = pts[d.indexOf(Math.min(...d))];
-  return [tl, tr, br, bl];
-}
-
-function warpToCard(src, quad) {
-  const cv = globalThis.cv;
-  const dst = new cv.Mat();
-  const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, quad.flat());
-  const dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-    0,
-    0,
-    WARP_W,
-    0,
-    WARP_W,
-    WARP_H,
-    0,
-    WARP_H,
-  ]);
-  const M = cv.getPerspectiveTransform(srcTri, dstTri);
-  cv.warpPerspective(
-    src,
-    dst,
-    M,
-    new cv.Size(WARP_W, WARP_H),
-    cv.INTER_LINEAR,
-    cv.BORDER_REPLICATE
-  );
-  srcTri.delete();
-  dstTri.delete();
-  M.delete();
-  return dst;
-}
-
-// Debug probe: count contours on a canvas, return edges image
-export function probeContours(canvas) {
-  const cv = globalThis.cv;
-  if (!cv || !canvas) return { count: -1, debugB64: null };
-  const src = cv.imread(canvas);
-  try {
-    const gray = new cv.Mat(),
-      blur = new cv.Mat(),
-      edges = new cv.Mat(),
-      closed = new cv.Mat();
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-    cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-    cv.Canny(blur, edges, 50, 150); // fixed, forgiving
-    const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
-    cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
-    cv.dilate(closed, closed, kernel);
-
-    const contours = new cv.MatVector(),
-      hier = new cv.Mat();
-    cv.findContours(
-      closed,
-      contours,
-      hier,
-      cv.RETR_LIST,
-      cv.CHAIN_APPROX_SIMPLE
-    );
-    const debugB64 = matToBase64(edges);
-    const count = contours.size();
-    cleanup([gray, blur, edges, closed, kernel, contours, hier]);
-    return { count, debugB64 };
-  } finally {
-    src.delete();
-  }
-}
-
-function pickRectFallback(contours, w, h) {
-  const cv = globalThis.cv;
-  const imgArea = w * h;
-  let maxArea = 0,
-    bestRect = null;
-
-  for (let i = 0; i < contours.size(); i++) {
-    const cnt = contours.get(i);
-    const rect = cv.boundingRect(cnt); // {x,y,width,height}
-    const area = rect.width * rect.height;
-    if (area > imgArea * MIN_AREA_FRAC && area > maxArea) {
-      maxArea = area;
-      bestRect = rect;
-    }
-  }
-  if (!bestRect) return { bestQuad: null, bestScore: -1 };
-
-  // Axis-aligned quad from bounding rect
-  const { x, y, width, height } = bestRect;
-  const quad = [
-    [x, y],
-    [x + width, y],
-    [x + width, y + height],
-    [x, y + height],
-  ];
-  const score = Math.min(1, maxArea / (imgArea * 0.5)); // area-only score
-  return { bestQuad: quad, bestScore: score };
 }
