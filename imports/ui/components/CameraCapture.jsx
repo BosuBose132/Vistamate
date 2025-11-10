@@ -3,7 +3,10 @@ import { useRef, useState, useEffect } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
 import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
 
-const POLL_MS = 200;
+const POLL_MS = 120;
+const SKIP_MOD = 2; // analyze every other tick
+const EDGE_MIN = 5000; // tune per device
+const CONF_MIN = 0.002;
 
 const PHASE = {
   ALIGN: 'align',
@@ -153,8 +156,11 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
   // main polling loop
   useEffect(() => {
+    let tick = 0;
     const id = setInterval(() => {
       if (hasCaptured) return;
+      tick = (tick + 1) % SKIP_MOD;
+      if (tick !== 0) return;
       checkFrameAndOCR();
     }, POLL_MS);
     return () => clearInterval(id);
@@ -283,6 +289,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               });
 
               ok = ratioOk && areaOk && anglesOk && posOk;
+              if (probeCount < EDGE_MIN) ok = false; // require “interesting” edges
+              if ((result?.score ?? 0) < CONF_MIN) ok = false; // detector confidence floor
             }
             if (ok) {
               setIsBoxGreen(true);
