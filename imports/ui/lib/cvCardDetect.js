@@ -44,6 +44,38 @@ export function iouRect(a, b) {
   const union = a.w * a.h + b.w * b.h - inter;
   return union > 0 ? inter / union : 0;
 }
+function orderQuadClockwise(quad) {
+  const pts = quad.map((p) => ({ x: p[0], y: p[1] }));
+  const cx = pts.reduce((a, p) => a + p.x, 0) / 4;
+  const cy = pts.reduce((a, p) => a + p.y, 0) / 4;
+  pts.sort(
+    (a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx)
+  );
+  // Ensure consistent start (top-left-ish)
+  pts.sort((a, b) => a.x + a.y - (b.x + b.y));
+  return [
+    [pts[0].x, pts[0].y],
+    [pts[1].x, pts[1].y],
+    [pts[2].x, pts[2].y],
+    [pts[3].x, pts[3].y],
+  ];
+}
+
+function edgeLength(a, b) {
+  const dx = a[0] - b[0],
+    dy = a[1] - b[1];
+  return Math.hypot(dx, dy);
+}
+function quadEdgeSanity(quad, cols, rows) {
+  const minEdge = 0.04 * Math.min(cols, rows); // each edge ≥ 4% of min dimension
+  const edges = [
+    [quad[0], quad[1]],
+    [quad[1], quad[2]],
+    [quad[2], quad[3]],
+    [quad[3], quad[0]],
+  ];
+  return edges.every(([p, q]) => edgeLength(p, q) >= minEdge);
+}
 
 // --- candidate selection (kept lightweight) ---
 function approxQuad(cv, contour) {
@@ -244,6 +276,10 @@ export function detectAndWarpCard(canvas, debug = false) {
       const fb = pickMinAreaRectFallback(contours, src.cols, src.rows);
       bestQuad = fb.bestQuad;
       bestScore = fb.bestScore;
+    }
+    if (bestQuad) {
+      bestQuad = orderQuadClockwise(bestQuad);
+      if (!quadEdgeSanity(bestQuad, src.cols, src.rows)) bestQuad = null;
     }
     if (!bestQuad) {
       // last-ditch : center crop so UX never blocks; this does not imply “valid card”
