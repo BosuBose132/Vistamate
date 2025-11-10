@@ -164,6 +164,27 @@ export function warpToCard(src, quad) {
   return out;
 }
 
+function autoCannyThresholds(gray, k = 0.33) {
+  const cv = globalThis.cv;
+  const hist = new cv.Mat();
+  const mask = new cv.Mat();
+  cv.calcHist(gray, [0], mask, hist, [256], [0, 256]);
+  let total = 0,
+    half = (gray.rows * gray.cols) / 2,
+    median = 0;
+  for (let i = 0; i < 256; i++) {
+    total += hist.floatAt(i, 0);
+    if (total >= half) {
+      median = i;
+      break;
+    }
+  }
+  hist.delete();
+  mask.delete();
+  const lower = Math.max(0, (1 - k) * median);
+  const upper = Math.min(255, (1 + k) * median);
+  return { lower, upper };
+}
 // --- lightweight probe for UI edges preview ---
 export function probeContours(canvas) {
   const cv = globalThis.cv;
@@ -173,8 +194,9 @@ export function probeContours(canvas) {
       blur = new cv.Mat(),
       edges = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-    cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-    cv.Canny(blur, edges, 35, 110);
+    cv.bilateralFilter(gray, blur, 7, 50, 50);
+    const { lower, upper } = autoCannyThresholds(blur);
+    cv.Canny(blur, edges, lower, upper);
     const count = cv.countNonZero(edges); // simple proxy for “edge richness”
     const debugB64 = matToBase64(edges);
     cleanup([gray, blur, edges]);
