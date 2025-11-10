@@ -217,6 +217,28 @@ function autoCannyThresholds(gray, k = 0.33) {
   const upper = Math.min(255, (1 + k) * median);
   return { lower, upper };
 }
+function autoCannyThresholds(gray, k = 0.33) {
+  const cv = globalThis.cv;
+  const hist = new cv.Mat(),
+    mask = new cv.Mat();
+  cv.calcHist(gray, [0], mask, hist, [256], [0, 256]);
+  let total = 0,
+    half = (gray.rows * gray.cols) / 2,
+    median = 0;
+  for (let i = 0; i < 256; i++) {
+    total += hist.floatAt(i, 0);
+    if (total >= half) {
+      median = i;
+      break;
+    }
+  }
+  hist.delete();
+  mask.delete();
+  return {
+    lower: Math.max(0, (1 - k) * median),
+    upper: Math.min(255, (1 + k) * median),
+  };
+}
 // --- lightweight probe for UI edges preview ---
 export function probeContours(canvas) {
   const cv = globalThis.cv;
@@ -250,8 +272,28 @@ export function detectAndWarpCard(canvas, debug = false) {
       edges = new cv.Mat(),
       closed = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
-    cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
-    cv.Canny(blur, edges, 35, 110);
+    cv.bilateralFilter(gray, blur, 7, 50, 50);
+    // Blur guard: skip super-blurry frames
+    {
+      const lap = new cv.Mat(),
+        mean = new cv.Mat(),
+        std = new cv.Mat();
+      cv.Laplacian(blur, lap, cv.CV_64F);
+      cv.meanStdDev(lap, mean, std);
+      const variance = Math.pow(std.doubleAt(0, 0), 2);
+      lap.delete();
+      mean.delete();
+      std.delete();
+      if (variance < 40) {
+        // loose threshold; tune 30–60 as needed
+        const debugB64 = debug ? matToBase64(blur) : null;
+        cleanup([gray, blur, edges, closed]);
+        // return “no valid quad”; UI gating will drop it
+        return { roiB64: null, score: 0, debugB64, quad: null };
+      }
+    }
+    const { lower, upper } = autoCannyThresholds(blur, 0.33);
+    cv.Canny(blur, edges, lower, upper);
 
     const kernelSize = Math.max(
       3,
