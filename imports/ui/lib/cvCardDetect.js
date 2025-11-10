@@ -221,7 +221,11 @@ export function detectAndWarpCard(canvas, debug = false) {
     cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0);
     cv.Canny(blur, edges, 35, 110);
 
-    const kernel = cv.Mat.ones(5, 5, cv.CV_8U);
+    const kernelSize = Math.max(
+      3,
+      Math.round(Math.min(src.cols, src.rows) * 0.004)
+    );
+    const kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
     cv.dilate(closed, closed, kernel, new cv.Point(-1, -1), 1);
 
