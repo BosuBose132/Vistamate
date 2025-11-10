@@ -299,6 +299,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       3,
       Math.round(Math.min(src.cols, src.rows) * 0.004)
     );
+    if (kernelSize % 2 === 0) kernelSize += 1; // odd is more stable for morphology
     const kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
     cv.dilate(closed, closed, kernel, new cv.Point(-1, -1), 1);
@@ -309,7 +310,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       closed,
       contours,
       hierarchy,
-      cv.RETR_LIST,
+      cv.RETR_EXTERNAL,
       cv.CHAIN_APPROX_SIMPLE
     );
 

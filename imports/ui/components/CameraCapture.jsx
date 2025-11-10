@@ -19,8 +19,8 @@ const PHASE = {
 // ---- Loose card-shape helpers ----
 const CARD_RATIO = 1.58; // business/ID card width/height
 const RATIO_TOL = 0.4; // ±40% tolerance (loose)
-const MIN_AREA_FRAC_UI = 0.01; // ≥1% of frame (loose)
-const MIN_IOU = 0.08; // ≥8% overlap with overlay (loose)
+const MIN_AREA_FRAC_UI = 0.05; // ≥1% of frame (loose)
+const MIN_IOU = 0.03; // ≥8% overlap with overlay (loose)
 
 const dot = (ax, ay, bx, by) => ax * bx + ay * by;
 const len = (ax, ay) => Math.hypot(ax, ay) || 1e-6;
@@ -289,6 +289,19 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               });
 
               ok = ratioOk && areaOk && anglesOk && posOk;
+              console.log('[gate]', {
+                ratio: ratio.toFixed(2),
+                ratioOk,
+                areaFrac: areaFrac.toFixed(3),
+                areaOk,
+                angScore: angScore?.toFixed?.(2),
+                anglesOk,
+                IoU: overlap.toFixed(2),
+                posOk,
+                score: result?.score?.toFixed?.(4),
+                hasQuad: !!result?.quad,
+                probeCount,
+              });
               if (probeCount < EDGE_MIN) ok = false; // require “interesting” edges
               if ((result?.score ?? 0) < CONF_MIN) ok = false; // detector confidence floor
             }
