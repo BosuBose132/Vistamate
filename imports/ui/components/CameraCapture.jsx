@@ -167,6 +167,16 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasCaptured]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (hasCaptured) return;
+      console.log('[cv] tick');
+      checkFrameAndOCR();
+    }, POLL_MS);
+
+    return () => clearInterval(id);
+  }, [hasCaptured]);
+
   const doCapture = () => {
     setPhase(PHASE.CAPTURING);
     const b64 = handleCaptureToBase64(videoRef, canvasRef);
@@ -187,6 +197,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
+    console.log('[cv] tick');
+
     if (!cvReady) return; // OpenCV not ready
     if (!video || !canvas) return; // refs not bound yet
     if (!videoReady) return; // wait for metadata
@@ -196,11 +208,13 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    console.log('[cv] dims', canvas.width, 'x', canvas.height);
 
     // Quick visibility probe (full frame)
     const probe = probeContours(canvas);
     const probeCount =
       probe && typeof probe.count === 'number' ? probe.count : 0;
+    console.log('[cv] probeCount', probeCount);
 
     // box ROI
     const ratio = 1.58;
@@ -289,6 +303,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               });
 
               ok = ratioOk && areaOk && anglesOk && posOk;
+              console.log('[cv] frame check running');
               console.log('[gate]', {
                 ratio: ratio.toFixed(2),
                 ratioOk,
