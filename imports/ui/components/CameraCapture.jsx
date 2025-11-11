@@ -194,156 +194,156 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   };
 
   const checkFrameAndOCR = async () => {
+    // Tunables (safe defaults)
+    const EDGE_MIN = 4000; // require “interesting” edges to avoid random greens
+    const CONF_MIN = 0.0015; // detector score floor (area*rectangularity)
+
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
+    // Heartbeat (verifies the poller is alive)
     console.log('[cv] tick');
 
-    if (!cvReady) return; // OpenCV not ready
-    if (!video || !canvas) return; // refs not bound yet
-    if (!videoReady) return; // wait for metadata
-    if (!video.videoWidth || !video.videoHeight) return; // redundant safety
-    // draw frame
+    // Readiness guards (keep silent in prod, noisy while debugging)
+    if (!cvReady) {
+      /* console.log('[cv] skip: cvReady=false'); */ return;
+    }
+    if (!video || !canvas) {
+      /* console.log('[cv] skip: refs missing'); */ return;
+    }
+    if (!videoReady) {
+      /* console.log('[cv] skip: videoReady=false'); */ return;
+    }
+    if (!video.videoWidth || !video.videoHeight) {
+      /* console.log('[cv] skip: no dims'); */ return;
+    }
+
+    // Draw the full frame to canvas
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     console.log('[cv] dims', canvas.width, 'x', canvas.height);
 
-    // Quick visibility probe (full frame)
+    // Quick edges probe for debug thumbnail + “edge richness”
     const probe = probeContours(canvas);
-    const probeCount =
-      probe && typeof probe.count === 'number' ? probe.count : 0;
+    const probeCount = probe?.count ?? 0;
     console.log('[cv] probeCount', probeCount);
+    const dbgImg = document.getElementById('cv-debug');
+    if (probe?.debugB64 && dbgImg) dbgImg.src = probe.debugB64;
 
-    // box ROI
+    // Overlay ROI rectangle we want users to align with
     const ratio = 1.58;
     const targetW = Math.floor(canvas.width * 0.8);
     const targetH = Math.floor(targetW / ratio);
     const x = Math.floor((canvas.width - targetW) / 2);
     const y = Math.floor((canvas.height - targetH) / 2);
-    const box = { x, y, w: targetW, h: targetH };
-    const img = ctx.getImageData(box.x, box.y, box.w, box.h);
-    const current = img.data;
 
-    // debug
-    console.log(
-      '[cv] probe count=',
-      probeCount,
-      'cvReady=',
-      cvReady,
-      'videoReady=',
-      videoReady
-    );
-    const dbgImg = document.getElementById('cv-debug');
-    if (probe.debugB64 && dbgImg) dbgImg.src = probe.debugB64;
-    // movement detection → steady vs align
+    // Simple motion check (seed once; update every loop)
+    const img = ctx.getImageData(x, y, targetW, targetH);
+    const current = img.data;
     if (!lastFrameData) {
-      // First frame: seed lastFrameData and wait for next poll
       setLastFrameData(current);
       return;
-    }
-    {
+    } else {
       let diff = 0;
       for (let i = 0; i < current.length; i += 4)
         diff += Math.abs(current[i] - lastFrameData[i]);
       const avg = diff / (current.length / 4);
       console.log('[cam] motion avg:', Math.round(avg));
-      if (true) {
-        // steady
-        if (!isCheckingOCR) {
-          setPhase(PHASE.STEADY);
-          setIsCheckingOCR(true);
-          try {
-            const result = detectAndWarpCard(canvas, /*debug*/ true);
-            if (result?.debugB64 && dbgImg) dbgImg.src = result.debugB64;
-            console.log(
-              '[cv] detect result:',
-              !!result,
-              'hasROI:',
-              !!result?.roiB64,
-              'score:',
-              result?.score
-            );
-            // Loose quad-based gating: still requires a quad, but very forgiving
-            let ok = Boolean(result?.roiB64 && result?.quad);
-            if (ok) {
-              const quad = result.quad;
-              const box = bboxOfQuad(quad);
-              const areaFrac = (box.w * box.h) / (canvas.width * canvas.height);
-              const ratio = box.w / Math.max(1, box.h);
-              const ratioOk =
-                Math.abs(ratio - CARD_RATIO) <= CARD_RATIO * RATIO_TOL; // ±40%
-              const areaOk = areaFrac >= MIN_AREA_FRAC_UI; // ≥1%
+      setLastFrameData(current); // keep this updated each tick
+    }
 
-              // right angles (loose): accept avg ≥ 0.60
-              const angScore = rightAngleScore(quad); // 0..1
-              const anglesOk = angScore >= 0.6;
+    // Prevent overlapping detector calls
+    if (isCheckingOCR) return;
 
-              // Position gate with margin (loose IoU)
-              const M = 50;
-              const gateBox = {
-                x: x - M,
-                y: y - M,
-                w: targetW + 2 * M,
-                h: targetH + 2 * M,
-              };
-              const overlap = iouRect(box, gateBox);
-              const posOk = overlap >= MIN_IOU; // ≥8%
+    setPhase(PHASE.STEADY);
+    setIsCheckingOCR(true);
+    try {
+      // Run detector
+      const result = detectAndWarpCard(canvas, /*debug*/ true);
+      if (result?.debugB64 && dbgImg) dbgImg.src = result.debugB64;
 
-              console.log('[gate-loose]', {
-                ratio: ratio.toFixed(2),
-                ratioOk,
-                areaFrac: areaFrac.toFixed(3),
-                areaOk,
-                angScore: angScore.toFixed(2),
-                anglesOk,
-                IoU: overlap.toFixed(2),
-                posOk,
-              });
+      console.log('[cv] detect', {
+        hasResult: !!result,
+        hasQuad: !!result?.quad,
+        hasROI: !!result?.roiB64,
+        score: result?.score,
+      });
 
-              ok = ratioOk && areaOk && anglesOk && posOk;
-              console.log('[cv] frame check running');
-              console.log('[gate]', {
-                ratio: ratio.toFixed(2),
-                ratioOk,
-                areaFrac: areaFrac.toFixed(3),
-                areaOk,
-                angScore: angScore?.toFixed?.(2),
-                anglesOk,
-                IoU: overlap.toFixed(2),
-                posOk,
-                score: result?.score?.toFixed?.(4),
-                hasQuad: !!result?.quad,
-                probeCount,
-              });
-              if (probeCount < EDGE_MIN) ok = false; // require “interesting” edges
-              if ((result?.score ?? 0) < CONF_MIN) ok = false; // detector confidence floor
-            }
-            if (ok) {
-              setIsBoxGreen(true);
-              setPhase(PHASE.READY);
-              setSteadyCount((c) => {
-                const next = c + 1;
-                console.log('[steady] count:', next);
-                if (!hasCaptured && next >= 2) {
-                  setTimeout(
-                    () => doCaptureWithROI(result?.roiB64 || null),
-                    80
-                  );
-                }
-                return next;
-              });
-            } else {
-              setIsBoxGreen(false);
-              setPhase(PHASE.ALIGN);
-              setSteadyCount(0);
-            }
-          } finally {
-            setIsCheckingOCR(false);
-          }
-        }
+      // Base OK requires detector to return a quad + ROI
+      let ok = Boolean(result?.roiB64 && result?.quad);
+
+      if (ok) {
+        // Geometry + UI gating
+        const quad = result.quad;
+        const bb = bboxOfQuad(quad);
+        const areaFrac = (bb.w * bb.h) / (canvas.width * canvas.height);
+
+        // Orientation-agnostic ratio: normalize to >= 1
+        const rawRatio = bb.w / Math.max(1, bb.h);
+        const r = rawRatio >= 1 ? rawRatio : 1 / rawRatio;
+        const ratioOk = Math.abs(r - CARD_RATIO) <= CARD_RATIO * RATIO_TOL; // ±40%
+        const areaOk = areaFrac >= MIN_AREA_FRAC_UI; // ≥1% (or your current value)
+
+        // Right-angle score (loose)
+        const angScore = rightAngleScore(quad); // 0..1
+        const anglesOk = angScore >= 0.6;
+
+        // Position gate: require some overlap with the big center box (+margin)
+        const M = 50;
+        const gateBox = {
+          x: x - M,
+          y: y - M,
+          w: targetW + 2 * M,
+          h: targetH + 2 * M,
+        };
+        const overlap = iouRect(bb, gateBox);
+        const posOk = overlap >= MIN_IOU; // e.g., 0.08 (8%)
+
+        // Log every gate so we see exactly what's failing
+        console.log('[gate]', {
+          ratio: rawRatio.toFixed(2),
+          normRatio: r.toFixed(2),
+          ratioOk,
+          areaFrac: areaFrac.toFixed(3),
+          areaOk,
+          angScore: angScore.toFixed(2),
+          anglesOk,
+          IoU: overlap.toFixed(2),
+          posOk,
+          score: (result?.score ?? 0).toFixed(4),
+          hasQuad: !!result?.quad,
+          probeCount,
+        });
+
+        // Final decision (you can temporarily drop `&& anglesOk` to prove plumbing)
+        ok = ratioOk && areaOk && anglesOk && posOk;
+
+        // Extra guards: edge richness + detector score
+        if (probeCount < EDGE_MIN) ok = false;
+        if ((result?.score ?? 0) < CONF_MIN) ok = false;
       }
+
+      // Update UI based on ok
+      if (ok) {
+        setIsBoxGreen(true);
+        setPhase(PHASE.READY);
+        setSteadyCount((c) => {
+          const next = c + 1;
+          console.log('[steady] count:', next);
+          if (!hasCaptured && next >= 2) {
+            setTimeout(() => doCaptureWithROI(result?.roiB64 || null), 80);
+          }
+          return next;
+        });
+      } else {
+        setIsBoxGreen(false);
+        setPhase(PHASE.ALIGN);
+        setSteadyCount(0);
+      }
+    } finally {
+      setIsCheckingOCR(false);
     }
   };
 
