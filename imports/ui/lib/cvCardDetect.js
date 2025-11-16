@@ -249,11 +249,17 @@ export function probeContours(canvas) {
       edges = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
     cv.bilateralFilter(gray, blur, 7, 50, 50);
-    const { lower, upper } = autoCannyThresholds(blur);
-    cv.Canny(blur, edges, lower, upper);
-    const count = cv.countNonZero(edges); // simple proxy for “edge richness”
+
+    const binary = new cv.Mat();
+    cv.threshold(blur, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+    const { lower, upper } = autoCannyThresholds(binary);
+    cv.Canny(binary, edges, lower, upper);
+
+    const count = cv.countNonZero(edges);
     const debugB64 = matToBase64(edges);
-    cleanup([gray, blur, edges]);
+
+    cleanup([gray, blur, binary, edges]);
     return { count, debugB64 };
   } finally {
     src.delete();
@@ -273,6 +279,8 @@ export function detectAndWarpCard(canvas, debug = false) {
       closed = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
     cv.bilateralFilter(gray, blur, 7, 50, 50);
+    const binary = new cv.Mat();
+    cv.threshold(blur, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
     // Blur guard: skip super-blurry frames
     {
       const lap = new cv.Mat(),
@@ -292,8 +300,8 @@ export function detectAndWarpCard(canvas, debug = false) {
         return { roiB64: null, score: 0, debugB64, quad: null };
       }
     }
-    const { lower, upper } = autoCannyThresholds(blur, 0.33);
-    cv.Canny(blur, edges, lower, upper);
+    const { lower, upper } = autoCannyThresholds(binary, 0.33);
+    cv.Canny(binary, edges, lower, upper);
 
     const kernelSize = Math.max(
       3,
@@ -342,7 +350,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       const roiB64 = matToBase64(roi);
       roi.delete();
       const debugB64 = debug ? matToBase64(closed) : null;
-      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy]);
+      cleanup([gray, blur, binary, edges, closed, kernel, contours, hierarchy]);
       return { roiB64, score: 0, debugB64, quad: null };
     }
 
