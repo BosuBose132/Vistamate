@@ -25,7 +25,14 @@
         console.log('[opencv] onRuntimeInitialized');
       },
     };
+    window.Module = {
+      onRuntimeInitialized() {
+        console.log('[opencv] onRuntimeInitialized');
+        window.__cvReady = true; // useOpenCV() watches this
+      },
+    };
   </script>
+
   <script src="https://docs.opencv.org/4.x/opencv.js"></script>
   <script>
     (function () {

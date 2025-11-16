@@ -117,40 +117,59 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
   // camera on
   useEffect(() => {
-    // Snapshot the element once so cleanup uses a stable reference
-    const el = videoRef.current;
-    let mounted = true;
+    const v = videoRef.current;
+    if (!v) return;
 
-    (async () => {
+    let mounted = true;
+    let stream;
+
+    const onMeta = () => {
+      if (!mounted) return;
+      setVideoReady(true);
+      console.log('[cam] loadedmetadata', v.videoWidth, 'x', v.videoHeight);
+    };
+
+    const start = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+        // Prefer rear camera + decent resolution
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' }, // 'user' for laptop webcam
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
         });
-        if (mounted && el) el.srcObject = stream;
-        const onMeta = () => setVideoReady(true);
-        el.addEventListener('loadedmetadata', onMeta, { once: true });
-        // If metadata already loaded (rare), set immediately
-        if (el.readyState >= 1 && el.videoWidth && el.videoHeight)
-          setVideoReady(true);
-        // store for cleanup
-        el.__onMeta = onMeta;
+
+        // Attach stream & make it autoplay-friendly across browsers/iOS
+        v.srcObject = stream;
+        v.muted = true; // required for autoplay in many browsers
+        v.playsInline = true; // iOS Safari
+        v.autoplay = true;
+
+        // Listen for metadata exactly once
+        v.addEventListener('loadedmetadata', onMeta, { once: true });
+
+        // Explicitly start playback (important)
+        await v.play().catch(() => {
+          /* ignore if already playing */
+        });
+
+        // If metadata already available (rare), set immediately
+        if (v.readyState >= 1 && v.videoWidth && v.videoHeight) onMeta();
       } catch (err) {
-        setError('Unable to access camera: ' + err.message);
+        console.error('[cam] getUserMedia failed', err);
+        setError('Unable to access camera: ' + (err?.message || err));
       }
-    })();
+    };
+
+    start();
 
     return () => {
       mounted = false;
-      if (el && el.srcObject) {
-        const tracks =
-          typeof el.srcObject.getTracks === 'function'
-            ? el.srcObject.getTracks()
-            : [];
-        tracks.forEach((t) => t.stop());
-        // optional: clear the srcObject to release the element
-        el.srcObject = null;
-        if (el.__onMeta) el.removeEventListener('loadedmetadata', el.__onMeta);
-      }
+      v.removeEventListener('loadedmetadata', onMeta);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (v.srcObject) v.srcObject = null;
     };
   }, []);
 
@@ -175,7 +194,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     }, POLL_MS);
 
     return () => clearInterval(id);
-  }, [hasCaptured]);
+  }, [hasCaptured, videoReady, cvReady]);
 
   const doCapture = () => {
     setPhase(PHASE.CAPTURING);
@@ -203,6 +222,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
     // Heartbeat (verifies the poller is alive)
     console.log('[cv] tick');
+    console.log('[cv] flags', { cvReady, videoReady });
 
     // Readiness guards (keep silent in prod, noisy while debugging)
     if (!cvReady) {
