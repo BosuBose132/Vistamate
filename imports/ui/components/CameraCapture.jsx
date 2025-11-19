@@ -347,6 +347,10 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
       // Update UI based on ok
       if (ok) {
+        console.log(
+          '%c[DEBUG] ENTERED OK BLOCK — CARD DETECTED',
+          'color: lime; font-weight: bold;'
+        );
         setIsBoxGreen(true);
         setPhase(PHASE.READY);
         setSteadyCount((c) => {
