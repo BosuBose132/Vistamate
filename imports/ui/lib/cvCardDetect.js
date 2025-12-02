@@ -368,18 +368,7 @@ export function detectAndWarpCard(canvas, debug = false) {
     // optional debug overlay (green outline)
     let debugB64 = null;
     if (debug) {
-      const overlay = src.clone();
-      const pts = cv.matFromArray(4, 1, cv.CV_32SC2, new Int32Array(flatQuad));
-      const vec = new cv.MatVector();
-      try {
-        vec.push_back(pts);
-        cv.polylines(overlay, vec, true, new cv.Scalar(0, 255, 0, 255), 3);
-        debugB64 = matToBase64(overlay);
-      } finally {
-        vec.delete();
-        pts.delete();
-        overlay.delete();
-      }
+      debugB64 = matToBase64(closed); // show post-morphology edges instead
     }
 
     cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, warped]);
