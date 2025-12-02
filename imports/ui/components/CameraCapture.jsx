@@ -249,6 +249,10 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const probe = probeContours(canvas);
     const probeCount = probe?.count ?? 0;
     console.log('[cv] probeCount', probeCount);
+    console.log(
+      '%c[EDGE DEBUG] Edge count = ' + probeCount,
+      'color: orange; font-weight: bold; font-size: 14px;'
+    );
     const dbgImg = document.getElementById('cv-debug');
     if (probe?.debugB64 && dbgImg) dbgImg.src = probe.debugB64;
 
