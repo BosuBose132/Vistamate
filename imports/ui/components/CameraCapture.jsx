@@ -285,7 +285,14 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     setIsCheckingOCR(true);
     try {
       // Run detector
-      const result = detectAndWarpCard(canvas, /*debug*/ true);
+      let result = null;
+      try {
+        result = detectAndWarpCard(canvas, /* debug */ true);
+      } catch (err) {
+        console.error('[cv] detectAndWarpCard error:', err);
+        // bail out of this frame; outer finally (if you have one) will still run
+        return;
+      }
       if (result?.debugB64 && dbgImg) dbgImg.src = result.debugB64;
 
       console.log('[cv] detect', {

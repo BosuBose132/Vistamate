@@ -213,32 +213,12 @@ function autoCannyThresholds(gray, k = 0.33) {
   }
   hist.delete();
   mask.delete();
-  const lower = Math.max(0, (1 - k) * median);
-  const upper = Math.min(255, (1 + k) * median);
-  return { lower, upper };
-}
-function autoCannyThresholds(gray, k = 0.33) {
-  const cv = globalThis.cv;
-  const hist = new cv.Mat(),
-    mask = new cv.Mat();
-  cv.calcHist(gray, [0], mask, hist, [256], [0, 256]);
-  let total = 0,
-    half = (gray.rows * gray.cols) / 2,
-    median = 0;
-  for (let i = 0; i < 256; i++) {
-    total += hist.floatAt(i, 0);
-    if (total >= half) {
-      median = i;
-      break;
-    }
-  }
-  hist.delete();
-  mask.delete();
   return {
     lower: Math.max(0, (1 - k) * median),
     upper: Math.min(255, (1 + k) * median),
   };
 }
+
 // --- lightweight probe for UI edges preview ---
 export function probeContours(canvas) {
   const cv = globalThis.cv;
@@ -279,8 +259,10 @@ export function detectAndWarpCard(canvas, debug = false) {
       closed = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
     cv.bilateralFilter(gray, blur, 7, 50, 50);
+
     const binary = new cv.Mat();
     cv.threshold(blur, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
     // Blur guard: skip super-blurry frames
     {
       const lap = new cv.Mat(),
@@ -293,13 +275,12 @@ export function detectAndWarpCard(canvas, debug = false) {
       mean.delete();
       std.delete();
       if (variance < 40) {
-        // loose threshold; tune 30–60 as needed
         const debugB64 = debug ? matToBase64(blur) : null;
-        cleanup([gray, blur, edges, closed]);
-        // return “no valid quad”; UI gating will drop it
+        cleanup([gray, blur, edges, closed, binary]);
         return { roiB64: null, score: 0, debugB64, quad: null };
       }
     }
+
     const { lower, upper } = autoCannyThresholds(binary, 0.33);
     cv.Canny(binary, edges, lower, upper);
 
@@ -307,13 +288,14 @@ export function detectAndWarpCard(canvas, debug = false) {
       3,
       Math.round(Math.min(src.cols, src.rows) * 0.004)
     );
-    if (kernelSize % 2 === 0) kernelSize += 1; // odd is more stable for morphology
     const kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
     cv.dilate(closed, closed, kernel, new cv.Point(-1, -1), 1);
 
-    const contours = new cv.MatVector(),
-      hierarchy = new cv.Mat();
+    // IMPORTANT: MatVector + Mat, created separately
+    const contours = new cv.MatVector();
+    const hierarchy = new cv.Mat();
+
     cv.findContours(
       closed,
       contours,
@@ -332,6 +314,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       bestQuad = orderQuadClockwise(bestQuad);
       if (!quadEdgeSanity(bestQuad, src.cols, src.rows)) bestQuad = null;
     }
+
     if (!bestQuad) {
       // last-ditch : center crop so UX never blocks; this does not imply “valid card”
       const cx = Math.floor(src.cols * 0.5),
@@ -357,7 +340,7 @@ export function detectAndWarpCard(canvas, debug = false) {
     // validate quad
     const flatQuad = bestQuad.flat().map(Number);
     if (flatQuad.length !== 8 || flatQuad.some((v) => !Number.isFinite(v))) {
-      cleanup([gray, blur, edges, closed, kernel, contours, hierarchy]);
+      cleanup([gray, blur, binary, edges, closed, kernel, contours, hierarchy]);
       return null;
     }
 
@@ -365,13 +348,22 @@ export function detectAndWarpCard(canvas, debug = false) {
     const warped = warpToCard(src, bestQuad);
     const roiB64 = matToBase64(warped);
 
-    // optional debug overlay (green outline)
     let debugB64 = null;
     if (debug) {
       debugB64 = matToBase64(closed); // show post-morphology edges instead
     }
 
-    cleanup([gray, blur, edges, closed, kernel, contours, hierarchy, warped]);
+    cleanup([
+      gray,
+      blur,
+      binary,
+      edges,
+      closed,
+      kernel,
+      contours,
+      hierarchy,
+      warped,
+    ]);
     return { roiB64, score: bestScore, debugB64, quad: bestQuad };
   } finally {
     src.delete();
