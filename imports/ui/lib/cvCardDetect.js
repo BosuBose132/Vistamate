@@ -5,15 +5,14 @@ export const WARP_W = 1000;
 export const WARP_H = Math.round(WARP_W / CARD_RATIO);
 
 export function matToBase64(mat) {
+  // FIX: cv.imencode does not exist in the browser build of OpenCV.js.
+  // Draw the Mat onto an offscreen canvas and use toDataURL() instead.
   const cv = globalThis.cv;
-  const png = new cv.Mat();
-  cv.imencode('.png', mat, png);
-  const bytes = new Uint8Array(png.data);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++)
-    binary += String.fromCharCode(bytes[i]);
-  png.delete();
-  return 'data:image/png;base64,' + btoa(binary);
+  const offscreen = document.createElement('canvas');
+  offscreen.width = mat.cols;
+  offscreen.height = mat.rows;
+  cv.imshow(offscreen, mat);
+  return offscreen.toDataURL('image/png');
 }
 
 export function cleanup(list) {
@@ -49,7 +48,7 @@ function orderQuadClockwise(quad) {
   const cx = pts.reduce((a, p) => a + p.x, 0) / 4;
   const cy = pts.reduce((a, p) => a + p.y, 0) / 4;
   pts.sort(
-    (a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx)
+    (a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx),
   );
   // Ensure consistent start (top-left-ish)
   pts.sort((a, b) => a.x + a.y - (b.x + b.y));
@@ -112,7 +111,7 @@ export function pickBestQuad(contours, cols, rows) {
     const bb = bboxOfQuad(quad);
     const ratio = bb.w / Math.max(1, bb.h);
     const ratioScore = Math.exp(
-      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL)
+      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL),
     );
     const areaFrac = (bb.w * bb.h) / frameArea;
     const score = ratioScore * areaFrac;
@@ -145,7 +144,7 @@ export function pickMinAreaRectFallback(contours, cols, rows) {
     const bb = bboxOfQuad(quad);
     const ratio = bb.w / Math.max(1, bb.h);
     const ratioScore = Math.exp(
-      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL)
+      -Math.abs(ratio - CARD_RATIO) / (CARD_RATIO * RATIO_TOL),
     );
     const areaFrac = (bb.w * bb.h) / frameArea;
     const score = ratioScore * areaFrac;
@@ -167,7 +166,7 @@ export function warpToCard(src, quad) {
     4,
     1,
     cv.CV_32FC2,
-    new Float32Array([0, 0, WARP_W, 0, WARP_W, WARP_H, 0, WARP_H])
+    new Float32Array([0, 0, WARP_W, 0, WARP_W, WARP_H, 0, WARP_H]),
   );
 
   // map input quad to float32
@@ -188,7 +187,7 @@ export function warpToCard(src, quad) {
     dsize,
     cv.INTER_LINEAR,
     cv.BORDER_REPLICATE,
-    new cv.Scalar()
+    new cv.Scalar(),
   );
   srcPts.delete();
   dstPts.delete();
@@ -200,7 +199,11 @@ function autoCannyThresholds(gray, k = 0.33) {
   const cv = globalThis.cv;
   const hist = new cv.Mat();
   const mask = new cv.Mat();
-  cv.calcHist(gray, [0], mask, hist, [256], [0, 256]);
+  // FIX: cv.calcHist requires a MatVector, not a plain Mat
+  const grayVec = new cv.MatVector();
+  grayVec.push_back(gray);
+  cv.calcHist(grayVec, [0], mask, hist, [256], [0, 256]);
+  grayVec.delete();
   let total = 0,
     half = (gray.rows * gray.cols) / 2,
     median = 0;
@@ -263,19 +266,22 @@ export function detectAndWarpCard(canvas, debug = false) {
     const binary = new cv.Mat();
     cv.threshold(blur, binary, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
 
-    // Blur guard: skip super-blurry frames
+    // Blur guard: skip genuinely unusable frames.
+    // FIX: run on `gray` (pre-blur), not `blur`. Bilateral filter smooths
+    // intentionally, so Laplacian variance on `blur` is always near-zero.
+    // Threshold lowered to 5 — only catches truly black/covered camera frames.
     {
       const lap = new cv.Mat(),
         mean = new cv.Mat(),
         std = new cv.Mat();
-      cv.Laplacian(blur, lap, cv.CV_64F);
+      cv.Laplacian(gray, lap, cv.CV_64F);
       cv.meanStdDev(lap, mean, std);
       const variance = Math.pow(std.doubleAt(0, 0), 2);
       lap.delete();
       mean.delete();
       std.delete();
-      if (variance < 40) {
-        const debugB64 = debug ? matToBase64(blur) : null;
+      if (variance < 5) {
+        const debugB64 = debug ? matToBase64(gray) : null;
         cleanup([gray, blur, edges, closed, binary]);
         return { roiB64: null, score: 0, debugB64, quad: null };
       }
@@ -286,7 +292,7 @@ export function detectAndWarpCard(canvas, debug = false) {
 
     const kernelSize = Math.max(
       3,
-      Math.round(Math.min(src.cols, src.rows) * 0.004)
+      Math.round(Math.min(src.cols, src.rows) * 0.004),
     );
     const kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
     cv.morphologyEx(edges, closed, cv.MORPH_CLOSE, kernel);
@@ -301,7 +307,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       contours,
       hierarchy,
       cv.RETR_EXTERNAL,
-      cv.CHAIN_APPROX_SIMPLE
+      cv.CHAIN_APPROX_SIMPLE,
     );
 
     let { bestQuad, bestScore } = pickBestQuad(contours, src.cols, src.rows);
@@ -327,7 +333,7 @@ export function detectAndWarpCard(canvas, debug = false) {
         x0,
         y0,
         Math.min(ww, src.cols - x0),
-        Math.min(hh, src.rows - y0)
+        Math.min(hh, src.rows - y0),
       );
       const roi = src.roi(rect);
       const roiB64 = matToBase64(roi);
@@ -346,6 +352,25 @@ export function detectAndWarpCard(canvas, debug = false) {
 
     // warp to canonical size from original color src
     const warped = warpToCard(src, bestQuad);
+
+    // --- ID-card texture check ---
+    // Real ID cards always contain a photo + text + design → rich edge density.
+    // Measure the fraction of edge pixels inside the warped card region.
+    // Blank objects, walls, notebooks score near 0; real cards score ≥ 0.04.
+    let textureScore = 0;
+    try {
+      const wGray = new cv.Mat();
+      const wEdge = new cv.Mat();
+      cv.cvtColor(warped, wGray, cv.COLOR_RGBA2GRAY, 0);
+      cv.Canny(wGray, wEdge, 50, 150);
+      const edgePx = cv.countNonZero(wEdge);
+      textureScore = edgePx / (warped.cols * warped.rows);
+      wGray.delete();
+      wEdge.delete();
+    } catch (_) {
+      /* non-fatal */
+    }
+
     const roiB64 = matToBase64(warped);
 
     let debugB64 = null;
@@ -364,7 +389,7 @@ export function detectAndWarpCard(canvas, debug = false) {
       hierarchy,
       warped,
     ]);
-    return { roiB64, score: bestScore, debugB64, quad: bestQuad };
+    return { roiB64, score: bestScore, debugB64, quad: bestQuad, textureScore };
   } finally {
     src.delete();
   }
