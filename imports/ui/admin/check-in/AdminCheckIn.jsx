@@ -1,7 +1,5 @@
 // /imports/ui/admin/checkins/AdminCheckIn.jsx
-import React, { useMemo, useState } from 'react';
-import AdminHeader from '/imports/ui/components/AdminHeader';
-import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
+import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 

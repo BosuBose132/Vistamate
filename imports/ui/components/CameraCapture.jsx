@@ -1,4 +1,3 @@
-import React from 'react';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
 import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';

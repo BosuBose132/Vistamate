@@ -1,7 +1,3 @@
-import React from 'react';
-import { Survey } from 'survey-react-ui';
-
-
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';

@@ -1,5 +1,4 @@
 import { WebApp } from 'meteor/webapp';
-import { Meteor } from 'meteor/meteor';
 import { Visitors } from '/imports/api/collections';
 import buildVCard from '/imports/lib/vcard.js';
 

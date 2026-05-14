@@ -1,7 +1,5 @@
 // /imports/ui/pages/WelcomePage.jsx
-import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
+
 
 import { useNavigate } from 'react-router-dom';
 

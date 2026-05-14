@@ -1,20 +1,9 @@
 // imports/ui/MainRouter.jsx
-import React from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
+
 // Pages
-import WelcomePage from './pages/WelcomePage';
-import App from './pages/App';
 //import Admin from './pages/Admin';
-import Login from './pages/Login';
-import ThankYou from './pages/ThankYou';
-import StationKiosk from '/imports/ui/stations/Stationkiosk';
-import StationBuilder from './admin/stations/StationBuilder';
-import SurveyManager from './admin/surveys/SurveyManager';
-import StationDashboard from './admin/dashboard/StationDashboard';
-import AdminCheckIn from './admin/check-in/AdminCheckIn';
 
 
 

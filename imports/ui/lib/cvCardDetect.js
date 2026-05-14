@@ -20,7 +20,9 @@ export function cleanup(list) {
     if (m && typeof m.delete === 'function') {
       try {
         m.delete();
-      } catch {}
+      } catch (err) {
+        console.warn(err);
+      }
     }
   }
 }

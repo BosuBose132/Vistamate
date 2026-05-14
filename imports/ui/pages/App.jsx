@@ -1,8 +1,3 @@
-import React from 'react';
-import CameraCapture from '../components/CameraCapture';
-import SurveyForm from '../components/SurveyForm';
-import { motion } from 'framer-motion';
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
