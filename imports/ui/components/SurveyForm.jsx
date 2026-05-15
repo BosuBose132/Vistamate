@@ -1,7 +1,6 @@
 // /imports/ui/components/SurveyForm.jsx
-import React from 'react';
-import { Survey } from 'survey-react-ui';   // <-- provides the <Survey /> React component
-import { Model } from 'survey-core';        // <-- survey engine
+// <-- provides the <Survey /> React component
+// <-- survey engine
 import 'survey-core/survey-core.css';
 import { useEffect } from 'react';
 

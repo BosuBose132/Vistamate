@@ -1,9 +1,6 @@
 // /imports/ui/pages/ThankYou.jsx
-import React from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Meteor } from 'meteor/meteor';
 import { buildVCard } from '/imports/ui/utils/vcard';
 
 export default function ThankYou() {
