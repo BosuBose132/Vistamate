@@ -1,5 +1,4 @@
-import React from 'react';
-import AdminHeader from '/imports/ui/components/AdminHeader';   // Navbar   
+// Navbar   
 
 import { useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';

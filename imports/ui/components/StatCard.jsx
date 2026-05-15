@@ -1,5 +1,4 @@
 // imports/ui/components/StatCard.jsx
-import React from 'react';
 
 export default function StatCard({ title, value }) {
     return (
