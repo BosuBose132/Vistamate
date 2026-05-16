@@ -1,3 +1,5 @@
+/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+import React from 'react';
 // /imports/ui/admin/checkins/AdminCheckIn.jsx
 import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';

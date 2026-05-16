@@ -1,3 +1,5 @@
+/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+import React from 'react';
 // /imports/ui/components/SurveyForm.jsx
 // <-- provides the <Survey /> React component
 // <-- survey engine

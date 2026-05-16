@@ -1,3 +1,5 @@
+/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+import React from 'react';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
