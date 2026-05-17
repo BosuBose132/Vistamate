@@ -5,8 +5,6 @@ import OpenAI from 'openai';
 import { Visitors } from './collections';
 import { VisitorDirectory } from '/imports/api/visitorDirectory/visitorDirectory.collection';
 
-const { checkAndCreateVisitor } = require('visitor-npm-app');
-
 Meteor.methods({
   async 'admin.quickCheckIn'(data) {
     // normalize & defaults
@@ -99,38 +97,7 @@ Meteor.methods({
       source: data.source || 'admin',
       createdAt: new Date(),
     };
-
-    // Try the AJV path; fall back to a minimal insert if that validator requires fields we didn’t collect
-    try {
-      // return await checkAndCreateVisitor(payload, Visitors);
-      const _id = await checkAndCreateVisitor(payload, Visitors);
-      // Ensure createdAt exists for "today" pub filtering
-      const doc =
-        (await Visitors.findOneAsync?.(_id)) || Visitors.findOne?.(_id);
-      if (!doc?.createdAt) {
-        await (Visitors.updateAsync
-          ? Visitors.updateAsync(_id, { $set: { createdAt: new Date() } })
-          : Visitors.update(_id, { $set: { createdAt: new Date() } }));
-      }
-      return _id;
-    } catch (e) {
-      console.warn(
-        'checkAndCreateVisitor failed, inserting minimal visitor:',
-        e?.reason || e?.message,
-      );
-      // Strip fields the npm validator might be strict about
-      const minimal = {
-        name: payload.name,
-        company: payload.company,
-        purpose: payload.purpose,
-        host: payload.host,
-        stationId: payload.stationId,
-        status: payload.status,
-        source: payload.source,
-        createdAt: payload.createdAt,
-      };
-      return await Visitors.insertAsync(minimal);
-    }
+    return await Visitors.insertAsync(payload);
   },
   async 'visitors.detectIdCard'(base64ImageData) {
     check(base64ImageData, String);
