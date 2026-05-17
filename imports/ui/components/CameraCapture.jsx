@@ -1,5 +1,6 @@
 /* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
 import React from 'react';
+import { Meteor } from 'meteor/meteor';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import useOpenCV from '/imports/ui/hooks/useOpenCV';
 import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
@@ -7,6 +8,11 @@ import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
 const POLL_MS = 120;
 const EDGE_MIN = 4000;
 const CONF_MIN = 0.0015;
+const ENABLE_OPENCV_AUTOCAPTURE = false;
+
+const ENABLE_AI_DETECTION = true;
+const AI_POLL_MS = 1000;
+const AI_CONFIDENCE_MIN = 0.6;
 
 const PHASE = {
   ALIGN: 'align',
@@ -120,7 +126,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const isCheckingRef = useRef(false); // replaces useState(false) for isCheckingOCR
   const steadyCountRef = useRef(0); // replaces useState(0) for steadyCount
   const hasCapturedRef = useRef(false); // mirrors hasCaptured state for interval reads
-
+  const aiCheckingRef = useRef(false);
   // Keep the ref in sync whenever state changes
   useEffect(() => {
     hasCapturedRef.current = hasCaptured;
@@ -192,7 +198,55 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     },
     [onCapture],
   );
+  const checkAIFrame = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
 
+    if (!ENABLE_AI_DETECTION) return;
+    if (hasCapturedRef.current) return;
+    if (!videoReady) return;
+    if (!video || !canvas) return;
+    if (!video.videoWidth || !video.videoHeight) return;
+    if (aiCheckingRef.current) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const frameB64 = canvas.toDataURL('image/jpeg', 0.75);
+
+    aiCheckingRef.current = true;
+    setPhase(PHASE.STEADY);
+
+    Meteor.call('visitors.detectIdCard', frameB64, (err, result) => {
+      aiCheckingRef.current = false;
+
+      if (err) {
+        console.error('[ai] Roboflow detection failed:', err);
+        setIsBoxGreen(false);
+        setPhase(PHASE.ALIGN);
+        steadyCountRef.current = 0;
+        return;
+      }
+
+      console.log('[ai] Roboflow detection:', result);
+
+      const confidence = result?.prediction?.confidence ?? 0;
+      const ok = Boolean(result?.ok && confidence >= AI_CONFIDENCE_MIN);
+
+      if (ok) {
+        setIsBoxGreen(true);
+        setPhase(PHASE.READY);
+        steadyCountRef.current += 1;
+      } else {
+        setIsBoxGreen(false);
+        setPhase(PHASE.ALIGN);
+        steadyCountRef.current = 0;
+      }
+    });
+  }, [videoReady]);
   // ── Main detection function (reads refs, not stale state) ───────────────
   const checkFrame = useCallback(() => {
     const video = videoRef.current;
@@ -328,9 +382,22 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   // Dependencies include cvReady and videoReady so the loop restarts with
   // a fresh closure when the camera or OpenCV becomes ready.
   useEffect(() => {
-    const id = setInterval(checkFrame, POLL_MS);
+    if (!ENABLE_AI_DETECTION) return undefined;
+
+    const id = setInterval(checkAIFrame, AI_POLL_MS);
     return () => clearInterval(id);
-  }, [checkFrame]); // checkFrame is stable via useCallback
+  }, [checkAIFrame]);
+
+  // useEffect(() => {
+  //   if (!ENABLE_OPENCV_AUTOCAPTURE) {
+  //     setIsBoxGreen(false);
+  //     setPhase(PHASE.ALIGN);
+  //     return undefined;
+  //   }
+
+  //   const id = setInterval(checkFrame, POLL_MS);
+  //   return () => clearInterval(id);
+  // }, [checkFrame]); // checkFrame is stable via useCallback
 
   // ── JSX ────────────────────────────────────────────────────────────────
   return (
