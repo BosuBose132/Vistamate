@@ -13,6 +13,8 @@ const ENABLE_OPENCV_AUTOCAPTURE = false;
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
 const AI_CONFIDENCE_MIN = 0.6;
+const AI_STABLE_FRAMES_REQUIRED = 2;
+const AI_CAPTURE_DELAY_MS = 400;
 
 const PHASE = {
   ALIGN: 'align',
@@ -127,6 +129,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const steadyCountRef = useRef(0); // replaces useState(0) for steadyCount
   const hasCapturedRef = useRef(false); // mirrors hasCaptured state for interval reads
   const aiCheckingRef = useRef(false);
+  const aiCaptureTimerRef = useRef(null);
   // Keep the ref in sync whenever state changes
   useEffect(() => {
     hasCapturedRef.current = hasCaptured;
@@ -218,7 +221,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const frameB64 = canvas.toDataURL('image/jpeg', 0.75);
 
     aiCheckingRef.current = true;
-    setPhase(PHASE.STEADY);
 
     Meteor.call('visitors.detectIdCard', frameB64, (err, result) => {
       aiCheckingRef.current = false;
@@ -238,15 +240,34 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
       if (ok) {
         setIsBoxGreen(true);
-        setPhase(PHASE.READY);
         steadyCountRef.current += 1;
-      } else {
-        setIsBoxGreen(false);
-        setPhase(PHASE.ALIGN);
-        steadyCountRef.current = 0;
+
+        // First valid frame: show hold steady
+        if (steadyCountRef.current < AI_STABLE_FRAMES_REQUIRED) {
+          setPhase(PHASE.STEADY);
+          return;
+        }
+
+        // After stable detections: show ready and capture once
+        setPhase(PHASE.READY);
+
+        if (!hasCapturedRef.current && !aiCaptureTimerRef.current) {
+          hasCapturedRef.current = true;
+
+          aiCaptureTimerRef.current = setTimeout(() => {
+            aiCaptureTimerRef.current = null;
+            doCapture();
+          }, AI_CAPTURE_DELAY_MS);
+        }
+
+        return;
       }
+
+      setIsBoxGreen(false);
+      setPhase(PHASE.ALIGN);
+      steadyCountRef.current = 0;
     });
-  }, [videoReady]);
+  }, [videoReady, doCapture]);
   // ── Main detection function (reads refs, not stale state) ───────────────
   const checkFrame = useCallback(() => {
     const video = videoRef.current;
