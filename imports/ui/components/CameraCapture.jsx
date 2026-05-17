@@ -2,13 +2,6 @@
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useRef, useState, useEffect, useCallback } from 'react';
-import useOpenCV from '/imports/ui/hooks/useOpenCV';
-import { detectAndWarpCard, probeContours } from '/imports/ui/lib/cvCardDetect';
-
-const POLL_MS = 120;
-const EDGE_MIN = 4000;
-const CONF_MIN = 0.0015;
-const ENABLE_OPENCV_AUTOCAPTURE = false;
 
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
@@ -111,7 +104,6 @@ const captureToBase64 = (videoRef, canvasRef) => {
 export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const { ready: cvReady } = useOpenCV();
 
   // ── Visual state (drives re-renders / UI) ──────────────────────────────
   const [videoReady, setVideoReady] = useState(false);
@@ -268,136 +260,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       steadyCountRef.current = 0;
     });
   }, [videoReady, doCapture]);
-  // ── Main detection function (reads refs, not stale state) ───────────────
-  const checkFrame = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    // Guard: skip if already captured or cv/video not ready
-    if (hasCapturedRef.current) return;
-    if (!cvReady || !videoReady) return;
-    if (!video || !canvas) return;
-    if (!video.videoWidth || !video.videoHeight) return;
-
-    // Guard: prevent overlapping calls (using ref — always current)
-    if (isCheckingRef.current) return;
-
-    // Draw current frame to canvas
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Overlay ROI geometry (mirrors the CSS overlay box at 80% width)
-    const targetW = Math.floor(canvas.width * 0.8);
-    const targetH = Math.floor(targetW / CARD_RATIO);
-    const x = Math.floor((canvas.width - targetW) / 2);
-    const y = Math.floor((canvas.height - targetH) / 2);
-
-    // Motion seed: first frame just stores data and returns
-    const img = ctx.getImageData(x, y, targetW, targetH);
-    const current = img.data;
-    if (!lastFrameDataRef.current) {
-      lastFrameDataRef.current = current;
-      return;
-    }
-    // Update stored frame for next tick
-    lastFrameDataRef.current = current;
-
-    // Edge probe (for debug thumbnail + richness gate)
-    const probe = probeContours(canvas);
-    const probeCount = probe?.count ?? 0;
-    const dbgImg = document.getElementById('cv-debug');
-    if (probe?.debugB64 && dbgImg) dbgImg.src = probe.debugB64;
-
-    // Lock: mark as running
-    isCheckingRef.current = true;
-    setPhase(PHASE.STEADY);
-
-    try {
-      let result = null;
-      try {
-        result = detectAndWarpCard(canvas, /* debug */ true);
-      } catch (err) {
-        console.error('[cv] detectAndWarpCard error:', err);
-        return; // finally will still fire and release the lock
-      }
-
-      if (result?.debugB64 && dbgImg) dbgImg.src = result.debugB64;
-
-      console.log('[cv] detect', {
-        hasQuad: !!result?.quad,
-        hasROI: !!result?.roiB64,
-        score: result?.score,
-        probeCount,
-      });
-
-      // Base requirement: detector returned a quad + warped ROI
-      let ok = Boolean(result?.roiB64 && result?.quad);
-
-      if (ok) {
-        const quad = result.quad;
-        const bb = bboxOfQuad(quad);
-        const areaFrac = (bb.w * bb.h) / (canvas.width * canvas.height);
-
-        // Orientation-agnostic ratio
-        const rawRatio = bb.w / Math.max(1, bb.h);
-        const r = rawRatio >= 1 ? rawRatio : 1 / rawRatio;
-        const ratioOk = Math.abs(r - CARD_RATIO) <= CARD_RATIO * RATIO_TOL;
-        const areaOk = areaFrac >= MIN_AREA_FRAC_UI;
-
-        const angScore = rightAngleScore(quad);
-        const anglesOk = angScore >= 0.3; // lowered from 0.6 — perspective distortion naturally reduces this score
-
-        // Position: must overlap with the guide box (+ margin)
-        const M = 50;
-        const gateBox = {
-          x: x - M,
-          y: y - M,
-          w: targetW + 2 * M,
-          h: targetH + 2 * M,
-        };
-        const overlap = iouRect(bb, gateBox);
-        const posOk = overlap >= MIN_IOU;
-
-        console.log('[gate]', {
-          ratio: rawRatio.toFixed(2),
-          normRatio: r.toFixed(2),
-          ratioOk,
-          areaFrac: areaFrac.toFixed(3),
-          areaOk,
-          angScore: angScore.toFixed(2),
-          anglesOk,
-          IoU: overlap.toFixed(2),
-          posOk,
-          score: (result?.score ?? 0).toFixed(4),
-          probeCount,
-        });
-
-        ok = ratioOk && areaOk && anglesOk && posOk;
-
-        // Extra guards: edge richness + detector confidence
-        if (probeCount < EDGE_MIN) ok = false;
-        if ((result?.score ?? 0) < CONF_MIN) ok = false;
-      }
-
-      if (ok) {
-        setIsBoxGreen(true);
-        setPhase(PHASE.READY);
-        steadyCountRef.current += 1;
-        if (!hasCapturedRef.current && steadyCountRef.current >= 2) {
-          setTimeout(() => doCaptureWithROI(result?.roiB64 || null), 80);
-        }
-      } else {
-        setIsBoxGreen(false);
-        setPhase(PHASE.ALIGN);
-        steadyCountRef.current = 0;
-      }
-    } finally {
-      // Always release the lock, even if an error was thrown
-      isCheckingRef.current = false;
-    }
-  }, [cvReady, videoReady, doCaptureWithROI]);
 
   // ── FIX: Single polling loop (was duplicated before) ───────────────────
   // Dependencies include cvReady and videoReady so the loop restarts with
@@ -408,17 +270,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const id = setInterval(checkAIFrame, AI_POLL_MS);
     return () => clearInterval(id);
   }, [checkAIFrame]);
-
-  // useEffect(() => {
-  //   if (!ENABLE_OPENCV_AUTOCAPTURE) {
-  //     setIsBoxGreen(false);
-  //     setPhase(PHASE.ALIGN);
-  //     return undefined;
-  //   }
-
-  //   const id = setInterval(checkFrame, POLL_MS);
-  //   return () => clearInterval(id);
-  // }, [checkFrame]); // checkFrame is stable via useCallback
 
   // ── JSX ────────────────────────────────────────────────────────────────
   return (

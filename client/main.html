@@ -18,23 +18,6 @@
   ></script>
 
   <script>
-    window.__cvReady = false;
-    window.Module = {
-      onRuntimeInitialized() {
-        window.__cvReady = true;
-        console.log('[opencv] onRuntimeInitialized');
-      },
-    };
-    window.Module = {
-      onRuntimeInitialized() {
-        console.log('[opencv] onRuntimeInitialized');
-        window.__cvReady = true; // useOpenCV() watches this
-      },
-    };
-  </script>
-
-  <script src="https://docs.opencv.org/4.x/opencv.js"></script>
-  <script>
     (function () {
       const KEY = 'daisy-theme';
       const DEFAULT = 'vistamate'; // or "light" if you kept that name in your @plugin block
@@ -60,8 +43,15 @@
     /* Optional: apply Inter globally */
     html,
     body {
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-        Arial, sans-serif;
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        Segoe UI,
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
     }
   </style>
 </head>
