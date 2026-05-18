@@ -11,6 +11,31 @@ const AI_STABLE_FRAMES_REQUIRED = 2;
 const AI_CAPTURE_DELAY_MS = 400;
 const AI_MISSES_ALLOWED = 2;
 
+const CAMERA_CONSTRAINTS = [
+  {
+    video: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ideal: 30 },
+      resizeMode: { ideal: 'none' },
+    },
+    audio: false,
+  },
+  {
+    video: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ideal: 30 },
+      resizeMode: { ideal: 'none' },
+    },
+    audio: false,
+  },
+];
+
 const PHASE = {
   ALIGN: 'align',
   STEADY: 'steady',
@@ -47,12 +72,12 @@ const rightAngleScore = (quad) => {
 
 const StatusBadge = ({ phase, ocrStatus }) => {
   const map = {
-    [PHASE.ALIGN]: { txt: 'Align your card', cls: 'badge-outline' },
+    [PHASE.ALIGN]: { txt: 'Place card', cls: 'badge-outline' },
     [PHASE.STEADY]: { txt: 'Hold steady', cls: 'badge-warning' },
-    [PHASE.READY]: { txt: 'Auto-capturing', cls: 'badge-success' },
+    [PHASE.READY]: { txt: 'Scanning', cls: 'badge-success' },
     [PHASE.CAPTURING]: { txt: 'Capturing', cls: 'badge-info' },
     [PHASE.PROCESSING]: {
-      txt: ocrStatus === 'processed' ? 'OCR complete' : 'Processing OCR',
+      txt: ocrStatus === 'processed' ? 'Ready' : 'Scanning',
       cls: ocrStatus === 'processed' ? 'badge-success' : 'badge-info',
     },
   };
@@ -63,7 +88,7 @@ const StatusBadge = ({ phase, ocrStatus }) => {
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className={`badge ${cls} gap-2 rounded-md px-3 py-3 font-medium`}
+      className={`badge ${cls} gap-2 rounded-md px-3 py-2 text-xs font-medium`}
       aria-live="polite"
     >
       <LoadingDot phase={phase} />
@@ -113,6 +138,27 @@ const captureToBase64 = (videoRef, canvasRef) => {
   return canvas.toDataURL('image/png');
 };
 
+const getCameraStream = async () => {
+  let fallbackError;
+
+  for (const constraints of CAMERA_CONSTRAINTS) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (err) {
+      fallbackError = err;
+      if (
+        err?.name === 'NotAllowedError' ||
+        err?.name === 'NotFoundError' ||
+        err?.name === 'SecurityError'
+      ) {
+        throw err;
+      }
+    }
+  }
+
+  throw fallbackError;
+};
+
 export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -155,14 +201,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
     const start = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
+        stream = await getCameraStream();
         v.srcObject = stream;
         v.muted = true;
         v.playsInline = true;
@@ -302,37 +341,31 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     <div className="w-full">
       <motion.div
         layout
-        transition={{ duration: 0.32, ease: 'easeOut' }}
-        className="mx-auto w-full max-w-3xl overflow-hidden rounded-lg border border-base-300 bg-base-100 text-base-content shadow-xl"
+        transition={{ duration: 0.28, ease: 'easeOut' }}
+        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-base-300 bg-base-100/95 text-base-content shadow-xl shadow-base-content/5"
       >
-        <div className="border-b border-base-300 bg-base-100 px-5 py-4 sm:px-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="border-b border-base-300 bg-base-100/90 px-4 py-3 sm:px-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase text-primary">
-                Secure capture
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold">
-                Visitor Check-In
-              </h2>
-              <p className="mt-2 max-w-xl leading-7 text-base-content/70">
-                Center an ID or business card inside the frame. Vistamate will
-                detect it and begin OCR automatically.
-              </p>
+              <h2 className="text-xl font-semibold">Check in</h2>
+              <span className="text-sm text-base-content/60">
+                Place your card inside the frame
+              </span>
             </div>
             <StatusBadge phase={phase} ocrStatus={ocrStatus} />
           </div>
         </div>
 
-        <div className="p-4 sm:p-5">
+        <div className="p-3 sm:p-4">
           {/* Video area */}
-          <div className="relative overflow-hidden rounded-lg border border-base-300 bg-neutral shadow-inner">
+          <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-neutral shadow-inner">
             <div className="aspect-video w-full">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className={`h-full w-full object-cover transition-opacity duration-300 ${
+                className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
                   videoReady ? 'opacity-100' : 'opacity-50'
                 }`}
               />
@@ -349,31 +382,29 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             )}
 
             {/* Overlay guide box */}
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-6">
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
               <motion.div
                 animate={{
                   borderColor: isBoxGreen
                     ? 'rgb(34 197 94)'
-                    : 'rgba(255,255,255,0.68)',
+                    : 'rgba(255,255,255,0.58)',
                 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className={`relative flex items-center justify-center rounded-lg border-2 bg-black/10 px-5 py-4 text-center shadow-[0_20px_70px_rgba(0,0,0,0.18)] backdrop-blur-[1px] ${
+                className={`relative rounded-2xl border bg-transparent text-center ${
                   isBoxGreen
-                    ? 'shadow-success/25'
-                    : 'shadow-black/20'
+                    ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
+                    : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
                 }`}
-                style={{ width: '78%', aspectRatio: '1.58' }}
+                style={{ width: '76%', aspectRatio: '1.58' }}
               >
                 <span
-                  className={`rounded-md px-3 py-2 text-sm font-semibold shadow-sm ${
+                  className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm ${
                     isBoxGreen
                       ? 'bg-success text-success-content'
-                      : 'bg-base-100/85 text-base-content'
+                      : 'bg-base-100/75 text-base-content/70'
                   }`}
                 >
-                  {isBoxGreen
-                    ? 'Card detected. Hold steady.'
-                    : 'Align your ID or business card inside the frame'}
+                  {isBoxGreen ? 'Hold steady' : 'Place card'}
                 </span>
               </motion.div>
             </div>
@@ -402,24 +433,14 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                         </svg>
                       </div>
                       <div>
-                        <p className="font-semibold">
-                          OCR processed. Review the form.
-                        </p>
-                        <p className="mt-1 text-sm text-base-content/70">
-                          Your details are ready on the review panel.
-                        </p>
+                        <p className="font-semibold">Review details</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <span className="loading loading-spinner loading-lg text-primary" />
                       <div>
-                        <p className="font-semibold">
-                          Captured. Processing OCR.
-                        </p>
-                        <p className="mt-1 text-sm text-base-content/70">
-                          Please wait while the form is prepared.
-                        </p>
+                        <p className="font-semibold">Scanning</p>
                       </div>
                     </>
                   )}
@@ -436,13 +457,9 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           )}
 
           {/* Manual capture button */}
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm leading-6 text-base-content/65">
-              Auto-capture is enabled. Use manual capture if the card is clear
-              but detection has not started.
-            </p>
+          <div className="mt-4 flex justify-center">
             <button
-              className="btn btn-primary rounded-md"
+              className="btn btn-primary min-w-44 rounded-md"
               onClick={doCapture}
               disabled={
                 hasCaptured ||
@@ -450,7 +467,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 phase === PHASE.PROCESSING
               }
             >
-              {hasCaptured ? 'Processing' : 'Capture & Scan'}
+              {hasCaptured ? 'Scanning' : 'Capture'}
             </button>
           </div>
         </div>

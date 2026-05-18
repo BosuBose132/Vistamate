@@ -169,47 +169,30 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
   return (
     <PublicLayout>
-      <section className="bg-base-200 px-4 py-8 text-base-content sm:px-6 lg:px-8">
-        <div className="mx-auto flex min-h-[calc(100vh-9rem)] w-full max-w-7xl flex-col justify-center">
-          <div className="mb-8 text-center">
-            <p className="text-sm font-semibold uppercase text-primary">
-              Visitor check-in
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
-              Scan your ID or business card
-            </h1>
-            <p className="mx-auto mt-3 max-w-2xl leading-7 text-base-content/70">
-              Vistamate will detect the card, capture it automatically, and
-              prepare your check-in details for review.
-            </p>
-          </div>
-
+      <section className="bg-base-200 px-4 py-6 text-base-content sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl flex-col justify-center">
           <motion.div
             layout
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className={
               hasSurveyModel
-                ? 'grid w-full items-start gap-6 lg:grid-cols-[minmax(0,0.95fr)_1px_minmax(0,1.05fr)]'
+                ? 'grid w-full items-start gap-5 lg:grid-cols-[minmax(0,0.92fr)_1px_minmax(0,1.08fr)]'
                 : 'flex w-full justify-center'
             }
           >
             {/* CAMERA */}
             <motion.div
               layout
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-              className={
-                hasSurveyModel
-                  ? 'w-full'
-                  : 'w-full max-w-3xl'
-              }
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className={hasSurveyModel ? 'w-full' : 'w-full max-w-4xl'}
             >
               <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
               {(loading || error) && (
                 <div className="mt-4">
                   {loading && (
-                    <div className="alert border-info/30 bg-info/10 text-base-content">
+                    <div className="alert rounded-md border-info/30 bg-info/10 text-base-content">
                       <span className="loading loading-spinner loading-sm" />
-                      <span>Processing OCR and preparing the review form.</span>
+                      <span>Scanning</span>
                     </div>
                   )}
                   {error && (
@@ -223,7 +206,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
             {hasSurveyModel && (
               <div
-                className="hidden h-full min-h-[34rem] w-px bg-base-300 lg:block"
+                className="hidden h-full min-h-[32rem] w-px bg-base-300 lg:block"
                 aria-hidden="true"
               />
             )}
@@ -235,29 +218,16 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
                   initial={{ opacity: 0, x: 28 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.32, ease: 'easeOut' }}
-                  className="w-full rounded-lg border border-base-300 bg-base-100 p-5 shadow-xl sm:p-6"
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  className="w-full rounded-2xl border border-base-300 bg-base-100/95 p-4 shadow-xl shadow-base-content/5 sm:p-5"
                 >
-                  <div className="mb-5 border-b border-base-300 pb-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold uppercase text-primary">
-                          Review
-                        </p>
-                        <h2 className="mt-1 text-2xl font-semibold">
-                          Review your details
-                        </h2>
-                        <p className="mt-2 leading-7 text-base-content/70">
-                          Confirm the OCR-filled fields, add any missing
-                          details, and submit your check-in.
-                        </p>
-                      </div>
-                      {ocrStatus === 'processed' && (
-                        <span className="badge badge-success rounded-md">
-                          OCR ready
-                        </span>
-                      )}
-                    </div>
+                  <div className="mb-4 flex items-center justify-between border-b border-base-300 pb-4">
+                    <h2 className="text-2xl font-semibold">Review details</h2>
+                    {ocrStatus === 'processed' && (
+                      <span className="badge badge-success rounded-md">
+                        Ready
+                      </span>
+                    )}
                   </div>
                   <SurveyForm surveyModel={surveyModel} />
                 </motion.aside>
