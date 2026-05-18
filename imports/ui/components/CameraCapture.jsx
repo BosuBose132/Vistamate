@@ -1,13 +1,14 @@
-/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
-const AI_CONFIDENCE_MIN = 0.6;
+const AI_CONFIDENCE_MIN = 0.45;
 const AI_STABLE_FRAMES_REQUIRED = 2;
 const AI_CAPTURE_DELAY_MS = 400;
+const AI_MISSES_ALLOWED = 2;
 
 const PHASE = {
   ALIGN: 'align',
@@ -122,6 +123,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const hasCapturedRef = useRef(false); // mirrors hasCaptured state for interval reads
   const aiCheckingRef = useRef(false);
   const aiCaptureTimerRef = useRef(null);
+  const aiMissCountRef = useRef(0);
   // Keep the ref in sync whenever state changes
   useEffect(() => {
     hasCapturedRef.current = hasCaptured;
@@ -231,6 +233,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       const ok = Boolean(result?.ok && confidence >= AI_CONFIDENCE_MIN);
 
       if (ok) {
+        aiMissCountRef.current = 0;
         setIsBoxGreen(true);
         steadyCountRef.current += 1;
 
@@ -255,9 +258,21 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
         return;
       }
 
+      aiMissCountRef.current += 1;
+
+      if (
+        aiMissCountRef.current <= AI_MISSES_ALLOWED &&
+        steadyCountRef.current > 0
+      ) {
+        setIsBoxGreen(true);
+        setPhase(PHASE.STEADY);
+        return;
+      }
+
       setIsBoxGreen(false);
       setPhase(PHASE.ALIGN);
       steadyCountRef.current = 0;
+      aiMissCountRef.current = 0;
     });
   }, [videoReady, doCapture]);
 

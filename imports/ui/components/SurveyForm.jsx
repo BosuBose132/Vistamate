@@ -1,4 +1,4 @@
-/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 import { Survey } from 'survey-react-ui';
 import { Model } from 'survey-core';

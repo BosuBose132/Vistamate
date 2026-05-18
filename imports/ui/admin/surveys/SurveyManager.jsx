@@ -1,56 +1,75 @@
-/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
-import React from 'react';
-// Navbar   
-
-import { useState } from 'react';
-import { useSubscribe, useFind } from 'meteor/react-meteor-data';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { useSubscribe, useFind } from 'meteor/react-meteor-data';
+
 import { Surveys } from '/imports/api/surveys/surveys.collection';
+import AdminHeader from '/imports/ui/components/AdminHeader';
 
 export default function SurveyManager() {
-    const sub = useSubscribe('surveys.admin')();
-    const surveys = useFind(() => Surveys.find({}, { sort: { createdAt: -1 } }), []);
-    const [name, setName] = useState('');
-    const [json, setJson] = useState('');
+  const sub = useSubscribe('surveys.admin')();
+  const surveys = useFind(
+    () => Surveys.find({}, { sort: { createdAt: -1 } }),
+    [],
+  );
+  const [name, setName] = useState('');
+  const [json, setJson] = useState('');
 
-    if (sub) return <div className="p-8">Loading…</div>;
+  if (sub) return <div className="p-8">Loading…</div>;
 
-    const create = (e) => {
-        e.preventDefault();
-        Meteor.call('surveys.create', { name, json }, (err) => {
-            if (err) alert(err.reason || err.message);
-            else { setName(''); setJson(''); }
-        });
-    };
+  const create = (e) => {
+    e.preventDefault();
+    Meteor.call('surveys.create', { name, json }, (err) => {
+      if (err) alert(err.reason || err.message);
+      else {
+        setName('');
+        setJson('');
+      }
+    });
+  };
 
-    return (
-        <div className="min-h-screen bg-base-200 text-base-content p-6">
-            <AdminHeader />
+  return (
+    <div className="min-h-screen bg-base-200 text-base-content p-6">
+      <AdminHeader />
 
-            <div className="grid lg:grid-cols-2 gap-6">
-                <div className="card bg-base-100 shadow">
-                    <div className="card-body">
-                        <h2 className="card-title">Add Survey (Paste JSON)</h2>
-                        <form onSubmit={create} className="grid gap-3">
-                            <input className="input input-bordered" placeholder="Survey name"
-                                value={name} onChange={e => setName(e.target.value)} required />
-                            <textarea className="textarea textarea-bordered h-64 font-mono"
-                                placeholder='{"title":"Visitor Registration","elements":[...]}' value={json}
-                                onChange={e => setJson(e.target.value)} required />
-                            <button className="btn btn-primary self-start">Save Survey</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div className="card bg-base-100 shadow">
-                    <div className="card-body">
-                        <h2 className="card-title">Existing Surveys</h2>
-                        <ul className="menu">
-                            {surveys.map(s => <li key={s._id}><span>{s.name}</span></li>)}
-                        </ul>
-                    </div>
-                </div>
-            </div>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="card bg-base-100 shadow">
+          <div className="card-body">
+            <h2 className="card-title">Add Survey (Paste JSON)</h2>
+            <form onSubmit={create} className="grid gap-3">
+              <input
+                className="input input-bordered"
+                placeholder="Survey name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <textarea
+                className="textarea textarea-bordered h-64 font-mono"
+                placeholder='{"title":"Visitor Registration","elements":[...]}'
+                value={json}
+                onChange={(e) => setJson(e.target.value)}
+                required
+              />
+              <button className="btn btn-primary self-start">
+                Save Survey
+              </button>
+            </form>
+          </div>
         </div>
-    );
+
+        <div className="card bg-base-100 shadow">
+          <div className="card-body">
+            <h2 className="card-title">Existing Surveys</h2>
+            <ul className="menu">
+              {surveys.map((s) => (
+                <li key={s._id}>
+                  <span>{s.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

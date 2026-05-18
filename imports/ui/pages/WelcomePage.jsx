@@ -1,11 +1,11 @@
-/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 // /imports/ui/pages/WelcomePage.jsx
 import { Link, NavLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import ThemeToggle from '../components/ThemeToggle';
 
-import { useNavigate } from 'react-router-dom';
 
 const WelcomePage = () => {
   const navigate = useNavigate();

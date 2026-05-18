@@ -1,13 +1,14 @@
-/* eslint-disable-next-line no-unused-vars, unused-imports/no-unused-imports */
+/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
-import CameraCapture from '../components/CameraCapture';
-import SurveyForm from '../components/SurveyForm';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import { FlatDarkPanelless } from 'survey-core/themes';
+
+import SurveyForm from '../components/SurveyForm';
+import CameraCapture from '../components/CameraCapture';
 import 'survey-core/survey-core.css';
 
 function applyOCRDefaults(parsed) {
