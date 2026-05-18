@@ -19,16 +19,21 @@ const SurveyForm = ({ surveyModel }) => {
 
   if (!surveyModel) {
     return (
-      <p className="text-center text-base-content/70 text-lg py-6">
-        No form to display yet. Capture an ID first!
-      </p>
+      <div className="rounded-lg border border-dashed border-base-300 bg-base-200 p-6 text-center">
+        <p className="text-lg font-medium text-base-content">
+          No form to display yet
+        </p>
+        <p className="mt-2 text-base-content/70">
+          Capture an ID or business card to prepare the review form.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="w-full max-w-xl md:max-w-2xl">
+    <div className="w-full">
       {/* Borderless, DaisyUI-colored form (no card/border here) */}
-      <div className="p-0 md:p-2">
+      <div className="rounded-md bg-base-100">
         <Survey model={surveyModel} />
       </div>
     </div>
