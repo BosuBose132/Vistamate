@@ -1,8 +1,14 @@
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import { FlatDarkPanelless } from 'survey-core/themes';
+
+import SurveyForm from '../components/SurveyForm';
+import CameraCapture from '../components/CameraCapture';
 import 'survey-core/survey-core.css';
 
 function applyOCRDefaults(parsed) {
@@ -16,14 +22,13 @@ function applyOCRDefaults(parsed) {
   };
 }
 
-
 //export const App = () => {
 export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const navigate = useNavigate();
   const { requirePhoto = false } = kioskConfig;
   const [capturedImage, setCapturedImage] = useState(null);
   const [surveyModel, setSurveyModel] = useState(null);
-  const [loading, setLoading] = useState(false);     // <- value + setter
+  const [loading, setLoading] = useState(false); // <- value + setter
   const [error, setError] = useState(null);
   const [ocrStatus, setOcrStatus] = useState('idle'); // 'idle' | 'processing' | 'processed'
 
@@ -48,7 +53,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
         const ocrJson = JSON.parse(result.text);
         // const surveyJson = generateSurveyJsonFromOCR(ocrJson);
         const surveyJson = assignedSurveyJson
-          ? applyOCRDefaults(assignedSurveyJson, ocrJson)  // use assigned survey if available
+          ? applyOCRDefaults(assignedSurveyJson, ocrJson) // use assigned survey if available
           : generateSurveyJsonFromOCR(ocrJson);
         const model = new Model(surveyJson);
         model.applyTheme(FlatDarkPanelless);
@@ -60,40 +65,57 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
           }
           const finalData = sender.data;
           //Meteor.call('visitors.checkIn', finalData, (err, res) => {
-          Meteor.call('visitors.checkIn', { ...finalData, stationId }, (err, res) => {
-            if (err) {
-              // alert('Error saving visitor: ' + err.message);
-              // ensure the survey can be submitted again if there was an error
-              try { sender.isCompleted = false; } catch { //ignore
-              }
-            } else if (res.status === 'duplicate') {
-              // alert('Visitor already exists');
-            } else {
-              // alert('Visitor successfully checked in!');
-              // 1) Build a small summary for the Thank You page
-              const insertedId =
-                typeof res === 'string' ? res : (res?.insertedId || res?._id || '');
-              const last = {
-                name: `${finalData.firstName || ''} ${finalData.lastName || ''}`.trim() || finalData.name || '',
-                company: finalData.company || '',
-                email: finalData.email || '',
-                phone: finalData.phone || '',
-                visitorId: insertedId,
-                checkedAt: Date.now(),
-              };
+          Meteor.call(
+            'visitors.checkIn',
+            { ...finalData, stationId },
+            (err, res) => {
+              if (err) {
+                // alert('Error saving visitor: ' + err.message);
+                // ensure the survey can be submitted again if there was an error
+                try {
+                  sender.isCompleted = false;
+                } catch {
+                  //ignore
+                }
+              } else if (res.status === 'duplicate') {
+                // alert('Visitor already exists');
+              } else {
+                // alert('Visitor successfully checked in!');
+                // 1) Build a small summary for the Thank You page
+                const insertedId =
+                  typeof res === 'string'
+                    ? res
+                    : res?.insertedId || res?._id || '';
+                const last = {
+                  name:
+                    `${finalData.firstName || ''} ${finalData.lastName || ''}`.trim() ||
+                    finalData.name ||
+                    '',
+                  company: finalData.company || '',
+                  email: finalData.email || '',
+                  phone: finalData.phone || '',
+                  visitorId: insertedId,
+                  checkedAt: Date.now(),
+                };
 
-              // 2) Persist for reloads (same tab)
-              try { sessionStorage.setItem('vistamate:lastCheckin', JSON.stringify(last)); } catch {
-                // ignore storage errors (private mode, quota exceeded, etc.)
-              }
+                // 2) Persist for reloads (same tab)
+                try {
+                  sessionStorage.setItem(
+                    'vistamate:lastCheckin',
+                    JSON.stringify(last),
+                  );
+                } catch {
+                  // ignore storage errors (private mode, quota exceeded, etc.)
+                }
 
-              // 3) Navigate and also pass state (works even if storage is empty)
-              navigate('/thankyou', { state: last });
-              setSurveyModel(null);
-              setCapturedImage(null);
-              setOcrStatus('idle');
-            }
-          });
+                // 3) Navigate and also pass state (works even if storage is empty)
+                navigate('/thankyou', { state: last });
+                setSurveyModel(null);
+                setCapturedImage(null);
+                setOcrStatus('idle');
+              }
+            },
+          );
         });
 
         setSurveyModel(model);
@@ -105,42 +127,42 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   };
 
   const generateSurveyJsonFromOCR = (ocrData = {}) => ({
-    title: "Visitor Registration",
-    showQuestionNumbers: "off",
+    title: 'Visitor Registration',
+    showQuestionNumbers: 'off',
     elements: [
       {
-        type: "text",
-        name: "name",
-        title: "Full Name",
+        type: 'text',
+        name: 'name',
+        title: 'Full Name',
         isRequired: true,
-        defaultValue: ocrData.name || ""
+        defaultValue: ocrData.name || '',
       },
       {
-        type: "text",
-        name: "email",
-        title: "Email",
-        inputType: "email",
-        defaultValue: ocrData.email || ""
+        type: 'text',
+        name: 'email',
+        title: 'Email',
+        inputType: 'email',
+        defaultValue: ocrData.email || '',
       },
       {
-        type: "text",
-        name: "phone",
-        title: "Phone Number",
-        defaultValue: ocrData.phone || ""
+        type: 'text',
+        name: 'phone',
+        title: 'Phone Number',
+        defaultValue: ocrData.phone || '',
       },
       {
-        type: "text",
-        name: "company",
-        title: "Company / Organization",
-        defaultValue: ocrData.company || ""
+        type: 'text',
+        name: 'company',
+        title: 'Company / Organization',
+        defaultValue: ocrData.company || '',
       },
       {
-        type: "text",
-        name: "address",
-        title: "Address",
-        defaultValue: ocrData.address || ""
+        type: 'text',
+        name: 'address',
+        title: 'Address',
+        defaultValue: ocrData.address || '',
       },
-    ]
+    ],
   });
 
   return (
@@ -150,8 +172,14 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
         <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
       </div>
       {/* Divider: vertical on desktop, horizontal on mobile */}
-      <div className="hidden md:block self-stretch w-px bg-base-300/80 rounded-full" aria-hidden="true" />
-      <div className="md:hidden h-px w-full bg-base-300/80 rounded-full" aria-hidden="true" />
+      <div
+        className="hidden md:block self-stretch w-px bg-base-300/80 rounded-full"
+        aria-hidden="true"
+      />
+      <div
+        className="md:hidden h-px w-full bg-base-300/80 rounded-full"
+        aria-hidden="true"
+      />
 
       {/* SURVEY FORM */}
       {surveyModel && (
@@ -165,7 +193,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
         </motion.div>
       )}
     </div>
-  )
+  );
 };
 
 export default App;

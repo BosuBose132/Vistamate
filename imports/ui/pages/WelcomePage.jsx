@@ -1,7 +1,10 @@
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
 // /imports/ui/pages/WelcomePage.jsx
-
-
+import { Link, NavLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+
+import ThemeToggle from '../components/ThemeToggle';
 
 
 const WelcomePage = () => {
@@ -16,7 +19,11 @@ const WelcomePage = () => {
           {/* start: logo (links to Welcome) */}
           <div className="navbar-start">
             <Link to="/" className="inline-flex items-center">
-              <img src="/VistaMate.png" alt="Vistamate" className="h-40 w-auto" />
+              <img
+                src="/VistaMate.png"
+                alt="Vistamate"
+                className="h-40 w-auto"
+              />
             </Link>
           </div>
           {/* end: nav + theme toggle (active pill like admin) */}
@@ -60,10 +67,6 @@ const WelcomePage = () => {
         </div>
       </header>
 
-
-
-
-
       {/* HERO */}
       <main className="container mx-auto px-4 flex-1 flex items-center">
         <div className="w-full grid lg:grid-cols-2 gap-8 py-12">
@@ -75,17 +78,22 @@ const WelcomePage = () => {
               Smart, camera‑powered visitor check‑in with OCR and dynamic forms.
             </p>
             <div className="flex gap-3">
-              <button className="btn btn-accent" onClick={() => navigate('/checkin')}>
+              <button
+                className="btn btn-accent"
+                onClick={() => navigate('/checkin')}
+              >
                 Start Check‑In
               </button>
-              <button className="btn btn-outline" onClick={() => navigate('/login')}>
+              <button
+                className="btn btn-outline"
+                onClick={() => navigate('/login')}
+              >
                 Admin Login
               </button>
             </div>
           </div>
 
           {/* Demo card shows theme surfaces changing */}
-
         </div>
       </main>
 

@@ -1,3 +1,5 @@
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
 import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';

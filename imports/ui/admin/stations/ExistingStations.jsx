@@ -1,3 +1,5 @@
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
 import { Meteor } from 'meteor/meteor';
 
 export default function ExistingStations({ stations }) {

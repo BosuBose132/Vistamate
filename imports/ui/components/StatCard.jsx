@@ -1,3 +1,5 @@
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
 // imports/ui/components/StatCard.jsx
 
 export default function StatCard({ title, value }) {

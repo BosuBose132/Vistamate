@@ -1,4 +1,5 @@
-
+/* eslint-disable-next-line unused-imports/no-unused-imports */
+import React from 'react';
 import { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useNavigate } from 'react-router-dom';
