@@ -20,7 +20,7 @@ const navLinkClass = ({ isActive }) =>
 
 export default function AdminHeader() {
   const navigate = useNavigate();
-  const onLogout = () => Meteor.logout(() => navigate('/login'));
+  const onLogout = () => Meteor.logout(() => navigate('/'));
 
   return (
     <motion.header

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { motion } from 'framer-motion';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 
 import { Stations } from '/imports/api/stations/stations.collection';
@@ -44,114 +45,211 @@ export default function StationBuilder() {
   };
 
   const isLoading = loadingSurveys() || loadingStations();
-  if (isLoading) return <div className="p-8">Loading…</div>;
-  return (
-    <div className="min-h-screen bg-base-200 text-base-content p-6">
-      <AdminHeader />
-
-      <div className="card bg-base-100 shadow">
-        <div className="card-body space-y-6">
-          <h2 className="card-title">Create New Kiosk</h2>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <input
-              className="input input-bordered"
-              placeholder="Kiosk Name"
-              value={form.name}
-              onChange={(e) => onChange('name', e.target.value)}
-            />
-            <input
-              className="input input-bordered"
-              placeholder="Location"
-              value={form.location}
-              onChange={(e) => onChange('location', e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="label">Select Questionnaire</label>
-            <select
-              className="select select-bordered w-full"
-              value={form.surveyId}
-              onChange={(e) => onChange('surveyId', e.target.value)}
-            >
-              <option value="">— choose survey —</option>
-              {surveys.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <label className="cursor-pointer flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="checkbox"
-                checked={form.cameraEnabled}
-                onChange={(e) => onChange('cameraEnabled', e.target.checked)}
-              />
-              <span>Enable Camera</span>
-            </label>
-            <label className="cursor-pointer flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="checkbox"
-                checked={form.requirePhoto}
-                onChange={(e) => onChange('requirePhoto', e.target.checked)}
-              />
-              <span>Require Photo</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="label">Mobile Behavior</label>
-            <div className="join">
-              <button
-                type="button"
-                className={`btn join-item ${form.mobileBehavior === 'form_always' ? 'btn-active' : ''}`}
-                onClick={() => onChange('mobileBehavior', 'form_always')}
-              >
-                Form always visible
-              </button>
-              <button
-                type="button"
-                className={`btn join-item ${form.mobileBehavior === 'toggle' ? 'btn-active' : ''}`}
-                onClick={() => onChange('mobileBehavior', 'toggle')}
-              >
-                Toggle camera/form
-              </button>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <textarea
-              className="textarea textarea-bordered"
-              placeholder="Welcome message"
-              value={form.welcomeMessage}
-              onChange={(e) => onChange('welcomeMessage', e.target.value)}
-            />
-            <input
-              className="input input-bordered"
-              placeholder="Theme (vistamate or dark)"
-              value={form.theme}
-              onChange={(e) => onChange('theme', e.target.value)}
-            />
-          </div>
-
-          <div className="flex gap-3">
-            <button className="btn btn-primary" onClick={create}>
-              Create Kiosk
-            </button>
-            <a className="btn btn-ghost" href="/admin">
-              Cancel
-            </a>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-base-200 text-base-content">
+        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <AdminHeader />
+          <div className="space-y-6">
+            <div className="skeleton h-64 rounded-2xl" />
+            <div className="skeleton h-80 rounded-2xl" />
           </div>
         </div>
       </div>
+    );
+  }
 
-      <ExistingStations stations={stations} />
+  return (
+    <div className="min-h-screen bg-base-200 text-base-content">
+      <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <AdminHeader />
+
+        <main className="space-y-6">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm font-medium text-primary">
+                Kiosk management
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+                Stations
+              </h1>
+              <p className="mt-2 text-sm text-base-content/60">
+                Create and manage kiosk stations.
+              </p>
+            </div>
+
+            <div className="rounded-full border border-base-300/80 bg-base-100 px-4 py-2 text-sm font-medium text-base-content/70 shadow-sm">
+              {stations.length} station{stations.length === 1 ? '' : 's'}
+            </div>
+          </div>
+
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5 sm:p-6"
+          >
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Create station</h2>
+                <p className="mt-1 text-sm text-base-content/55">
+                  Configure the kiosk experience and assigned survey.
+                </p>
+              </div>
+              <span className="badge badge-outline rounded-md border-base-300">
+                New kiosk
+              </span>
+            </div>
+
+            <div className="grid gap-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="form-control">
+                  <span className="label-text mb-2 font-semibold">
+                    Kiosk name
+                  </span>
+                  <input
+                    className="input input-bordered rounded-md border-base-300"
+                    placeholder="Lobby kiosk"
+                    value={form.name}
+                    onChange={(e) => onChange('name', e.target.value)}
+                  />
+                </label>
+
+                <label className="form-control">
+                  <span className="label-text mb-2 font-semibold">
+                    Location
+                  </span>
+                  <input
+                    className="input input-bordered rounded-md border-base-300"
+                    placeholder="Main reception"
+                    value={form.location}
+                    onChange={(e) => onChange('location', e.target.value)}
+                  />
+                </label>
+              </div>
+
+              <label className="form-control">
+                <span className="label-text mb-2 font-semibold">
+                  Select questionnaire
+                </span>
+                <select
+                  className="select select-bordered w-full rounded-md border-base-300"
+                  value={form.surveyId}
+                  onChange={(e) => onChange('surveyId', e.target.value)}
+                >
+                  <option value="">— choose survey —</option>
+                  {surveys.map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-base-300/80 bg-base-200/30 p-4">
+                  <span>
+                    <span className="block font-semibold">Enable camera</span>
+                    <span className="text-sm text-base-content/55">
+                      Allow kiosk camera capture.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={form.cameraEnabled}
+                    onChange={(e) => onChange('cameraEnabled', e.target.checked)}
+                  />
+                </label>
+
+                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-base-300/80 bg-base-200/30 p-4">
+                  <span>
+                    <span className="block font-semibold">Require photo</span>
+                    <span className="text-sm text-base-content/55">
+                      Capture visitor image when needed.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={form.requirePhoto}
+                    onChange={(e) => onChange('requirePhoto', e.target.checked)}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <span className="label-text mb-2 block font-semibold">
+                  Mobile behavior
+                </span>
+                <div className="join w-full md:w-auto">
+                  <button
+                    type="button"
+                    className={`btn join-item flex-1 rounded-l-md md:flex-none ${
+                      form.mobileBehavior === 'form_always'
+                        ? 'btn-primary'
+                        : 'btn-outline border-base-300'
+                    }`}
+                    onClick={() => onChange('mobileBehavior', 'form_always')}
+                  >
+                    Form always visible
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn join-item flex-1 rounded-r-md md:flex-none ${
+                      form.mobileBehavior === 'toggle'
+                        ? 'btn-primary'
+                        : 'btn-outline border-base-300'
+                    }`}
+                    onClick={() => onChange('mobileBehavior', 'toggle')}
+                  >
+                    Toggle camera/form
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="form-control">
+                  <span className="label-text mb-2 font-semibold">
+                    Welcome message
+                  </span>
+                  <textarea
+                    className="textarea textarea-bordered min-h-28 rounded-md border-base-300"
+                    placeholder="Welcome message"
+                    value={form.welcomeMessage}
+                    onChange={(e) => onChange('welcomeMessage', e.target.value)}
+                  />
+                </label>
+
+                <label className="form-control">
+                  <span className="label-text mb-2 font-semibold">Theme</span>
+                  <input
+                    className="input input-bordered rounded-md border-base-300"
+                    placeholder="vistamate or dark"
+                    value={form.theme}
+                    onChange={(e) => onChange('theme', e.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-base-300/80 pt-5 sm:flex-row">
+                <button
+                  type="button"
+                  className="btn btn-primary rounded-md"
+                  onClick={create}
+                >
+                  Create Kiosk
+                </button>
+                <a className="btn btn-ghost rounded-md" href="/admin">
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </motion.section>
+
+          <ExistingStations stations={stations} surveys={surveys} />
+        </main>
+      </div>
     </div>
   );
 }
