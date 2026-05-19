@@ -2,6 +2,16 @@ import React from 'react';
 // /imports/ui/pages/WelcomePage.jsx
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  Building2,
+  ClipboardCheck,
+  FileText,
+  IdCard,
+  LayoutDashboard,
+  ScanLine,
+  ShieldCheck,
+  UserCheck,
+} from 'lucide-react';
 
 import PublicLayout from '../components/PublicLayout';
 
@@ -21,32 +31,48 @@ const stagger = {
 
 const platformCards = [
   {
+    icon: ScanLine,
     title: 'AI document detection',
     body: 'Recognize ID and business card frames from the check-in camera so the right capture flow starts quickly.',
     metric: 'ID + cards',
   },
   {
+    icon: FileText,
     title: 'OCR autofill',
     body: 'Extract visitor details and prefill forms to reduce typing at the front desk or kiosk.',
     metric: 'Less manual entry',
   },
   {
+    icon: UserCheck,
     title: 'Visitor check-in',
     body: 'Guide guests through a simple registration flow with the data needed for arrival tracking.',
     metric: 'Fast arrivals',
   },
   {
+    icon: LayoutDashboard,
     title: 'Admin dashboard',
     body: 'Give staff a centralized view of stations, check-ins, surveys, and visitor operations.',
     metric: 'Operational view',
   },
+  {
+    icon: ShieldCheck,
+    title: 'Secure visitor records',
+    body: 'Keep visitor details organized for reception teams while maintaining a controlled admin experience.',
+    metric: 'Managed access',
+  },
+  {
+    icon: Building2,
+    title: 'Station kiosk support',
+    body: 'Create dedicated kiosk stations for lobbies, offices, events, and high-traffic entry points.',
+    metric: 'Multi-station',
+  },
 ];
 
 const workflowSteps = [
-  'Scan ID or business card',
-  'Review OCR-filled details',
-  'Submit visitor check-in',
-  'Monitor activity by station',
+  { icon: IdCard, label: 'Scan ID or business card' },
+  { icon: ClipboardCheck, label: 'Review OCR-filled details' },
+  { icon: UserCheck, label: 'Submit visitor check-in' },
+  { icon: LayoutDashboard, label: 'Monitor activity by station' },
 ];
 
 const WelcomePage = () => {
@@ -225,23 +251,31 @@ const WelcomePage = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
-            className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+            className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
           >
-            {platformCards.map((card) => (
-              <motion.article
-                variants={fadeUp}
-                key={card.title}
-                className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
-              >
-                <div className="mb-5 inline-flex rounded-md bg-base-200 px-3 py-2 text-xs font-semibold text-primary">
-                  {card.metric}
-                </div>
-                <h3 className="text-lg font-semibold">{card.title}</h3>
-                <p className="mt-3 leading-7 text-base-content/70">
-                  {card.body}
-                </p>
-              </motion.article>
-            ))}
+            {platformCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <motion.article
+                  variants={fadeUp}
+                  key={card.title}
+                  className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
+                >
+                  <div className="mb-5 flex items-center justify-between gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
+                      <Icon className="h-5 w-5" strokeWidth={1.8} />
+                    </div>
+                    <span className="rounded-md bg-base-200 px-3 py-2 text-xs font-semibold text-primary">
+                      {card.metric}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold">{card.title}</h3>
+                  <p className="mt-3 leading-7 text-base-content/70">
+                    {card.body}
+                  </p>
+                </motion.article>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -266,25 +300,28 @@ const WelcomePage = () => {
           </div>
 
           <div className="grid gap-3">
-            {workflowSteps.map((step, index) => (
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 16 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{
-                  duration: 0.24,
-                  ease: 'easeOut',
-                  delay: index * 0.05,
-                }}
-                className="flex items-center gap-4 rounded-lg border border-base-300 bg-base-200 p-4"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-sm font-semibold text-primary-content">
-                  {index + 1}
-                </span>
-                <span className="font-medium">{step}</span>
-              </motion.div>
-            ))}
+            {workflowSteps.map((step, index) => {
+              const StepIcon = step.icon;
+              return (
+                <motion.div
+                  key={step.label}
+                  initial={{ opacity: 0, x: 16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{
+                    duration: 0.24,
+                    ease: 'easeOut',
+                    delay: index * 0.05,
+                  }}
+                  className="flex items-center gap-4 rounded-lg border border-base-300 bg-base-200 p-4"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
+                    <StepIcon className="h-5 w-5" strokeWidth={1.8} />
+                  </span>
+                  <span className="font-medium">{step.label}</span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -11,7 +11,7 @@ const navLinkClasses = ({ isActive }) =>
     isActive ? 'bg-primary/10 text-primary' : 'text-base-content/75',
   ].join(' ');
 
-const sectionLinkClasses =
+const navActionClasses =
   'btn btn-ghost btn-sm rounded-md font-medium text-base-content/75';
 
 export function PublicHeader() {
@@ -98,10 +98,7 @@ export function PublicHeader() {
                 <NavLink to="/">Home</NavLink>
               </li>
               <li>
-                <Link to="/#platform">Platform</Link>
-              </li>
-              <li>
-                <Link to="/#workflow">Workflow</Link>
+                <Link to="/checkin">Check In</Link>
               </li>
               <li>
                 {isHomePage ? (
@@ -133,35 +130,34 @@ export function PublicHeader() {
             <NavLink to="/" className={navLinkClasses}>
               Home
             </NavLink>
-            <Link to="/#platform" className={sectionLinkClasses}>
-              Platform
+            <Link to="/checkin" className={navActionClasses}>
+              Check In
             </Link>
-            <Link to="/#workflow" className={sectionLinkClasses}>
-              Workflow
-            </Link>
+            {isHomePage ? (
+              <button
+                type="button"
+                className={adminButtonClasses}
+                onClick={toggleLogin}
+                aria-expanded={isLoginOpen}
+                aria-controls="inline-admin-login"
+              >
+                Admin Login
+              </button>
+            ) : (
+              <NavLink to="/login" className={navLinkClasses}>
+                Admin Login
+              </NavLink>
+            )}
           </nav>
         </div>
 
         <div className="navbar-end gap-2">
-          <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
-          {isHomePage ? (
-            <button
-              type="button"
-              className={adminButtonClasses}
-              onClick={toggleLogin}
-              aria-expanded={isLoginOpen}
-              aria-controls="inline-admin-login"
-            >
-              Admin Login
-            </button>
-          ) : (
-            <NavLink to="/login" className={navLinkClasses}>
-              Admin Login
-            </NavLink>
-          )}
-          <Link to="/checkin" className="btn btn-primary btn-sm rounded-md">
-            Check In
-          </Link>
+          <div className="hidden h-8 border-l border-base-300 pl-3 sm:flex sm:items-center">
+            <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
+          </div>
+          <div className="sm:hidden">
+            <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
+          </div>
         </div>
       </div>
 
