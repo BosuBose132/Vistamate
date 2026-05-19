@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Meteor } from 'meteor/meteor';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import ThemeToggle from './ThemeToggle';
 
@@ -14,6 +15,50 @@ const sectionLinkClasses =
   'btn btn-ghost btn-sm rounded-md font-medium text-base-content/75';
 
 export function PublicHeader() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHomePage = location.pathname === '/';
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const adminButtonClasses = [
+    'btn btn-ghost btn-sm rounded-md font-medium',
+    isLoginOpen ? 'bg-primary/10 text-primary' : 'text-base-content/75',
+  ].join(' ');
+
+  const toggleLogin = () => {
+    setError('');
+    setIsLoginOpen((open) => !open);
+  };
+
+  const closeLogin = () => {
+    setError('');
+    setPassword('');
+    setIsLoginOpen(false);
+  };
+
+  const handleInlineLogin = (e) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    Meteor.loginWithPassword(email, password, (err) => {
+      setIsSubmitting(false);
+
+      if (err) {
+        setError(err.reason || 'Login failed');
+        return;
+      }
+
+      setPassword('');
+      setIsLoginOpen(false);
+      navigate('/admin');
+    });
+  };
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
@@ -59,7 +104,13 @@ export function PublicHeader() {
                 <Link to="/#workflow">Workflow</Link>
               </li>
               <li>
-                <NavLink to="/login">Admin Login</NavLink>
+                {isHomePage ? (
+                  <button type="button" onClick={toggleLogin}>
+                    Admin Login
+                  </button>
+                ) : (
+                  <NavLink to="/login">Admin Login</NavLink>
+                )}
               </li>
             </ul>
           </div>
@@ -93,14 +144,95 @@ export function PublicHeader() {
 
         <div className="navbar-end gap-2">
           <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
-          <NavLink to="/login" className={navLinkClasses}>
-            Admin Login
-          </NavLink>
+          {isHomePage ? (
+            <button
+              type="button"
+              className={adminButtonClasses}
+              onClick={toggleLogin}
+              aria-expanded={isLoginOpen}
+              aria-controls="inline-admin-login"
+            >
+              Admin Login
+            </button>
+          ) : (
+            <NavLink to="/login" className={navLinkClasses}>
+              Admin Login
+            </NavLink>
+          )}
           <Link to="/checkin" className="btn btn-primary btn-sm rounded-md">
             Check In
           </Link>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isHomePage && isLoginOpen && (
+          <motion.div
+            id="inline-admin-login"
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.24, ease: 'easeOut' }}
+            className="overflow-hidden border-t border-base-300/70 bg-base-100/95"
+          >
+            <div className="mx-auto flex w-full max-w-7xl justify-end px-4 py-3 sm:px-6 lg:px-8">
+              <form
+                onSubmit={handleInlineLogin}
+                className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl shadow-base-content/5 lg:w-auto"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input
+                    type="email"
+                    className="input input-bordered input-sm w-full rounded-md sm:w-44 lg:w-52"
+                    placeholder="Username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                  <input
+                    type="password"
+                    className="input input-bordered input-sm w-full rounded-md sm:w-40 lg:w-48"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+
+                  {error && (
+                    <div className="alert alert-error rounded-md py-2 text-sm">
+                      <span>{error}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-sm rounded-md sm:min-w-24"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="loading loading-spinner loading-xs" />
+                        Logging in
+                      </>
+                    ) : (
+                      'Login'
+                    )}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="sr-only"
+                  onClick={closeLogin}
+                >
+                  Close
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }
