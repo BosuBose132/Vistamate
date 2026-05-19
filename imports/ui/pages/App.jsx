@@ -176,7 +176,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className={
               hasSurveyModel
-                ? 'grid w-full items-start gap-5 lg:grid-cols-[minmax(0,0.92fr)_1px_minmax(0,1.08fr)]'
+                ? 'grid w-full items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1px_440px]'
                 : 'flex w-full justify-center'
             }
           >
@@ -206,7 +206,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
             {hasSurveyModel && (
               <div
-                className="hidden h-full min-h-[32rem] w-px bg-base-300 lg:block"
+                className="hidden h-full min-h-[28rem] w-px bg-base-300 lg:block"
                 aria-hidden="true"
               />
             )}
@@ -219,10 +219,15 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.28, ease: 'easeOut' }}
-                  className="w-full rounded-2xl border border-base-300 bg-base-100/95 p-4 shadow-xl shadow-base-content/5 sm:p-5"
+                  className="w-full max-w-[440px] justify-self-center rounded-2xl border border-base-300 bg-base-100/95 p-4 shadow-xl shadow-base-content/5 lg:justify-self-end"
                 >
-                  <div className="mb-4 flex items-center justify-between border-b border-base-300 pb-4">
-                    <h2 className="text-2xl font-semibold">Review details</h2>
+                  <div className="mb-4 flex items-start justify-between gap-4 border-b border-base-300 pb-4">
+                    <div>
+                      <h2 className="text-xl font-semibold">Review details</h2>
+                      <p className="mt-1 text-sm text-base-content/60">
+                        Confirm the scanned information.
+                      </p>
+                    </div>
                     {ocrStatus === 'processed' && (
                       <span className="badge badge-success rounded-md">
                         Ready

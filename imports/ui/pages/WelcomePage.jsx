@@ -89,7 +89,7 @@ const WelcomePage = () => {
           >
             <motion.div
               variants={fadeUp}
-              className="badge badge-outline badge-lg mb-5 rounded-md border-primary/35 bg-primary/5 px-3 text-primary"
+              className="badge badge-outline badge-lg mb-4 rounded-md border-primary/35 bg-primary/5 px-3 text-primary"
             >
               AI-powered visitor operations
             </motion.div>
@@ -101,15 +101,15 @@ const WelcomePage = () => {
             </motion.h1>
             <motion.p
               variants={fadeUp}
-              className="mt-6 max-w-2xl text-lg leading-8 text-base-content/70"
+              className="mt-5 max-w-2xl text-lg leading-8 text-base-content/70"
             >
-              Vistamate combines AI ID and business card detection, OCR autofill,
-              station kiosks, visitor check-in, and an admin dashboard into one
-              polished front-desk workflow.
+              Vistamate combines AI ID and business card detection, OCR
+              autofill, station kiosks, visitor check-in, and an admin dashboard
+              into one polished front-desk workflow.
             </motion.p>
             <motion.div
               variants={fadeUp}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
+              className="mt-6 flex flex-col gap-3 sm:flex-row"
             >
               <Link to="/checkin" className="btn btn-primary rounded-md">
                 Check In
@@ -120,7 +120,7 @@ const WelcomePage = () => {
             </motion.div>
             <motion.div
               variants={fadeUp}
-              className="mt-10 grid max-w-2xl grid-cols-3 gap-3 text-sm"
+              className="mt-8 grid max-w-2xl grid-cols-3 gap-3 text-sm"
             >
               <div className="border-l-2 border-primary pl-3">
                 <p className="font-semibold">OCR autofill</p>
@@ -143,101 +143,23 @@ const WelcomePage = () => {
             transition={{ duration: 0.38, ease: 'easeOut', delay: 0.12 }}
             className="relative"
           >
-            <div className="rounded-lg border border-base-300 bg-base-200 p-3 shadow-2xl">
-              <div className="rounded-md border border-base-300 bg-base-100">
-                <div className="flex items-center justify-between border-b border-base-300 px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-error" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-warning" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-success" />
-                  </div>
-                  <span className="text-xs font-medium text-base-content/50">
-                    Station kiosk
-                  </span>
-                </div>
-
-                <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
-                  <div className="border-b border-base-300 p-5 md:border-b-0 md:border-r">
-                    <div className="flex aspect-[4/3] items-center justify-center rounded-md border border-dashed border-primary/35 bg-primary/5">
-                      <div className="w-4/5 rounded-md border border-primary/30 bg-base-100 p-4 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
-                          <span className="h-8 w-12 rounded bg-primary/20" />
-                          <span className="badge badge-primary rounded-md">
-                            AI detected
-                          </span>
-                        </div>
-                        <div className="space-y-2">
-                          <span className="block h-2.5 w-3/4 rounded bg-base-content/20" />
-                          <span className="block h-2.5 w-1/2 rounded bg-base-content/10" />
-                          <span className="block h-2.5 w-2/3 rounded bg-base-content/10" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3">
-                      <div className="rounded-md border border-base-300 bg-base-100 p-3">
-                        <p className="text-xs text-base-content/60">Capture</p>
-                        <p className="font-semibold">Business card</p>
-                      </div>
-                      <div className="rounded-md border border-base-300 bg-base-100 p-3">
-                        <p className="text-xs text-base-content/60">Status</p>
-                        <p className="font-semibold text-success">Ready</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="mb-5 flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-base-content">
-                          Visitor profile
-                        </p>
-                        <p className="text-xs text-base-content/60">
-                          OCR fields queued for review
-                        </p>
-                      </div>
-                      <div className="badge badge-outline rounded-md">
-                        Autofill
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      {['Full name', 'Company', 'Email', 'Host'].map(
-                        (label, index) => (
-                          <div key={label}>
-                            <div className="mb-1 flex items-center justify-between text-xs">
-                              <span className="font-medium text-base-content/60">
-                                {label}
-                              </span>
-                              <span className="text-success">
-                                {index < 3 ? 'Detected' : 'Required'}
-                              </span>
-                            </div>
-                            <div className="h-10 rounded-md border border-base-300 bg-base-200" />
-                          </div>
-                        ),
-                      )}
-                    </div>
-                    <div className="mt-5 rounded-md bg-neutral p-4 text-neutral-content">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Today&apos;s station check-ins</span>
-                        <span className="font-semibold">128</span>
-                      </div>
-                      <progress
-                        className="progress progress-primary mt-3"
-                        value="72"
-                        max="100"
-                      />
-                    </div>
-                  </div>
-                </div>
+            <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-2 shadow-2xl shadow-base-content/10">
+              <div className="relative overflow-hidden rounded-xl">
+                <img
+                  src="/homePage.png"
+                  alt="Visitor presenting an ID card to a check-in kiosk in a modern lobby"
+                  className="aspect-[16/9] w-full object-cover"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-base-content/35 to-transparent" />
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section id="platform" className="bg-base-200 px-4 py-16 sm:px-6 lg:px-8">
+      <section id="platform" className="bg-base-200 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-10 max-w-3xl">
+          <div className="mb-7 max-w-3xl">
             <p className="text-sm font-semibold uppercase text-primary">
               Platform
             </p>
@@ -282,9 +204,9 @@ const WelcomePage = () => {
 
       <section
         id="workflow"
-        className="border-y border-base-300/80 bg-base-100 px-4 py-16 sm:px-6 lg:px-8"
+        className="border-y border-base-300/80 bg-base-100 px-4 py-10 sm:px-6 lg:px-8"
       >
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div className="mx-auto grid max-w-7xl gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-primary">
               Workflow
@@ -292,7 +214,7 @@ const WelcomePage = () => {
             <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
               From document capture to dashboard visibility.
             </h2>
-            <p className="mt-5 max-w-2xl leading-8 text-base-content/70">
+            <p className="mt-4 max-w-2xl leading-8 text-base-content/70">
               Vistamate supports self-service station kiosks and front-desk
               assisted check-ins while preserving a consistent experience for
               administrators.
@@ -326,7 +248,7 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      <section className="bg-base-200 px-4 py-14 sm:px-6 lg:px-8">
+      <section className="bg-base-200 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm md:flex-row md:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-primary">

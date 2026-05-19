@@ -26,7 +26,7 @@ const SurveyForm = ({ surveyModel }) => {
   }
 
   return (
-    <div className="w-full">
+    <div className="vistamate-review-survey w-full max-w-[440px]">
       {/* Borderless, DaisyUI-colored form (no card/border here) */}
       <div className="rounded-xl bg-base-100">
         <Survey model={surveyModel} />
