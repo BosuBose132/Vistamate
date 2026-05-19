@@ -1,6 +1,6 @@
 /* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
@@ -9,6 +9,7 @@ import { FlatDarkPanelless } from 'survey-core/themes';
 
 import SurveyForm from '../components/SurveyForm';
 import CameraCapture from '../components/CameraCapture';
+import PublicLayout from '../components/PublicLayout';
 import 'survey-core/survey-core.css';
 
 function applyOCRDefaults(parsed) {
@@ -31,6 +32,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const [loading, setLoading] = useState(false); // <- value + setter
   const [error, setError] = useState(null);
   const [ocrStatus, setOcrStatus] = useState('idle'); // 'idle' | 'processing' | 'processed'
+  const hasSurveyModel = Boolean(surveyModel);
 
   const handleCapture = (base64) => {
     console.log('Captured in App.jsx:', base64);
@@ -166,33 +168,80 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   });
 
   return (
-    <div className="min-h-screen w-full flex flex-col md:flex-row items-center justify-center gap-6 px-4 py-10 bg-base-200 text-base-content">
-      {/* CAMERA */}
-      <div className="w-full md:w-1/2 flex justify-center items-center">
-        <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
-      </div>
-      {/* Divider: vertical on desktop, horizontal on mobile */}
-      <div
-        className="hidden md:block self-stretch w-px bg-base-300/80 rounded-full"
-        aria-hidden="true"
-      />
-      <div
-        className="md:hidden h-px w-full bg-base-300/80 rounded-full"
-        aria-hidden="true"
-      />
+    <PublicLayout>
+      <section className="bg-base-200 px-4 py-6 text-base-content sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl flex-col justify-center">
+          <motion.div
+            layout
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className={
+              hasSurveyModel
+                ? 'grid w-full items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1px_440px]'
+                : 'flex w-full justify-center'
+            }
+          >
+            {/* CAMERA */}
+            <motion.div
+              layout
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className={hasSurveyModel ? 'w-full' : 'w-full max-w-4xl'}
+            >
+              <CameraCapture onCapture={handleCapture} ocrStatus={ocrStatus} />
+              {(loading || error) && (
+                <div className="mt-4">
+                  {loading && (
+                    <div className="alert rounded-md border-info/30 bg-info/10 text-base-content">
+                      <span className="loading loading-spinner loading-sm" />
+                      <span>Scanning</span>
+                    </div>
+                  )}
+                  {error && (
+                    <div className="alert alert-error mt-3">
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </motion.div>
 
-      {/* SURVEY FORM */}
-      {surveyModel && (
-        <motion.div
-          initial={{ x: '100%', opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full md:w-1/2 flex justify-center items-center md:items-center"
-        >
-          <SurveyForm surveyModel={surveyModel} />
-        </motion.div>
-      )}
-    </div>
+            {hasSurveyModel && (
+              <div
+                className="hidden h-full min-h-[28rem] w-px bg-base-300 lg:block"
+                aria-hidden="true"
+              />
+            )}
+
+            <AnimatePresence mode="wait">
+              {surveyModel && (
+                <motion.aside
+                  key="survey-review"
+                  initial={{ opacity: 0, x: 28 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  className="w-full max-w-[440px] justify-self-center rounded-2xl border border-base-300 bg-base-100/95 p-4 shadow-xl shadow-base-content/5 lg:justify-self-end"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-4 border-b border-base-300 pb-4">
+                    <div>
+                      <h2 className="text-xl font-semibold">Review details</h2>
+                      <p className="mt-1 text-sm text-base-content/60">
+                        Confirm the scanned information.
+                      </p>
+                    </div>
+                    {ocrStatus === 'processed' && (
+                      <span className="badge badge-success rounded-md">
+                        Ready
+                      </span>
+                    )}
+                  </div>
+                  <SurveyForm surveyModel={surveyModel} />
+                </motion.aside>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </section>
+    </PublicLayout>
   );
 };
 

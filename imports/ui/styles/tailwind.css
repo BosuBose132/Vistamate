@@ -204,3 +204,51 @@
     background: transparent !important;
     border-top: 1px solid transparent !important;
 }
+
+/* Compact SurveyJS review panel on the public check-in flow */
+.vistamate-review-survey .sd-root-modern {
+    max-width: 100% !important;
+}
+
+.vistamate-review-survey .sd-body {
+    padding: 0 !important;
+}
+
+.vistamate-review-survey .sd-container-modern {
+    margin: 0 !important;
+}
+
+.vistamate-review-survey .sd-page {
+    padding: 0 !important;
+}
+
+.vistamate-review-survey .sd-row {
+    margin-top: 0.75rem !important;
+}
+
+.vistamate-review-survey .sd-question {
+    padding: 0 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.vistamate-review-survey .sd-question__title {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.vistamate-review-survey .sd-input,
+.vistamate-review-survey .sd-text,
+.vistamate-review-survey .sd-dropdown,
+.vistamate-review-survey .sd-selectbase__control {
+    min-height: 2.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.925rem !important;
+}
+
+.vistamate-review-survey .sd-footer,
+.vistamate-review-survey .sd-action-bar {
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem !important;
+}

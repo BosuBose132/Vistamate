@@ -120,33 +120,42 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
   };
 
   return (
-    <div className="card bg-base-100 shadow mb-6">
-      <div className="card-body">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="card-title">New Visitor Check-in</h2>
-          <span className="text-xs opacity-60">Admin entered</span>
+    <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Quick check-in</h2>
+          <p className="mt-1 text-sm text-base-content/55">Admin entry</p>
         </div>
+        <span className="badge badge-outline rounded-md border-base-300">
+          Manual
+        </span>
+      </div>
 
-        <div className="sv-root-modern text-base-content">
-          <Survey model={survey} />
-        </div>
+      <div className="sv-root-modern rounded-xl border border-base-300/70 bg-base-200/30 p-3 text-base-content">
+        <Survey model={survey} />
+      </div>
 
-        <div className="mt-2 flex items-center gap-3">
-          <button
-            className={`btn btn-primary ${submitting ? 'btn-disabled' : ''}`}
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? 'Checking In…' : 'Check In'}
-          </button>
+      <div className="mt-4 space-y-3">
+        <button
+          className={`btn btn-primary w-full rounded-md ${
+            submitting ? 'btn-disabled' : ''
+          }`}
+          onClick={handleSubmit}
+          disabled={submitting}
+        >
+          {submitting ? 'Checking In…' : 'Check In'}
+        </button>
 
-          {msg?.type === 'success' && (
-            <div className="badge badge-success badge-outline">{msg.text}</div>
-          )}
-          {msg?.type === 'error' && (
-            <div className="badge badge-error badge-outline">{msg.text}</div>
-          )}
-        </div>
+        {msg?.type === 'success' && (
+          <div className="alert alert-success rounded-xl py-2 text-sm">
+            <span>{msg.text}</span>
+          </div>
+        )}
+        {msg?.type === 'error' && (
+          <div className="alert alert-error rounded-xl py-2 text-sm">
+            <span>{msg.text}</span>
+          </div>
+        )}
       </div>
     </div>
   );

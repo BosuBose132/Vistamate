@@ -1,6 +1,7 @@
 /* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
 
 const ENABLE_AI_DETECTION = true;
@@ -9,6 +10,31 @@ const AI_CONFIDENCE_MIN = 0.45;
 const AI_STABLE_FRAMES_REQUIRED = 2;
 const AI_CAPTURE_DELAY_MS = 400;
 const AI_MISSES_ALLOWED = 2;
+
+const CAMERA_CONSTRAINTS = [
+  {
+    video: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ideal: 30 },
+      resizeMode: { ideal: 'none' },
+    },
+    audio: false,
+  },
+  {
+    video: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      aspectRatio: { ideal: 16 / 9 },
+      frameRate: { ideal: 30 },
+      resizeMode: { ideal: 'none' },
+    },
+    audio: false,
+  },
+];
 
 const PHASE = {
   ALIGN: 'align',
@@ -44,20 +70,30 @@ const rightAngleScore = (quad) => {
   return (scores[0] + scores[1] + scores[2] + scores[3]) / 4;
 };
 
-const StatusBadge = ({ phase }) => {
+const StatusBadge = ({ phase, ocrStatus }) => {
   const map = {
-    [PHASE.ALIGN]: { txt: 'Align your ID', cls: 'badge-ghost' },
-    [PHASE.STEADY]: { txt: 'Hold steady…', cls: 'badge-warning' },
-    [PHASE.READY]: { txt: 'Auto-capturing…', cls: 'badge-success' },
-    [PHASE.CAPTURING]: { txt: 'Capturing…', cls: 'badge-info' },
-    [PHASE.PROCESSING]: { txt: 'Processing OCR…', cls: 'badge-info' },
+    [PHASE.ALIGN]: { txt: 'Place card', cls: 'badge-outline' },
+    [PHASE.STEADY]: { txt: 'Hold steady', cls: 'badge-warning' },
+    [PHASE.READY]: { txt: 'Scanning', cls: 'badge-success' },
+    [PHASE.CAPTURING]: { txt: 'Capturing', cls: 'badge-info' },
+    [PHASE.PROCESSING]: {
+      txt: ocrStatus === 'processed' ? 'Ready' : 'Scanning',
+      cls: ocrStatus === 'processed' ? 'badge-success' : 'badge-info',
+    },
   };
   const { txt, cls } = map[phase] || { txt: 'Ready', cls: 'badge-ghost' };
   return (
-    <span className={`badge ${cls} gap-2`}>
+    <motion.span
+      key={`${phase}-${ocrStatus}`}
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className={`badge ${cls} gap-2 rounded-md px-3 py-2 text-xs font-medium`}
+      aria-live="polite"
+    >
       <LoadingDot phase={phase} />
       {txt}
-    </span>
+    </motion.span>
   );
 };
 
@@ -102,6 +138,27 @@ const captureToBase64 = (videoRef, canvasRef) => {
   return canvas.toDataURL('image/png');
 };
 
+const getCameraStream = async () => {
+  let fallbackError;
+
+  for (const constraints of CAMERA_CONSTRAINTS) {
+    try {
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (err) {
+      fallbackError = err;
+      if (
+        err?.name === 'NotAllowedError' ||
+        err?.name === 'NotFoundError' ||
+        err?.name === 'SecurityError'
+      ) {
+        throw err;
+      }
+    }
+  }
+
+  throw fallbackError;
+};
+
 export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -144,14 +201,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
     const start = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
+        stream = await getCameraStream();
         v.srcObject = stream;
         v.muted = true;
         v.playsInline = true;
@@ -289,100 +339,119 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   // ── JSX ────────────────────────────────────────────────────────────────
   return (
     <div className="w-full">
-      <div className="card bg-base-100 text-base-content shadow-xl mx-auto max-w-3xl">
-        <div className="card-body">
-          {/* Header */}
-          <div className="flex items-center justify-between">
+      <motion.div
+        layout
+        transition={{ duration: 0.28, ease: 'easeOut' }}
+        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-base-300 bg-base-100/95 text-base-content shadow-xl shadow-base-content/5"
+      >
+        <div className="border-b border-base-300 bg-base-100/90 px-4 py-3 sm:px-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="card-title">Visitor Check-In</h2>
-              <p className="opacity-70">
-                Please align your business card within the box to check in
-              </p>
+              <h2 className="text-xl font-semibold">Check in</h2>
+              <span className="text-sm text-base-content/60">
+                Place your card inside the frame
+              </span>
             </div>
-            <StatusBadge phase={phase} />
+            <StatusBadge phase={phase} ocrStatus={ocrStatus} />
           </div>
+        </div>
 
+        <div className="p-3 sm:p-4">
           {/* Video area */}
-          <div className="relative mt-4 rounded-2xl overflow-hidden bg-base-200 border border-base-300">
+          <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-neutral shadow-inner">
             <div className="aspect-video w-full">
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
+                  videoReady ? 'opacity-100' : 'opacity-50'
+                }`}
               />
               <canvas ref={canvasRef} className="hidden" />
-
-              {/* Debug edges thumbnail */}
-              <div className="absolute bottom-2 left-2 pointer-events-none bg-base-100/70 rounded p-1 shadow">
-                <div className="text-[10px] opacity-70 px-1">Edges</div>
-                <img
-                  id="cv-debug"
-                  alt="cv debug"
-                  className="max-w-[140px] rounded"
-                />
-              </div>
             </div>
 
-            {/* Overlay guide box */}
-            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none transition-all">
-              <div
-                className={`rounded-2xl px-8 py-16 border-4 transition-all duration-300 ${
-                  isBoxGreen
-                    ? 'border-success/80 shadow-[0_0_24px_4px_rgba(34,197,94,0.35)] bg-success/5'
-                    : 'border-base-300 bg-base-300/10'
-                }`}
-                style={{ width: '80%', aspectRatio: '1.58' }}
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  {isBoxGreen ? (
-                    <span className="font-semibold text-success animate-pulse">
-                      Auto-capturing… hold steady
-                    </span>
-                  ) : (
-                    <span className="opacity-80">
-                      Align your business card inside the box
-                    </span>
-                  )}
+            {!videoReady && !error && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-neutral-content">
+                <div className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 px-4 py-3 backdrop-blur">
+                  <span className="loading loading-spinner loading-sm" />
+                  <span className="text-sm font-medium">Starting camera</span>
                 </div>
               </div>
+            )}
+
+            {/* Overlay guide box */}
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
+              <motion.div
+                animate={{
+                  borderColor: isBoxGreen
+                    ? 'rgb(34 197 94)'
+                    : 'rgba(255,255,255,0.58)',
+                }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className={`relative rounded-2xl border bg-transparent text-center ${
+                  isBoxGreen
+                    ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
+                    : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
+                }`}
+                style={{ width: '76%', aspectRatio: '1.58' }}
+              >
+                <span
+                  className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm ${
+                    isBoxGreen
+                      ? 'bg-success text-success-content'
+                      : 'bg-base-100/75 text-base-content/70'
+                  }`}
+                >
+                  {isBoxGreen ? 'Hold steady' : 'Place card'}
+                </span>
+              </motion.div>
             </div>
 
             {/* Post-capture overlay */}
-            {hasCaptured && (
-              <div className="absolute inset-0 bg-base-100/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2 text-base-content">
-                {ocrStatus === 'processed' ? (
-                  <>
-                    <div className="text-success">
-                      <svg
-                        className="w-10 h-10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M20 6L9 17l-5-5" />
-                      </svg>
-                    </div>
-                    <p className="font-semibold">
-                      OCR processed — review the form
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <span className="loading loading-spinner loading-lg" />
-                    <p className="font-semibold">Captured — processing OCR…</p>
-                    <p className="text-sm opacity-70">Please wait</p>
-                  </>
-                )}
-              </div>
-            )}
+            <AnimatePresence>
+              {hasCaptured && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-base-100/88 px-6 text-center text-base-content backdrop-blur-md"
+                >
+                  {ocrStatus === 'processed' ? (
+                    <>
+                      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
+                        <svg
+                          className="h-7 w-7"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Review details</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="loading loading-spinner loading-lg text-primary" />
+                      <div>
+                        <p className="font-semibold">Scanning</p>
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Error */}
           {error && (
-            <div className="alert alert-error mt-4">
+            <div className="alert alert-error mt-4 rounded-md">
               <span>{error}</span>
             </div>
           )}
@@ -390,7 +459,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
           {/* Manual capture button */}
           <div className="mt-4 flex justify-center">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary min-w-44 rounded-md"
               onClick={doCapture}
               disabled={
                 hasCaptured ||
@@ -398,11 +467,11 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 phase === PHASE.PROCESSING
               }
             >
-              {hasCaptured ? 'Processing…' : 'Capture & Scan'}
+              {hasCaptured ? 'Scanning' : 'Capture'}
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
