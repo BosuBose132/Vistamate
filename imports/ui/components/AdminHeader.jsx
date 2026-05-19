@@ -1,74 +1,85 @@
-/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
-import ThemeToggle from '/imports/ui/components/ThemeToggle';
-import { NavLink } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
+import { motion } from 'framer-motion';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+
+import ThemeToggle from '/imports/ui/components/ThemeToggle';
+
+const navItems = [
+  { to: '/admin', label: 'Dashboard', end: true },
+  { to: '/admin/checkins', label: 'Check-ins' },
+  { to: '/admin/stations', label: 'Stations' },
+  { to: '/admin/surveys', label: 'Surveys' },
+];
+
+const navLinkClass = ({ isActive }) =>
+  [
+    'btn btn-ghost btn-sm rounded-md border border-transparent px-3',
+    'font-medium text-base-content/70',
+    isActive
+      ? 'border-primary/20 bg-primary/10 text-primary shadow-sm'
+      : 'hover:border-base-300 hover:bg-base-200/80',
+  ].join(' ');
+
 export default function AdminHeader() {
   const navigate = useNavigate();
   const onLogout = () => Meteor.logout(() => navigate('/login'));
 
   return (
-    <div className="bg-base-100 shadow rounded-xl mb-6">
-      {/* One straight line: relative + flex (no wrap), title absolutely centered */}
-      <div className="relative flex items-center flex-nowrap h-14 px-3 sm:px-4">
-        {/* LEFT: logo + links (scroll horizontally if crowded) */}
-        <div className="flex items-center gap-2 whitespace-nowrap overflow-x-auto">
-          <a href="/" className="btn btn-ghost px-1" title="Go to Welcome">
-            <img
-              src="/VistamateLogo.png"
-              alt="Vistamate"
-              className="h-36 w-auto"
-            />
-          </a>
-          <NavLink
-            to="/admin"
-            end
-            className={({ isActive }) =>
-              `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
-            }
+    <motion.header
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: 'easeOut' }}
+      className="mb-6 rounded-2xl border border-base-300/80 bg-base-100/95 shadow-sm shadow-base-content/5 backdrop-blur"
+    >
+      <div className="flex min-h-16 flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between lg:px-5">
+        <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
+            aria-label="Vistamate home"
           >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/admin/checkins"
-            className={({ isActive }) =>
-              `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
-            }
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-lg font-bold text-primary">
+              V
+            </span>
+            <span className="leading-tight">
+              <span className="block text-sm font-semibold tracking-wide">
+                Vistamate
+              </span>
+              <span className="block text-xs font-medium text-base-content/55">
+                Admin
+              </span>
+            </span>
+          </Link>
+
+          <nav
+            className="flex gap-1 overflow-x-auto whitespace-nowrap pb-1 lg:pb-0"
+            aria-label="Admin"
           >
-            Check-ins
-          </NavLink>
-          <NavLink
-            to="/admin/stations"
-            className={({ isActive }) =>
-              `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
-            }
-          >
-            Stations
-          </NavLink>
-          <NavLink
-            to="/admin/surveys"
-            className={({ isActive }) =>
-              `btn btn-sm ${isActive ? 'btn-primary' : 'btn-ghost'}`
-            }
-          >
-            Surveys
-          </NavLink>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={navLinkClass}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
 
-        {/* CENTER: absolutely centered title (stays on the same line) */}
-
-        {/* RIGHT: theme toggle + logout, pushed to far right */}
-        <div className="flex items-center gap-2 ml-auto whitespace-nowrap">
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
           <button
-            className="btn btn-xs sm:btn-sm btn-outline"
+            type="button"
+            className="btn btn-outline btn-sm rounded-md border-base-300 font-medium"
             onClick={onLogout}
           >
             Logout
           </button>
-          <ThemeToggle />
         </div>
       </div>
-    </div>
+    </motion.header>
   );
 }
