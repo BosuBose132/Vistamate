@@ -14,11 +14,8 @@ const navItems = [
 
 const navLinkClass = ({ isActive }) =>
   [
-    'btn btn-ghost btn-sm rounded-md border border-transparent px-3',
-    'font-medium text-base-content/70',
-    isActive
-      ? 'border-primary/20 bg-primary/10 text-primary shadow-sm'
-      : 'hover:border-base-300 hover:bg-base-200/80',
+    'btn btn-ghost btn-sm rounded-md font-medium',
+    isActive ? 'bg-primary/10 text-primary' : 'text-base-content/75',
   ].join(' ');
 
 export default function AdminHeader() {
@@ -32,28 +29,60 @@ export default function AdminHeader() {
       transition={{ duration: 0.24, ease: 'easeOut' }}
       className="mb-6 rounded-2xl border border-base-300/80 bg-base-100/95 shadow-sm shadow-base-content/5 backdrop-blur"
     >
-      <div className="flex min-h-16 flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center lg:justify-between lg:px-5">
-        <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="navbar min-h-16 w-full px-4 sm:px-6 lg:px-8">
+        <div className="navbar-start gap-2">
+          <div className="dropdown lg:hidden">
+            <button
+              type="button"
+              tabIndex={0}
+              className="btn btn-ghost btn-square rounded-md"
+              aria-label="Open admin navigation"
+            >
+              <svg
+                aria-hidden="true"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeWidth="2"
+                />
+              </svg>
+            </button>
+            <ul
+              tabIndex={0}
+              className="menu dropdown-content mt-3 w-64 rounded-lg border border-base-300 bg-base-100 p-2 shadow-xl"
+            >
+              {navItems.map((item) => (
+                <li key={item.to}>
+                  <NavLink to={item.to} end={item.end}>
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <Link
             to="/"
-            className="flex shrink-0 items-center gap-3 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
+            className="relative h-16 w-40 shrink-0 rounded-md sm:w-48 lg:w-56 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
             aria-label="Vistamate home"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-lg font-bold text-primary">
-              V
-            </span>
-            <span className="leading-tight">
-              <span className="block text-sm font-semibold tracking-wide">
-                Vistamate
-              </span>
-              <span className="block text-xs font-medium text-base-content/55">
-                Admin
-              </span>
-            </span>
+            <img
+              src="/VistaMate.png"
+              alt="Vistamate"
+              className="absolute left-0 top-1/2 h-28 w-auto max-w-none -translate-y-1/2 object-contain sm:h-32 lg:h-36"
+            />
           </Link>
+        </div>
 
+        <div className="navbar-center hidden lg:flex">
           <nav
-            className="flex gap-1 overflow-x-auto whitespace-nowrap pb-1 lg:pb-0"
+            className="flex items-center gap-1"
             aria-label="Admin"
           >
             {navItems.map((item) => (
@@ -69,7 +98,7 @@ export default function AdminHeader() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="navbar-end gap-2">
           <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
           <button
             type="button"

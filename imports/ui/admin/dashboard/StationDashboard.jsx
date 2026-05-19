@@ -183,13 +183,17 @@ export default function StationDashboard() {
                               })
                             : '—'}
                         </td>
-                        <td>
+                        <td className="align-middle">
                           {v.status === 'checked_out' ? (
-                            <span className="badge badge-ghost rounded-md">
+                            <span className="inline-flex h-7 items-center rounded-full border border-base-300 bg-base-200/70 px-3 text-xs font-medium leading-none text-base-content/65">
                               Checked Out
                             </span>
                           ) : (
-                            <span className="badge badge-success rounded-md">
+                            <span className="inline-flex h-7 items-center gap-2 rounded-full border border-success/20 bg-success/10 px-3 text-xs font-semibold leading-none text-success">
+                              <span
+                                className="h-1.5 w-1.5 rounded-full bg-success"
+                                aria-hidden="true"
+                              />
                               In Building
                             </span>
                           )}
