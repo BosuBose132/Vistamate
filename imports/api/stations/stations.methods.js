@@ -13,71 +13,106 @@ import { assertAdminAsync } from '/imports/api/_roles.helpers.js';
 // }
 
 Meteor.methods({
-    // used by Welcome button to route to Lobby
-    async 'stations.getDefaultToken'() {
-        const lobby = await Stations.findOneAsync({ name: 'Lobby', isActive: true });
-        if (lobby) return lobby.token;
-        const firstActive = await Stations.findOneAsync({ isActive: true }, { sort: { createdAt: 1 } });
-        return firstActive?.token || null;
-    },
+  // used by Welcome button to route to Lobby
+  async 'stations.getDefaultToken'() {
+    const lobby = await Stations.findOneAsync({
+      name: 'Lobby',
+      isActive: true,
+    });
+    if (lobby) return lobby.token;
+    const firstActive = await Stations.findOneAsync(
+      { isActive: true },
+      { sort: { createdAt: 1 } },
+    );
+    return firstActive?.token || null;
+  },
 
-    // Create a kiosk (station) with configuration
-    async 'stations.create'(payload) {
-        check(payload, {
-            name: String,
-            location: String,
-            surveyId: Match.Optional(String),
-            cameraEnabled: Match.Optional(Boolean),
-            requirePhoto: Match.Optional(Boolean),
-            mobileBehavior: Match.Optional(String), // 'form_always' | 'toggle'
-            welcomeMessage: Match.Optional(String),
-            theme: Match.Optional(String),
-        });
-        await assertAdminAsync(this.userId);
+  // Create a kiosk (station) with configuration
+  async 'stations.create'(payload) {
+    check(payload, {
+      name: String,
+      location: String,
+      surveyId: Match.Optional(String),
+      cameraEnabled: Match.Optional(Boolean),
+      requirePhoto: Match.Optional(Boolean),
+      mobileBehavior: Match.Optional(String),
+      welcomeMessage: Match.Optional(String),
+      theme: Match.Optional(String),
+    });
 
-        const token = uuidv4();
-        const _id = await Stations.insertAsync({
-            ...payload,
-            token: uuidv4(),
-            isActive: true,
-            createdAt: new Date(),
-            createdBy: this.userId,
-        });
-        return { _id, token };
-    },
+    await assertAdminAsync(this.userId);
 
-    async 'stations.update'({ _id, updates }) {
-        check(_id, String);
-        check(updates, Object);
-        await assertAdminAsync(this.userId);
-        const allowed = ['name', 'location', 'surveyId', 'cameraEnabled', 'requirePhoto', 'mobileBehavior', 'welcomeMessage', 'theme', 'isActive'];
-        const $set = Object.fromEntries(Object.entries(updates).filter(([k]) => allowed.includes(k)));
-        await Stations.updateAsync(_id, { $set });
-    },
+    const name = payload.name.trim();
+    if (!name) {
+      throw new Meteor.Error('bad-request', 'Station name is required.');
+    }
 
-    async 'stations.rename'({ _id, name }) {
-        check(_id, String); check(name, String);
-        await assertAdminAsync(this.userId);
-        await Stations.updateAsync(_id, { $set: { name: name.trim() } });
-    },
+    const token = uuidv4();
 
-    async 'stations.toggle'({ _id, isActive }) {
-        check(_id, String); check(isActive, Boolean);
-        await assertAdminAsync(this.userId);
-        Stations.updateAsync(_id, { $set: { isActive } });
-    },
+    const _id = await Stations.insertAsync({
+      name,
+      location: payload.location?.trim() || '',
+      surveyId: payload.surveyId || null,
+      cameraEnabled: payload.cameraEnabled ?? true,
+      requirePhoto: payload.requirePhoto ?? false,
+      mobileBehavior: payload.mobileBehavior || 'toggle',
+      welcomeMessage: payload.welcomeMessage?.trim() || '',
+      theme: payload.theme || 'vistamate',
+      token,
+      isActive: true,
+      createdAt: new Date(),
+      createdBy: this.userId,
+    });
 
-    async 'stations.rotate'({ _id }) {
-        check(_id, String);
-        await assertAdminAsync(this.userId);
-        const token = uuidv4();
-        await Stations.updateAsync(_id, { $set: { token } });
-        return token;
-    },
+    return { _id, token };
+  },
 
-    async 'stations.remove'({ _id }) {
-        check(_id, String);
-        await assertAdminAsync(this.userId);
-        await Stations.removeAsync(_id);
-    },
+  async 'stations.update'({ _id, updates }) {
+    check(_id, String);
+    check(updates, Object);
+    await assertAdminAsync(this.userId);
+    const allowed = [
+      'name',
+      'location',
+      'surveyId',
+      'cameraEnabled',
+      'requirePhoto',
+      'mobileBehavior',
+      'welcomeMessage',
+      'theme',
+      'isActive',
+    ];
+    const $set = Object.fromEntries(
+      Object.entries(updates).filter(([k]) => allowed.includes(k)),
+    );
+    await Stations.updateAsync(_id, { $set });
+  },
+
+  async 'stations.rename'({ _id, name }) {
+    check(_id, String);
+    check(name, String);
+    await assertAdminAsync(this.userId);
+    await Stations.updateAsync(_id, { $set: { name: name.trim() } });
+  },
+
+  async 'stations.toggle'({ _id, isActive }) {
+    check(_id, String);
+    check(isActive, Boolean);
+    await assertAdminAsync(this.userId);
+    await Stations.updateAsync(_id, { $set: { isActive } });
+  },
+
+  async 'stations.rotate'({ _id }) {
+    check(_id, String);
+    await assertAdminAsync(this.userId);
+    const token = uuidv4();
+    await Stations.updateAsync(_id, { $set: { token } });
+    return token;
+  },
+
+  async 'stations.remove'({ _id }) {
+    check(_id, String);
+    await assertAdminAsync(this.userId);
+    await Stations.removeAsync(_id);
+  },
 });
