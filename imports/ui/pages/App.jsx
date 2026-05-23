@@ -78,7 +78,11 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
           //Meteor.call('visitors.checkIn', finalData, (err, res) => {
           Meteor.call(
             'visitors.checkIn',
-            { ...finalData, stationId },
+            {
+              ...finalData,
+              stationId: stationId ?? null,
+              source: stationId ? 'kiosk' : 'public',
+            },
             (err, res) => {
               if (err) {
                 // alert('Error saving visitor: ' + err.message);
