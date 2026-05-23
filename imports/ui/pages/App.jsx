@@ -12,7 +12,7 @@ import CameraCapture from '../components/CameraCapture';
 import PublicLayout from '../components/PublicLayout';
 import 'survey-core/survey-core.css';
 
-function applyOCRDefaults(parsed) {
+function applyOCRDefaults(parsed = {}) {
   return {
     name: parsed?.name ?? '',
     email: parsed?.email ?? '',
@@ -21,6 +21,11 @@ function applyOCRDefaults(parsed) {
     dob: parsed?.dob ?? '',
     address: parsed?.address ?? '',
   };
+}
+function removeEmptyValues(data = {}) {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== null && value !== ''),
+  );
 }
 
 //export const App = () => {
@@ -53,11 +58,15 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
       try {
         const ocrJson = JSON.parse(result.text);
-        // const surveyJson = generateSurveyJsonFromOCR(ocrJson);
-        const surveyJson = assignedSurveyJson
-          ? applyOCRDefaults(assignedSurveyJson, ocrJson) // use assigned survey if available
-          : generateSurveyJsonFromOCR(ocrJson);
+        const ocrDefaults = getOCRDefaults(ocrJson);
+        const surveyJson =
+          assignedSurveyJson || generateSurveyJsonFromOCR(ocrJson);
+
         const model = new Model(surveyJson);
+        model.data = {
+          ...(model.data || {}),
+          ...removeEmptyValues(ocrDefaults),
+        };
         model.applyTheme(FlatDarkPanelless);
         model.showCompletedPage = false;
         model.onComplete.add((sender) => {
