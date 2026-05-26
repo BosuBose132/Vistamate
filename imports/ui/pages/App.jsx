@@ -12,7 +12,7 @@ import CameraCapture from '../components/CameraCapture';
 import PublicLayout from '../components/PublicLayout';
 import 'survey-core/survey-core.css';
 
-function applyOCRDefaults(parsed = {}) {
+function getOCRDefaults(parsed = {}) {
   return {
     name: parsed?.name ?? '',
     email: parsed?.email ?? '',

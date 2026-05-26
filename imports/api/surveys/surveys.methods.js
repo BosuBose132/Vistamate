@@ -3,6 +3,7 @@ import { check, Match } from 'meteor/check';
 
 import { Surveys } from './surveys.collection';
 import { assertAdminAsync } from '../_roles.helpers';
+import { Stations } from '/imports/api/stations/stations.collection';
 
 Meteor.methods({
   async 'surveys.create'({ name, json }) {
