@@ -75,8 +75,10 @@ Meteor.methods({
       address: Match.Optional(String),
       purpose: Match.Optional(String),
       dob: Match.Optional(String),
-      host: Match.Optional(String), // <— admin form field
-      stationId: Match.Optional(Match.OneOf(String, null)), // allow null
+      host: Match.Optional(String),
+      stationId: Match.Optional(Match.OneOf(String, null)),
+      source: Match.Optional(String),
+      status: Match.Optional(String),
     });
 
     //return await checkAndCreateVisitor(data, Visitors);
@@ -94,7 +96,7 @@ Meteor.methods({
       purpose: data.purpose || 'Other',
       stationId: data.stationId ?? null,
       status: data.status || 'in_building',
-      source: data.source || 'admin',
+      source: data.source || (data.stationId ? 'kiosk' : 'public'),
       createdAt: new Date(),
     };
     return await Visitors.insertAsync(payload);

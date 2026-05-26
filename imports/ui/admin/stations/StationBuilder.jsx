@@ -35,12 +35,33 @@ export default function StationBuilder() {
   const onChange = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const create = (e) => {
     e.preventDefault();
-    Meteor.call('stations.create', form, (err, _id) => {
-      if (err) return alert(err.reason || err.message);
-      const s = Stations.findOne(_id);
-      navigator.clipboard.writeText(`${Meteor.absoluteUrl()}s/${s.token}`);
-      alert('Kiosk created. URL copied to clipboard.');
-      setForm({ ...form, name: '', location: '' });
+
+    if (!form.name.trim()) {
+      alert('Kiosk name is required.');
+      return;
+    }
+
+    Meteor.call('stations.create', form, async (err, result) => {
+      if (err) {
+        alert(err.reason || err.message);
+        return;
+      }
+
+      const kioskUrl = `${Meteor.absoluteUrl()}s/${result.token}`;
+
+      try {
+        await navigator.clipboard.writeText(kioskUrl);
+        alert('Kiosk created. URL copied to clipboard.');
+      } catch {
+        alert(`Kiosk created. URL: ${kioskUrl}`);
+      }
+
+      setForm((current) => ({
+        ...current,
+        name: '',
+        location: '',
+        welcomeMessage: '',
+      }));
     });
   };
 
@@ -158,7 +179,9 @@ export default function StationBuilder() {
                     type="checkbox"
                     className="toggle toggle-primary"
                     checked={form.cameraEnabled}
-                    onChange={(e) => onChange('cameraEnabled', e.target.checked)}
+                    onChange={(e) =>
+                      onChange('cameraEnabled', e.target.checked)
+                    }
                   />
                 </label>
 
