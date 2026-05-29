@@ -104,30 +104,94 @@ Meteor.methods({
   async 'visitors.detectIdCard'(base64ImageData) {
     check(base64ImageData, String);
 
-    const cfg = Meteor.settings?.roboflow || {};
-    const apiKey = cfg.apiKey;
-    const projectId = cfg.projectId;
-    const version = cfg.version;
+    const inferenceCfg = Meteor.settings?.inference || {};
+    const provider = inferenceCfg.provider || 'roboflow';
 
-    if (!apiKey || !projectId || !version) {
-      throw new Meteor.Error(
-        'config-error',
-        'Roboflow settings are missing. Please configure roboflow.apiKey, roboflow.projectId, and roboflow.version in settings.json.',
+    const isCardClass = (prediction) => {
+      const className = String(
+        prediction?.class || prediction?.class_name || '',
+      )
+        .toLowerCase()
+        .replace(/[-\s]/g, '_');
+
+      return (
+        className === 'id_card' ||
+        className === 'card' ||
+        className === 'business_card' ||
+        className === 'id' ||
+        className === 'identity_card'
       );
-    }
+    };
 
-    const imageBase64 = base64ImageData.replace(/^data:image\/\w+;base64,/, '');
+    const normalizeDetectionResult = (result, activeProvider) => {
+      const predictions = Array.isArray(result?.predictions)
+        ? result.predictions
+        : [];
 
-    const confidence = cfg.confidence ?? 40;
-    const overlap = cfg.overlap ?? 30;
+      const bestCard =
+        predictions
+          .filter(isCardClass)
+          .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0] ||
+        result?.prediction ||
+        null;
 
-    const url =
-      `https://detect.roboflow.com/${projectId}/${version}` +
-      `?api_key=${encodeURIComponent(apiKey)}` +
-      `&confidence=${encodeURIComponent(confidence)}` +
-      `&overlap=${encodeURIComponent(overlap)}`;
+      return {
+        ok: Boolean(result?.ok || bestCard),
+        prediction: bestCard,
+        predictions,
+        provider: activeProvider,
+      };
+    };
 
-    try {
+    const callLocalInference = async () => {
+      const localUrl = inferenceCfg.localUrl || 'http://localhost:8001/detect';
+
+      const response = await fetch(localUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: base64ImageData }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error || result?.detail || 'Local inference failed',
+        );
+      }
+
+      return normalizeDetectionResult(result, 'mie-container-onnx');
+    };
+
+    const callRoboflowInference = async () => {
+      const cfg = Meteor.settings?.roboflow || {};
+      const apiKey = cfg.apiKey;
+      const projectId = cfg.projectId;
+      const version = cfg.version;
+
+      if (!apiKey || !projectId || !version) {
+        throw new Meteor.Error(
+          'config-error',
+          'Roboflow settings are missing. Please configure roboflow.apiKey, roboflow.projectId, and roboflow.version in settings.json.',
+        );
+      }
+
+      const imageBase64 = base64ImageData.replace(
+        /^data:image\/\w+;base64,/,
+        '',
+      );
+
+      const confidence = cfg.confidence ?? 40;
+      const overlap = cfg.overlap ?? 30;
+
+      const url =
+        `https://detect.roboflow.com/${projectId}/${version}` +
+        `?api_key=${encodeURIComponent(apiKey)}` +
+        `&confidence=${encodeURIComponent(confidence)}` +
+        `&overlap=${encodeURIComponent(overlap)}`;
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -144,36 +208,35 @@ Meteor.methods({
         );
       }
 
-      const predictions = Array.isArray(result.predictions)
-        ? result.predictions
-        : [];
+      return normalizeDetectionResult(result, 'roboflow');
+    };
 
-      const bestCard =
-        predictions
-          .filter((prediction) => {
-            const className = String(
-              prediction.class || prediction.class_name || '',
-            ).toLowerCase();
+    try {
+      if (provider === 'local' || provider === 'mie-container') {
+        try {
+          return await callLocalInference();
+        } catch (localErr) {
+          console.error(
+            'Local/MIE container ID card detection failed:',
+            localErr,
+          );
 
-            return (
-              className === 'id_card' ||
-              className === 'id-card' ||
-              className === 'id card' ||
-              className === 'card'
-            );
-          })
-          .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0] || null;
+          if (inferenceCfg.fallbackToRoboflow === false) {
+            throw localErr;
+          }
 
-      return {
-        ok: Boolean(bestCard),
-        prediction: bestCard,
-        predictions,
-      };
+          console.warn('Falling back to Roboflow cloud inference.');
+          return await callRoboflowInference();
+        }
+      }
+
+      return await callRoboflowInference();
     } catch (err) {
-      console.error('Roboflow ID card detection failed:', err);
+      console.error('ID card detection failed:', err);
+
       throw new Meteor.Error(
-        'roboflow-detection-failed',
-        'Roboflow ID card detection failed: ' + err.message,
+        'id-card-detection-failed',
+        'ID card detection failed: ' + err.message,
       );
     }
   },
