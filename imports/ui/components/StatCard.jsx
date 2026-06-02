@@ -1,33 +1,36 @@
 import React from 'react';
+import { Card } from '@mieweb/ui';
+
 // imports/ui/components/StatCard.jsx
 
 const toneClasses = {
-  primary: 'bg-primary/10 text-primary ring-primary/15',
-  success: 'bg-success/10 text-success ring-success/15',
-  info: 'bg-info/10 text-info ring-info/15',
+  primary: 'bg-[#e9f7f6] text-[#23b6b6]',
+  success: 'bg-emerald-50 text-emerald-600',
+  info: 'bg-sky-50 text-sky-600',
+  warning: 'bg-amber-50 text-amber-600',
 };
 
 export default function StatCard({ title, value, icon, tone = 'primary' }) {
   return (
-    <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-medium text-base-content/60">{title}</h3>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-base-content">
-            {value}
-          </p>
+    <Card className="rounded-2xl border border-[#d9eceb] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-center gap-4">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+            toneClasses[tone] || toneClasses.primary
+          }`}
+        >
+          <span className="text-sm font-bold">{icon}</span>
         </div>
 
-        {icon && (
-          <div
-            className={`flex h-11 min-w-11 items-center justify-center rounded-xl text-xs font-semibold ring-1 ${
-              toneClasses[tone] || toneClasses.primary
-            }`}
-          >
-            {icon}
-          </div>
-        )}
+        <div className="min-w-0">
+          <p className="text-2xl font-bold tracking-tight text-[#17323b]">
+            {value}
+          </p>
+          <p className="mt-1 truncate text-sm font-medium text-[#6c7f86]">
+            {title}
+          </p>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }
