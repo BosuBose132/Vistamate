@@ -26,7 +26,8 @@
     "survey-react-ui": "^2.3.4",
     "tesseract.js": "^6.0.1",
     "uuid": "^11.1.0",
-    "visitor-npm-app": "^1.0.15"
+    "visitor-npm-app": "^1.0.15",
+    "wavesurfer.js": "^7.12.7"
   },
   "meteor": {
     "mainModule": {
