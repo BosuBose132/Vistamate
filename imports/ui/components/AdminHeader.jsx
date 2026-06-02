@@ -4,19 +4,39 @@ import { motion } from 'framer-motion';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 import ThemeToggle from '/imports/ui/components/ThemeToggle';
-
 const navItems = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/checkins', label: 'Check-ins' },
   { to: '/admin/stations', label: 'Stations' },
   { to: '/admin/surveys', label: 'Surveys' },
 ];
-
 const navLinkClass = ({ isActive }) =>
   [
-    'btn btn-ghost btn-sm rounded-md font-medium',
-    isActive ? 'bg-primary/10 text-primary' : 'text-base-content/75',
+    'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
+    isActive
+      ? 'bg-primary/10 text-primary'
+      : 'text-base-content/70 hover:bg-base-200 hover:text-base-content',
   ].join(' ');
+
+function MenuIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M4 7h16M4 12h16M4 17h16"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
 
 export default function AdminHeader() {
   const navigate = useNavigate();
@@ -26,36 +46,24 @@ export default function AdminHeader() {
     <motion.header
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24, ease: 'easeOut' }}
-      className="mb-6 rounded-2xl border border-base-300/80 bg-base-100/95 shadow-sm shadow-base-content/5 backdrop-blur"
+      transition={{ duration: 0.22, ease: 'easeOut' }}
+      className="mb-6 overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm"
     >
-      <div className="navbar min-h-16 w-full px-4 sm:px-6 lg:px-8">
-        <div className="navbar-start gap-2">
+      <div className="flex min-h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="dropdown lg:hidden">
             <button
               type="button"
               tabIndex={0}
-              className="btn btn-ghost btn-square rounded-md"
+              className="btn btn-ghost btn-square btn-sm rounded-md"
               aria-label="Open admin navigation"
             >
-              <svg
-                aria-hidden="true"
-                className="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                />
-              </svg>
+              <MenuIcon />
             </button>
+
             <ul
               tabIndex={0}
-              className="menu dropdown-content mt-3 w-64 rounded-lg border border-base-300 bg-base-100 p-2 shadow-xl"
+              className="menu dropdown-content z-50 mt-3 w-64 rounded-xl border border-base-300 bg-base-100 p-2 shadow-xl"
             >
               {navItems.map((item) => (
                 <li key={item.to}>
@@ -68,38 +76,41 @@ export default function AdminHeader() {
           </div>
 
           <Link
-            to="/"
-            className="relative h-16 w-40 shrink-0 rounded-md sm:w-48 lg:w-56 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
-            aria-label="Vistamate home"
+            to="/admin"
+            className="flex min-w-0 items-center gap-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
+            aria-label="Vistamate admin dashboard"
           >
-            <img
-              src="/VistaMate.png"
-              alt="Vistamate"
-              className="absolute left-0 top-1/2 h-28 w-auto max-w-none -translate-y-1/2 object-contain sm:h-32 lg:h-36"
-            />
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-content shadow-sm">
+              V
+            </span>
+
+            <span className="hidden min-w-0 sm:block">
+              <span className="block truncate text-sm font-semibold leading-5 text-base-content">
+                Vistamate
+              </span>
+              <span className="block truncate text-xs text-base-content/55">
+                Admin Suite
+              </span>
+            </span>
           </Link>
         </div>
 
-        <div className="navbar-center hidden lg:flex">
-          <nav
-            className="flex items-center gap-1"
-            aria-label="Admin"
-          >
-            {navItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={navLinkClass}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Admin">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={navLinkClass}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
 
-        <div className="navbar-end gap-2">
-          <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle className="btn btn-ghost btn-square btn-sm rounded-md" />
+
           <button
             type="button"
             className="btn btn-outline btn-sm rounded-md border-base-300 font-medium"

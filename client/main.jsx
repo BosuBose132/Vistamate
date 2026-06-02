@@ -13,5 +13,9 @@ Meteor.startup(() => {
     return;
   }
   const root = createRoot(container);
-  root.render(<MainRouter />);
+  root.render(
+    <ThemeProvider>
+      <MainRouter />
+    </ThemeProvider>,
+  );
 });
