@@ -32,124 +32,122 @@ export default function AdminShell({
   };
 
   return (
-    <div className="min-h-screen bg-[#d9f3f1] text-[#17323b]">
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,_rgba(35,182,182,0.38),_transparent_36%),linear-gradient(135deg,_#0e9b99_0%,_#d9f3f1_34%,_#eefafa_100%)] p-3 sm:p-5 lg:p-8">
-        <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1500px] overflow-hidden rounded-[1.75rem] bg-white shadow-2xl shadow-teal-950/20">
-          <aside className="hidden w-72 shrink-0 bg-[#062b38] text-white lg:flex lg:flex-col">
-            <div className="flex h-24 items-center px-7">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#23b6b6] text-white shadow-lg shadow-teal-900/30">
-                  <LogoMark />
-                </div>
-                <div>
-                  <p className="text-xl font-bold tracking-tight">Vistamate</p>
-                  <p className="text-xs font-medium text-slate-400">
-                    MIE Visitor Suite
-                  </p>
-                </div>
+    <div className="min-h-screen text-[#17323b]">
+      <div className="flex min-h-screen w-full overflow-hidden">
+        <aside className="hidden w-72 shrink-0 bg-[#062b38] text-white lg:flex lg:flex-col">
+          <div className="flex h-24 items-center px-7">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#23b6b6] text-white shadow-lg shadow-teal-900/30">
+                <LogoMark />
+              </div>
+              <div>
+                <p className="text-xl font-bold tracking-tight">Vistamate</p>
+                <p className="text-xs font-medium text-slate-400">
+                  MIE Visitor Suite
+                </p>
               </div>
             </div>
-
-            <div className="mx-5 rounded-xl bg-[#123f4c] p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-400">
-                Active location
-              </p>
-              <p className="mt-1 truncate text-sm font-semibold text-white">
-                Main Reception
-              </p>
-            </div>
-
-            <nav className="mt-7 flex-1 space-y-1 px-5" aria-label="Admin">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    className={sidebarLinkClass}
-                  >
-                    <Icon />
-                    {item.label}
-                  </NavLink>
-                );
-              })}
-            </nav>
-
-            <div className="m-5 rounded-2xl bg-[#123f4c] p-5">
-              <p className="text-sm font-semibold text-white">Setup progress</p>
-              <p className="mt-1 text-xs text-slate-400">
-                Stations, surveys, and check-in flow configured.
-              </p>
-              <div className="mt-4 h-2 rounded-full bg-white/10">
-                <div className="h-full w-4/5 rounded-full bg-[#55ddd8]" />
-              </div>
-              <p className="mt-4 text-sm font-semibold text-[#f6d883]">
-                Continue setup →
-              </p>
-            </div>
-          </aside>
-
-          <div className="flex min-w-0 flex-1 flex-col bg-[#f5fbfb]">
-            <header className="flex h-20 items-center justify-between gap-4 border-b border-[#d9eceb] bg-white px-4 sm:px-6 lg:px-8">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="dropdown lg:hidden">
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    className="btn btn-ghost btn-square btn-sm rounded-xl"
-                    aria-label="Open navigation"
-                  >
-                    <MenuIcon />
-                  </button>
-
-                  <ul
-                    tabIndex={0}
-                    className="menu dropdown-content z-50 mt-3 w-64 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
-                  >
-                    {navItems.map((item) => (
-                      <li key={item.to}>
-                        <NavLink to={item.to} end={item.end}>
-                          {item.label}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#23b6b6]">
-                    {eyebrow}
-                  </p>
-                  <h1 className="truncate text-lg font-bold text-[#17323b] sm:text-xl">
-                    {title}
-                  </h1>
-                </div>
-              </div>
-
-              <div className="flex shrink-0 items-center gap-3">
-                <div className="hidden rounded-full bg-[#e9f7f6] px-4 py-2 text-sm font-semibold text-[#0f766e] md:block">
-                  Live visitor operations
-                </div>
-
-                <ThemeToggle className="rounded-xl text-[#17323b]" />
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="rounded-xl border-[#d9eceb] bg-white text-sm font-semibold text-[#17323b] hover:bg-[#e9f7f6]"
-                  onClick={onLogout}
-                >
-                  Logout
-                </Button>
-              </div>
-            </header>
-
-            <main className="min-w-0 flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-              {children}
-            </main>
           </div>
+
+          <div className="mx-5 rounded-xl bg-[#123f4c] p-3">
+            <p className="text-xs uppercase tracking-wide text-slate-400">
+              Active location
+            </p>
+            <p className="mt-1 truncate text-sm font-semibold text-white">
+              Main Reception
+            </p>
+          </div>
+
+          <nav className="mt-7 flex-1 space-y-1 px-5" aria-label="Admin">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={sidebarLinkClass}
+                >
+                  <Icon />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <div className="m-5 rounded-2xl bg-[#123f4c] p-5">
+            <p className="text-sm font-semibold text-white">Setup progress</p>
+            <p className="mt-1 text-xs text-slate-400">
+              Stations, surveys, and check-in flow configured.
+            </p>
+            <div className="mt-4 h-2 rounded-full bg-white/10">
+              <div className="h-full w-4/5 rounded-full bg-[#55ddd8]" />
+            </div>
+            <p className="mt-4 text-sm font-semibold text-[#f6d883]">
+              Continue setup →
+            </p>
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-20 items-center justify-between gap-4 border-b border-[#d9eceb] bg-white px-4 sm:px-6 lg:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="dropdown lg:hidden">
+                <button
+                  type="button"
+                  tabIndex={0}
+                  className="btn btn-ghost btn-square btn-sm rounded-xl"
+                  aria-label="Open navigation"
+                >
+                  <MenuIcon />
+                </button>
+
+                <ul
+                  tabIndex={0}
+                  className="menu dropdown-content z-50 mt-3 w-64 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
+                >
+                  {navItems.map((item) => (
+                    <li key={item.to}>
+                      <NavLink to={item.to} end={item.end}>
+                        {item.label}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#23b6b6]">
+                  {eyebrow}
+                </p>
+                <h1 className="truncate text-lg font-bold text-[#17323b] sm:text-xl">
+                  {title}
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <div className="hidden rounded-full bg-[#e9f7f6] px-4 py-2 text-sm font-semibold text-[#0f766e] md:block">
+                Live visitor operations
+              </div>
+
+              <ThemeToggle className="rounded-xl text-[#17323b]" />
+
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-xl border-[#d9eceb] bg-white text-sm font-semibold text-[#17323b] hover:bg-[#e9f7f6]"
+                onClick={onLogout}
+              >
+                Logout
+              </Button>
+            </div>
+          </header>
+
+          <main className="min-w-0 flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+            {children}
+          </main>
         </div>
       </div>
     </div>
