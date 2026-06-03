@@ -461,7 +461,7 @@
   border: 1px solid var(--vm-border) !important;
   border-radius: 1rem !important;
   box-shadow: var(--vm-shadow) !important;
-  overflow: hidden !important;
+  z-index: 9999 !important;
 }
 
 .sd-list__item,
@@ -568,4 +568,25 @@
 .vistamate-review-survey .sd-action-bar {
   margin-top: 0.75rem !important;
   padding-top: 0.75rem !important;
+}
+/* SurveyJS dropdown color override */
+.sd-list__item--selected,
+.sd-list__item--focused,
+.sd-list__item:hover,
+.sd-list__item--selected.sd-list__item--allowhover {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item--selected .sd-list__item-body,
+.sd-list__item--focused .sd-list__item-body,
+.sd-list__item:hover .sd-list__item-body,
+.sd-list__item--selected.sd-list__item--allowhover .sd-list__item-body {
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item--selected svg,
+.sd-list__item--focused svg {
+  fill: var(--vm-primary) !important;
+  stroke: var(--vm-primary) !important;
 }
