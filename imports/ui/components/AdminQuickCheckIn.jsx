@@ -8,6 +8,50 @@ import {
 } from 'survey-core/themes'; // Modern SurveyJS base CSS
 //import 'survey-core/defaultV2.min.css';
 import { Button, Card } from '@mieweb/ui';
+
+const vistamateSurveyVariables = {
+  '--sjs-primary-backcolor': 'var(--vm-primary)',
+  '--sjs-primary-backcolor-dark': 'var(--vm-primary-hover)',
+  '--sjs-primary-backcolor-light': 'var(--vm-primary-soft)',
+  '--sjs-primary-forecolor': '#ffffff',
+
+  '--sjs-primary-background-500': 'var(--vm-primary)',
+  '--sjs-primary-background-400': 'var(--vm-primary-hover)',
+  '--sjs-primary-background-10': 'var(--vm-primary-soft)',
+  '--sjs-primary-foreground-100': '#ffffff',
+
+  '--sjs-general-backcolor': 'var(--vm-surface)',
+  '--sjs-general-backcolor-dim': 'var(--vm-surface-soft)',
+  '--sjs-general-forecolor': 'var(--vm-text)',
+  '--sjs-general-forecolor-light': 'var(--vm-muted)',
+
+  '--sjs-general-background-500': 'var(--vm-surface)',
+  '--sjs-general-background-400': 'var(--vm-surface-soft)',
+  '--sjs-general-background-10': 'var(--vm-surface-muted)',
+  '--sjs-general-foreground-100': 'var(--vm-text)',
+  '--sjs-general-foreground-70': 'var(--vm-muted)',
+  '--sjs-general-foreground-50': 'var(--vm-muted)',
+
+  '--sjs-border-default': 'var(--vm-border)',
+  '--sjs-border-light': 'var(--vm-border)',
+};
+
+const VistamateLightSurveyTheme = {
+  ...LayeredLightPanelless,
+  cssVariables: {
+    ...(LayeredLightPanelless.cssVariables || {}),
+    ...vistamateSurveyVariables,
+  },
+};
+
+const VistamateDarkSurveyTheme = {
+  ...LayeredDarkPanelless,
+  cssVariables: {
+    ...(LayeredDarkPanelless.cssVariables || {}),
+    ...vistamateSurveyVariables,
+  },
+};
+
 export default function AdminQuickCheckIn({ defaultStationId = null }) {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -68,7 +112,9 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
       const isDark =
         (dt && dt.toLowerCase().includes('dark')) ||
         document.documentElement.classList.contains('dark');
-      m.applyTheme(isDark ? LayeredDarkPanelless : LayeredLightPanelless);
+      m.applyTheme(
+        isDark ? VistamateDarkSurveyTheme : VistamateLightSurveyTheme,
+      );
     };
 
     apply(); // initial
@@ -123,8 +169,10 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
     <Card className="vm-card p-5 sm:p-6">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Quick check-in</h2>
-          <p className="mt-1 text-sm vm-muted">Admin entry</p>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--vm-heading)]">
+            Quick check-in
+          </h2>
+          <p className="mt-1 text-sm text-[var(--vm-muted)]">Admin entry</p>
         </div>
 
         <span className="vm-badge">Manual</span>
