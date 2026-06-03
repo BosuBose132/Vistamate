@@ -63,63 +63,190 @@
    to speak the same visual language. */
 :root,
 [data-theme='vistamate'] {
-  --mieweb-primary-50: #e8f8ef;
-  --mieweb-primary-100: #c5edd6;
-  --mieweb-primary-200: #9fe2bb;
-  --mieweb-primary-300: #79d7a0;
-  --mieweb-primary-400: #53cc85;
-  --mieweb-primary-500: #27ae60;
-  --mieweb-primary-600: #219c55;
-  --mieweb-primary-700: #1b894a;
-  --mieweb-primary-800: #15773e;
-  --mieweb-primary-900: #0f6533;
-  --mieweb-primary-950: #094d26;
+  --vm-page: #f7fbfb;
+  --vm-surface: #ffffff;
+  --vm-surface-soft: #f4fafa;
+  --vm-surface-muted: #e9f7f6;
 
-  --mieweb-background: #ffffff;
-  --mieweb-foreground: #171717;
-  --mieweb-card: #ffffff;
-  --mieweb-card-foreground: #171717;
-  --mieweb-muted: #f5f5f5;
-  --mieweb-muted-foreground: #494949;
-  --mieweb-border: #e5e7eb;
-  --mieweb-input: #e5e7eb;
-  --mieweb-ring: #27ae60;
+  --vm-sidebar: #062b38;
+  --vm-sidebar-soft: #123f4c;
 
-  --mieweb-radius-md: 0.5rem;
-  --mieweb-radius-lg: 0.75rem;
-  --mieweb-radius-xl: 1rem;
-  --mieweb-radius-2xl: 1.5rem;
+  --vm-text: #17323b;
+  --vm-muted: #6c7f86;
+  --vm-border: #d9eceb;
 
-  --mieweb-shadow-card:
-    0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --vm-primary: #23b6b6;
+  --vm-primary-hover: #159b9a;
+  --vm-primary-soft: #e9f7f6;
+
+  --vm-success: #22c55e;
+  --vm-success-soft: #ecfdf5;
+  --vm-danger: #ef4444;
+  --vm-danger-soft: #fef2f2;
+
+  --vm-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
 }
 
 [data-theme='dark'],
 .dark {
-  --mieweb-background: #171717;
-  --mieweb-foreground: #fafafa;
-  --mieweb-card: #262626;
-  --mieweb-card-foreground: #fafafa;
-  --mieweb-muted: #404040;
-  --mieweb-muted-foreground: #a1a1aa;
-  --mieweb-border: #404040;
-  --mieweb-input: #404040;
-  --mieweb-ring: #27ae60;
+  --vm-page: #071b22;
+  --vm-surface: #0b2530;
+  --vm-surface-soft: #0f303c;
+  --vm-surface-muted: #123f4c;
+
+  --vm-sidebar: #03161c;
+  --vm-sidebar-soft: #0b303b;
+
+  --vm-text: #ecfeff;
+  --vm-muted: #9fb8bf;
+  --vm-border: #1d4652;
+
+  --vm-primary: #35d2cc;
+  --vm-primary-hover: #2bbdb8;
+  --vm-primary-soft: #103f45;
+
+  --vm-success: #34d399;
+  --vm-success-soft: #073a2a;
+  --vm-danger: #fb7185;
+  --vm-danger-soft: #3f111a;
+
+  --vm-shadow: 0 1px 2px rgb(0 0 0 / 0.25), 0 12px 32px rgb(0 0 0 / 0.28);
 }
 
-.table,
-.table thead,
-.table tbody,
-.table tr,
-.table th,
-.table td {
-  background-color: transparent !important;
-  color: inherit;
-}
+@layer components {
+  .vm-page {
+    background: var(--vm-page);
+    color: var(--vm-text);
+  }
 
-/* Optional: improve header contrast in both themes */
-.table thead tr th {
-  background-color: var(--color-base-200) !important;
+  .vm-card {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 1.25rem;
+    box-shadow: var(--vm-shadow);
+  }
+
+  .vm-panel {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-muted);
+    border-radius: 1rem;
+  }
+
+  .vm-kicker {
+    color: var(--vm-primary);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vm-heading {
+    color: var(--vm-text);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .vm-muted {
+    color: var(--vm-muted);
+  }
+
+  .vm-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-muted);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.05);
+  }
+
+  .vm-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-text);
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .vm-input,
+  .vm-select,
+  .vm-textarea {
+    width: 100%;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+    outline: none;
+  }
+
+  .vm-input::placeholder,
+  .vm-textarea::placeholder {
+    color: color-mix(in oklab, var(--vm-muted), transparent 20%);
+  }
+
+  .vm-input:focus,
+  .vm-select:focus,
+  .vm-textarea:focus {
+    border-color: var(--vm-primary);
+    box-shadow: 0 0 0 3px
+      color-mix(in oklab, var(--vm-primary), transparent 78%);
+  }
+
+  .vm-btn-primary {
+    border: 1px solid var(--vm-primary);
+    background: var(--vm-primary);
+    color: white;
+    border-radius: 0.875rem;
+    font-weight: 800;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .vm-btn-primary:hover {
+    background: var(--vm-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .vm-btn-secondary {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    font-weight: 800;
+  }
+
+  .vm-status-active {
+    border: 1px solid color-mix(in oklab, var(--vm-success), transparent 70%);
+    background: var(--vm-success-soft);
+    color: var(--vm-success);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .vm-status-neutral {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-muted);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
 }
 
 /* --- SurveyJS (v2) x DaisyUI bridge --- */
@@ -322,4 +449,63 @@
 .vistamate-review-survey .sd-action-bar {
   margin-top: 0.75rem !important;
   padding-top: 0.75rem !important;
+}
+
+/* --- Vistamate admin SurveyJS panel theme --- */
+/* Scoped only to admin cards that wrap SurveyJS with .vm-panel */
+
+.vm-panel .sd-root-modern,
+.vm-panel .sd-body,
+.vm-panel .sd-container-modern,
+.vm-panel .sd-page,
+.vm-panel .sd-row,
+.vm-panel .sd-panel,
+.vm-panel .sd-element,
+.vm-panel .sd-question {
+  background: transparent !important;
+  color: var(--vm-text) !important;
+}
+
+.vm-panel .sd-title,
+.vm-panel .sd-question__title,
+.vm-panel .sd-string-viewer,
+.vm-panel .sd-selectbase__label {
+  color: var(--vm-text) !important;
+}
+
+.vm-panel .sd-input,
+.vm-panel .sd-text,
+.vm-panel .sd-comment,
+.vm-panel .sd-dropdown,
+.vm-panel .sd-tagbox,
+.vm-panel .sd-selectbase__control {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border: 1px solid var(--vm-border) !important;
+  border-radius: 0.875rem !important;
+  box-shadow: none !important;
+}
+
+.vm-panel .sd-input::placeholder,
+.vm-panel .sd-text::placeholder,
+.vm-panel .sd-comment::placeholder {
+  color: var(--vm-muted) !important;
+}
+
+.vm-panel .sd-input:focus,
+.vm-panel .sd-text:focus,
+.vm-panel .sd-comment:focus,
+.vm-panel .sd-selectbase__control:focus-within {
+  border-color: var(--vm-primary) !important;
+  outline: 2px solid color-mix(in oklab, var(--vm-primary), transparent 70%) !important;
+  outline-offset: 1px !important;
+}
+
+.vm-panel .sd-popup,
+.vm-panel .sd-selectbase__popup,
+.vm-panel .sd-dropdown__popup,
+.vm-panel .sd-list__container {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border: 1px solid var(--vm-border) !important;
 }

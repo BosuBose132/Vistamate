@@ -34,23 +34,11 @@ export default function AdminCheckIn() {
   return (
     <AdminShell title="Check-ins" eyebrow="Visitor operations">
       <main className="space-y-6">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-medium text-primary">
-              Visitor operations
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Check-ins
-            </h1>
-            <p className="mt-2 text-sm text-base-content/60">
-              Register visitors manually and assign them to stations.
-            </p>
-          </div>
-
-          <div className="rounded-full border border-base-300/80 bg-base-100 px-4 py-2 text-sm font-medium text-base-content/70 shadow-sm">
+        <div className="flex justify-end">
+          <span className="vm-pill">
             {stations.length} station{stations.length === 1 ? '' : 's'}{' '}
             available
-          </div>
+          </span>
         </div>
 
         <motion.div
@@ -59,31 +47,34 @@ export default function AdminCheckIn() {
           transition={{ duration: 0.25, ease: 'easeOut' }}
           className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]"
         >
-          <section className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-            <h2 className="text-lg font-semibold">Assignment</h2>
-            <p className="mt-1 text-sm text-base-content/55">
+          <Card className="vm-card p-5 sm:p-6">
+            <h2 className="text-xl font-bold tracking-tight">Assignment</h2>
+            <p className="mt-1 text-sm vm-muted">
               Choose where this visitor should be checked in.
             </p>
 
-            <label className="label mt-5 px-0 pt-0">
-              <span className="label-text font-semibold">Station scope</span>
-            </label>
-            <select
-              className="select select-bordered w-full rounded-md border-base-300"
-              value={selectedId}
-              onChange={(e) => setSelectedId(e.target.value)}
-            >
-              {options.map((o) => (
-                <option key={o._id} value={o._id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
+            <label className="mt-6 block">
+              <span className="mb-2 block text-sm font-bold vm-muted">
+                Station scope
+              </span>
 
-            <div className="mt-5 rounded-xl border border-base-300/70 bg-base-200/40 p-4 text-sm text-base-content/65">
+              <select
+                className="vm-select"
+                value={selectedId}
+                onChange={(e) => setSelectedId(e.target.value)}
+              >
+                {options.map((o) => (
+                  <option key={o._id} value={o._id}>
+                    {o.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="vm-panel mt-5 p-4 text-sm">
               Selected visitors will use this station context for admin entry.
             </div>
-          </section>
+          </Card>
 
           <AdminQuickCheckIn
             defaultStationId={selectedId === 'GLOBAL' ? null : selectedId}

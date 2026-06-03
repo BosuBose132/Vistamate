@@ -7,7 +7,7 @@ import {
   LayeredLightPanelless,
 } from 'survey-core/themes'; // Modern SurveyJS base CSS
 //import 'survey-core/defaultV2.min.css';
-
+import { Button, Card } from '@mieweb/ui';
 export default function AdminQuickCheckIn({ defaultStationId = null }) {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -120,43 +120,43 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
   };
 
   return (
-    <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <Card className="vm-card p-5 sm:p-6">
+      <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Quick check-in</h2>
-          <p className="mt-1 text-sm text-base-content/55">Admin entry</p>
+          <h2 className="text-xl font-bold tracking-tight">Quick check-in</h2>
+          <p className="mt-1 text-sm vm-muted">Admin entry</p>
         </div>
-        <span className="badge badge-outline rounded-md border-base-300">
-          Manual
-        </span>
+
+        <span className="vm-badge">Manual</span>
       </div>
 
-      <div className="sv-root-modern rounded-xl border border-base-300/70 bg-base-200/30 p-3 text-base-content">
+      <div className="vm-panel p-3">
         <Survey model={survey} />
       </div>
 
-      <div className="mt-4 space-y-3">
-        <button
-          className={`btn btn-primary w-full rounded-md ${
-            submitting ? 'btn-disabled' : ''
+      <div className="mt-5 space-y-3">
+        <Button
+          className={`vm-btn-primary h-12 w-full ${
+            submitting ? 'opacity-60' : ''
           }`}
           onClick={handleSubmit}
           disabled={submitting}
         >
           {submitting ? 'Checking In…' : 'Check In'}
-        </button>
+        </Button>
 
         {msg?.type === 'success' && (
-          <div className="alert alert-success rounded-xl py-2 text-sm">
-            <span>{msg.text}</span>
+          <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500">
+            {msg.text}
           </div>
         )}
+
         {msg?.type === 'error' && (
-          <div className="alert alert-error rounded-xl py-2 text-sm">
-            <span>{msg.text}</span>
+          <div className="rounded-xl border border-red-300/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+            {msg.text}
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
