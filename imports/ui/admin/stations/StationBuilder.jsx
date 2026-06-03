@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { motion } from 'framer-motion';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
+import { ChevronDown } from 'lucide-react';
 
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Surveys } from '/imports/api/surveys/surveys.collection';
@@ -31,6 +32,8 @@ export default function StationBuilder() {
     welcomeMessage: '',
     theme: 'vistamate',
   });
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const onChange = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const create = (e) => {
@@ -143,96 +146,100 @@ export default function StationBuilder() {
               </select>
             </label>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
-                <span>
-                  <span className="block font-semibold vm-heading">
-                    Enable camera
-                  </span>
-                  <span className="mt-1 text-sm vm-muted">
-                    Allow kiosk camera capture.
-                  </span>
-                </span>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={form.cameraEnabled}
-                  onChange={(e) => onChange('cameraEnabled', e.target.checked)}
+            <div className="border-t border-[var(--vm-border)] pt-5">
+              <button
+                type="button"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="flex items-center gap-2 text-sm font-semibold text-[var(--vm-primary)] hover:text-[var(--vm-primary-hover)] transition-colors"
+              >
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+                  strokeWidth={2}
                 />
-              </label>
+                Advanced Settings
+              </button>
 
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
-                <span>
-                  <span className="block font-semibold vm-heading">
-                    Require photo
-                  </span>
-                  <span className="mt-1 text-sm vm-muted">
-                    Capture visitor image when needed.
-                  </span>
-                </span>
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={form.requirePhoto}
-                  onChange={(e) => onChange('requirePhoto', e.target.checked)}
-                />
-              </label>
-            </div>
+              {showAdvanced && (
+                <div className="mt-4 space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
+                      <span>
+                        <span className="block font-semibold vm-heading">
+                          Enable camera
+                        </span>
+                        <span className="mt-1 text-sm vm-muted">
+                          Allow kiosk camera capture.
+                        </span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={form.cameraEnabled}
+                        onChange={(e) => onChange('cameraEnabled', e.target.checked)}
+                      />
+                    </label>
 
-            <div>
-              <span className="mb-2 block text-sm font-semibold vm-heading">
-                Mobile behavior
-              </span>
-              <div className="flex gap-2 w-full md:w-auto">
-                <button
-                  type="button"
-                  className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                    form.mobileBehavior === 'form_always'
-                      ? 'bg-[var(--vm-primary)] text-white'
-                      : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
-                  }`}
-                  onClick={() => onChange('mobileBehavior', 'form_always')}
-                >
-                  Form always visible
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
-                    form.mobileBehavior === 'toggle'
-                      ? 'bg-[var(--vm-primary)] text-white'
-                      : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
-                  }`}
-                  onClick={() => onChange('mobileBehavior', 'toggle')}
-                >
-                  Toggle camera/form
-                </button>
-              </div>
-            </div>
+                    <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
+                      <span>
+                        <span className="block font-semibold vm-heading">
+                          Require photo
+                        </span>
+                        <span className="mt-1 text-sm vm-muted">
+                          Capture visitor image when needed.
+                        </span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        className="toggle toggle-primary"
+                        checked={form.requirePhoto}
+                        onChange={(e) => onChange('requirePhoto', e.target.checked)}
+                      />
+                    </label>
+                  </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold vm-heading">
-                  Welcome message
-                </span>
-                <textarea
-                  className="vm-textarea w-full min-h-28 rounded-md"
-                  placeholder="Welcome message"
-                  value={form.welcomeMessage}
-                  onChange={(e) => onChange('welcomeMessage', e.target.value)}
-                />
-              </label>
+                  <div>
+                    <span className="mb-2 block text-sm font-semibold vm-heading">
+                      Mobile behavior
+                    </span>
+                    <div className="flex gap-2 w-full md:w-auto">
+                      <button
+                        type="button"
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                          form.mobileBehavior === 'form_always'
+                            ? 'bg-[var(--vm-primary)] text-white'
+                            : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
+                        }`}
+                        onClick={() => onChange('mobileBehavior', 'form_always')}
+                      >
+                        Form always visible
+                      </button>
+                      <button
+                        type="button"
+                        className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
+                          form.mobileBehavior === 'toggle'
+                            ? 'bg-[var(--vm-primary)] text-white'
+                            : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
+                        }`}
+                        onClick={() => onChange('mobileBehavior', 'toggle')}
+                      >
+                        Toggle camera/form
+                      </button>
+                    </div>
+                  </div>
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold vm-heading">
-                  Theme
-                </span>
-                <input
-                  className="vm-input w-full rounded-md"
-                  placeholder="vistamate or dark"
-                  value={form.theme}
-                  onChange={(e) => onChange('theme', e.target.value)}
-                />
-              </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold vm-heading">
+                      Welcome message
+                    </span>
+                    <textarea
+                      className="vm-textarea w-full min-h-28 rounded-md"
+                      placeholder="Welcome message"
+                      value={form.welcomeMessage}
+                      onChange={(e) => onChange('welcomeMessage', e.target.value)}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-3 border-t border-[var(--vm-border)] pt-5 sm:flex-row">

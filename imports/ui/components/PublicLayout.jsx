@@ -7,12 +7,14 @@ import ThemeToggle from './ThemeToggle';
 
 const navLinkClasses = ({ isActive }) =>
   [
-    'btn btn-ghost btn-sm rounded-md font-medium',
-    isActive ? 'bg-primary/10 text-primary' : 'text-base-content/75',
+    'text-sm font-medium rounded-md px-3 py-2 transition-colors',
+    isActive
+      ? 'text-[var(--vm-primary)]'
+      : 'text-[var(--vm-muted)] hover:text-[var(--vm-text)]',
   ].join(' ');
 
 const navActionClasses =
-  'btn btn-ghost btn-sm rounded-md font-medium text-base-content/75';
+  'text-sm font-medium rounded-md px-3 py-2 transition-colors text-[var(--vm-muted)] hover:text-[var(--vm-text)]';
 
 export function PublicHeader() {
   const location = useLocation();
@@ -25,8 +27,10 @@ export function PublicHeader() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const adminButtonClasses = [
-    'btn btn-ghost btn-sm rounded-md font-medium',
-    isLoginOpen ? 'bg-primary/10 text-primary' : 'text-base-content/75',
+    'text-sm font-medium rounded-md px-3 py-2 transition-colors',
+    isLoginOpen
+      ? 'text-[var(--vm-primary)]'
+      : 'text-[var(--vm-muted)] hover:text-[var(--vm-text)]',
   ].join(' ');
 
   const toggleLogin = () => {
@@ -64,15 +68,67 @@ export function PublicHeader() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: 'easeOut' }}
-      className="sticky top-0 z-40 border-b border-base-300/80 bg-base-100/95 shadow-sm backdrop-blur"
+      className="sticky top-0 z-40 border-b border-[var(--vm-border)] bg-[var(--vm-surface)]/95 backdrop-blur"
     >
-      <div className="navbar mx-auto min-h-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="navbar-start gap-2">
-          <div className="dropdown lg:hidden">
+      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="relative h-16 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vm-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--vm-surface)]"
+          aria-label="Vistamate home"
+        >
+          <img
+            src="/VistaMate.png"
+            alt="Vistamate"
+            className="h-12 w-auto object-contain sm:h-14"
+          />
+        </Link>
+
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+          <NavLink to="/" className={navLinkClasses}>
+            Home
+          </NavLink>
+          <Link to="/checkin" className={navActionClasses}>
+            Check In
+          </Link>
+          {isHomePage ? (
+            <button
+              type="button"
+              className={adminButtonClasses}
+              onClick={toggleLogin}
+              aria-expanded={isLoginOpen}
+              aria-controls="inline-admin-login"
+            >
+              Admin Login
+            </button>
+          ) : (
+            <NavLink to="/login" className={navLinkClasses}>
+              Admin Login
+            </NavLink>
+          )}
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <Link
+            to="/checkin"
+            className="hidden vm-btn-primary rounded-md px-4 py-2 text-sm font-semibold sm:inline-block"
+          >
+            Start Check-In
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden h-8 border-l border-[var(--vm-border)] pl-3 sm:flex sm:items-center">
+              <ThemeToggle className="rounded-md p-2 text-[var(--vm-muted)] hover:text-[var(--vm-text)]" />
+            </div>
+            <div className="sm:hidden">
+              <ThemeToggle className="rounded-md p-2 text-[var(--vm-muted)] hover:text-[var(--vm-text)]" />
+            </div>
+          </div>
+
+          <div className="dropdown dropdown-end lg:hidden">
             <button
               type="button"
               tabIndex={0}
-              className="btn btn-ghost btn-square rounded-md"
+              className="rounded-md p-2 text-[var(--vm-muted)] hover:text-[var(--vm-text)]"
               aria-label="Open navigation"
             >
               <svg
@@ -92,7 +148,7 @@ export function PublicHeader() {
             </button>
             <ul
               tabIndex={0}
-              className="menu dropdown-content mt-3 w-64 rounded-lg border border-base-300 bg-base-100 p-2 shadow-xl"
+              className="dropdown-content menu mt-3 w-52 rounded-lg border border-[var(--vm-border)] bg-[var(--vm-surface)] p-2 shadow-xl"
             >
               <li>
                 <NavLink to="/">Home</NavLink>
@@ -111,53 +167,6 @@ export function PublicHeader() {
               </li>
             </ul>
           </div>
-
-          <Link
-            to="/"
-            className="relative h-16 w-40 shrink-0 rounded-md sm:w-48 lg:w-56 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-base-100"
-            aria-label="Vistamate home"
-          >
-            <img
-              src="/VistaMate.png"
-              alt="Vistamate"
-              className="absolute left-0 top-1/2 h-28 w-auto max-w-none -translate-y-1/2 object-contain sm:h-32 lg:h-36"
-            />
-          </Link>
-        </div>
-
-        <div className="navbar-center hidden lg:flex">
-          <nav className="flex items-center gap-1" aria-label="Primary">
-            <NavLink to="/" className={navLinkClasses}>
-              Home
-            </NavLink>
-            <Link to="/checkin" className={navActionClasses}>
-              Check In
-            </Link>
-            {isHomePage ? (
-              <button
-                type="button"
-                className={adminButtonClasses}
-                onClick={toggleLogin}
-                aria-expanded={isLoginOpen}
-                aria-controls="inline-admin-login"
-              >
-                Admin Login
-              </button>
-            ) : (
-              <NavLink to="/login" className={navLinkClasses}>
-                Admin Login
-              </NavLink>
-            )}
-          </nav>
-        </div>
-
-        <div className="navbar-end gap-2">
-          <div className="hidden h-8 border-l border-base-300 pl-3 sm:flex sm:items-center">
-            <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
-          </div>
-          <div className="sm:hidden">
-            <ThemeToggle className="btn btn-ghost btn-square rounded-md" />
-          </div>
         </div>
       </div>
 
@@ -169,18 +178,18 @@ export function PublicHeader() {
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -8, height: 0 }}
             transition={{ duration: 0.24, ease: 'easeOut' }}
-            className="overflow-hidden border-t border-base-300/70 bg-base-100/95"
+            className="overflow-hidden border-t border-[var(--vm-border)] bg-[var(--vm-surface)]/95"
           >
             <div className="mx-auto flex w-full max-w-7xl justify-end px-4 py-3 sm:px-6 lg:px-8">
               <form
                 onSubmit={handleInlineLogin}
-                className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl shadow-base-content/5 lg:w-auto"
+                className="vm-card w-full rounded-xl p-4 lg:w-auto"
               >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     type="email"
-                    className="input input-bordered input-sm w-full rounded-md sm:w-44 lg:w-52"
-                    placeholder="Username"
+                    className="vm-input w-full rounded-md sm:w-44 lg:w-52"
+                    placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
@@ -188,7 +197,7 @@ export function PublicHeader() {
                   />
                   <input
                     type="password"
-                    className="input input-bordered input-sm w-full rounded-md sm:w-40 lg:w-48"
+                    className="vm-input w-full rounded-md sm:w-40 lg:w-48"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -197,14 +206,14 @@ export function PublicHeader() {
                   />
 
                   {error && (
-                    <div className="alert alert-error rounded-md py-2 text-sm">
-                      <span>{error}</span>
+                    <div className="rounded-md bg-[var(--vm-danger-soft)] px-3 py-2 text-sm text-[var(--vm-danger)]">
+                      {error}
                     </div>
                   )}
 
                   <button
                     type="submit"
-                    className="btn btn-primary btn-sm rounded-md sm:min-w-24"
+                    className="vm-btn-primary rounded-md px-4 py-2 text-sm font-semibold sm:min-w-24"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -217,11 +226,7 @@ export function PublicHeader() {
                     )}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  className="sr-only"
-                  onClick={closeLogin}
-                >
+                <button type="button" className="sr-only" onClick={closeLogin}>
                   Close
                 </button>
               </form>
@@ -235,17 +240,17 @@ export function PublicHeader() {
 
 export default function PublicLayout({ children }) {
   return (
-    <div className="min-h-screen bg-base-200 text-base-content">
+    <div className="min-h-screen bg-[var(--vm-content-bg)] text-[var(--vm-text)]">
       <PublicHeader />
       <main>{children}</main>
-      <footer className="border-t border-base-300/80 bg-base-100">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 text-sm text-base-content/65 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <footer className="border-t border-[var(--vm-border)] bg-[var(--vm-surface)]">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 text-sm vm-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} Vistamate. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link to="/checkin" className="link-hover font-medium">
+            <Link to="/checkin" className="font-medium hover:text-[var(--vm-text)] transition-colors">
               Check In
             </Link>
-            <Link to="/login" className="link-hover font-medium">
+            <Link to="/login" className="font-medium hover:text-[var(--vm-text)] transition-colors">
               Admin Login
             </Link>
           </div>

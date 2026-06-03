@@ -36,17 +36,11 @@ export default function AdminShell({
       <div className="flex min-h-screen w-full overflow-hidden">
         <aside className="vm-sidebar hidden w-72 shrink-0 lg:flex lg:flex-col">
           <div className="flex h-24 items-center px-7">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#23b6b6] text-white shadow-lg shadow-teal-900/30">
-                <LogoMark />
-              </div>
-              <div>
-                <p className="text-xl font-bold tracking-tight">Vistamate</p>
-                <p className="text-xs font-medium text-slate-400">
-                  MIE Visitor Suite
-                </p>
-              </div>
-            </div>
+            <img
+              src="/VistaMate.png"
+              alt="Vistamate"
+              className="max-h-45 w-auto object-contain"
+            />
           </div>
 
           <div className="vm-sidebar-card mx-5 rounded-xl p-3">
