@@ -11,7 +11,7 @@ import AdminShell from '../../components/AdminShell';
 import StatCard from '../../components/StatCard';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
-
+import { Monitor, Users, UserCheck, LogOut } from 'lucide-react';
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 
 export default function StationDashboard() {
@@ -100,18 +100,29 @@ export default function StationDashboard() {
           transition={{ duration: 0.24, ease: 'easeOut' }}
           className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
         >
-          <StatCard title="Total Stations" value={stations.length} icon="KS" />
-          <StatCard title="Total Visitors" value={total} icon="TV" />
+          <StatCard
+            title="Total Stations"
+            value={stations.length}
+            icon={<Monitor className="h-5 w-5" strokeWidth={2} />}
+          />
+
+          <StatCard
+            title="Total Visitors"
+            value={total}
+            icon={<Users className="h-5 w-5" strokeWidth={2} />}
+          />
+
           <StatCard
             title="Active Visitors"
             value={inBuilding}
-            icon="AV"
+            icon={<UserCheck className="h-5 w-5" strokeWidth={2} />}
             tone="success"
           />
+
           <StatCard
             title="Checked Out"
             value={checkedOut}
-            icon="CO"
+            icon={<LogOut className="h-5 w-5" strokeWidth={2} />}
             tone="info"
           />
         </motion.div>

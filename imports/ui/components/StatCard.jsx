@@ -12,14 +12,15 @@ export default function StatCard({ title, value, icon, tone = 'primary' }) {
   return (
     <Card className="vm-card p-5 transition-all duration-200 hover:-translate-y-0.5">
       <div className="flex items-center gap-4">
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-            toneClasses[tone] || toneClasses.primary
-          }`}
-        >
-          <span className="text-sm font-bold">{icon}</span>
-        </div>
-
+        {icon && (
+          <div
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+              toneClasses[tone] || toneClasses.primary
+            }`}
+          >
+            <span className="text-sm font-bold">{icon}</span>
+          </div>
+        )}
         <div className="min-w-0">
           <p className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
             {value}
