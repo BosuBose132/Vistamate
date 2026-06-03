@@ -57,6 +57,242 @@
   --depth: 1;
   --noise: 0;
 }
+:root,
+[data-theme='vistamate'] {
+  --vm-app-bg:
+    radial-gradient(
+      circle at top left,
+      rgba(35, 182, 182, 0.16),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #f7fbfb 0%, #eefafa 100%);
+
+  --vm-content-bg: #f7fbfb;
+  --vm-surface: #ffffff;
+  --vm-surface-soft: #f3fafa;
+  --vm-surface-muted: #e8f6f5;
+
+  --vm-sidebar: #062b38;
+  --vm-sidebar-soft: #123f4c;
+  --vm-sidebar-active: #154d5b;
+
+  --vm-text: #17323b;
+  --vm-heading: #102a33;
+  --vm-muted: #6c7f86;
+  --vm-border: #d9eceb;
+
+  --vm-primary: #23b6b6;
+  --vm-primary-hover: #159b9a;
+  --vm-primary-soft: #e5f7f6;
+
+  --vm-success: #22c55e;
+  --vm-success-soft: #ecfdf5;
+  --vm-danger: #ef4444;
+  --vm-danger-soft: #fef2f2;
+
+  --vm-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 12px 32px rgb(15 23 42 / 0.07);
+}
+
+[data-theme='dark'],
+.dark {
+  --vm-app-bg:
+    radial-gradient(
+      circle at top left,
+      rgba(35, 182, 182, 0.16),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #06181f 0%, #071f28 48%, #041319 100%);
+
+  --vm-content-bg: #071f28;
+  --vm-surface: #0b2530;
+  --vm-surface-soft: #0f303c;
+  --vm-surface-muted: #123f4c;
+
+  --vm-sidebar: #03161c;
+  --vm-sidebar-soft: #0b303b;
+  --vm-sidebar-active: #123f4c;
+
+  --vm-text: #dff7f7;
+  --vm-heading: #f4ffff;
+  --vm-muted: #9fb8bf;
+  --vm-border: #1d4652;
+
+  --vm-primary: #35d2cc;
+  --vm-primary-hover: #2bbdb8;
+  --vm-primary-soft: #103f45;
+
+  --vm-success: #34d399;
+  --vm-success-soft: #073a2a;
+  --vm-danger: #fb7185;
+  --vm-danger-soft: #3f111a;
+
+  --vm-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.35);
+}
+
+@layer components {
+  .vm-app {
+    background: var(--vm-app-bg);
+    color: var(--vm-text);
+  }
+
+  .vm-content {
+    background: var(--vm-content-bg);
+    color: var(--vm-text);
+  }
+
+  .vm-sidebar {
+    background: var(--vm-sidebar);
+    color: #dff7f7;
+  }
+
+  .vm-sidebar-card {
+    background: var(--vm-sidebar-soft);
+    color: #dff7f7;
+  }
+
+  .vm-topbar {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-color: var(--vm-border);
+  }
+
+  .vm-card {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border: 1px solid var(--vm-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--vm-shadow);
+  }
+
+  .vm-panel {
+    background: var(--vm-surface-soft);
+    color: var(--vm-text);
+    border: 1px solid var(--vm-border);
+    border-radius: 1rem;
+  }
+
+  .vm-heading {
+    color: var(--vm-heading);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .vm-muted {
+    color: var(--vm-muted);
+  }
+
+  .vm-kicker {
+    color: var(--vm-primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .vm-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-primary-soft);
+    color: var(--vm-primary);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .vm-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-text);
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .vm-input,
+  .vm-select,
+  .vm-textarea {
+    width: 100%;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+    outline: none;
+  }
+
+  .vm-input::placeholder,
+  .vm-textarea::placeholder {
+    color: var(--vm-muted);
+  }
+
+  .vm-input:focus,
+  .vm-select:focus,
+  .vm-textarea:focus {
+    border-color: var(--vm-primary);
+    box-shadow: 0 0 0 3px
+      color-mix(in oklab, var(--vm-primary), transparent 75%);
+  }
+
+  .vm-btn-primary {
+    border: 1px solid var(--vm-primary);
+    background: var(--vm-primary);
+    color: #ffffff;
+    border-radius: 0.875rem;
+    font-weight: 800;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .vm-btn-primary:hover {
+    background: var(--vm-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .vm-btn-secondary {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    font-weight: 800;
+  }
+
+  .vm-table-row {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+  }
+
+  .vm-table-row:hover {
+    background: var(--vm-surface-soft);
+  }
+
+  .vm-status-active {
+    border: 1px solid color-mix(in oklab, var(--vm-success), transparent 70%);
+    background: var(--vm-success-soft);
+    color: var(--vm-success);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .vm-status-neutral {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-muted);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+}
 
 /* MIE UI token bridge.
    This allows future @mieweb/ui components and your current DaisyUI classes

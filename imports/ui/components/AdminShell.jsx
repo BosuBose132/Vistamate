@@ -32,9 +32,9 @@ export default function AdminShell({
   };
 
   return (
-    <div className="min-h-screen text-[#17323b]">
+    <div className="min-h-screen vm-app">
       <div className="flex min-h-screen w-full overflow-hidden">
-        <aside className="hidden w-72 shrink-0 bg-[#062b38] text-white lg:flex lg:flex-col">
+        <aside className="vm-sidebar hidden w-72 shrink-0 lg:flex lg:flex-col">
           <div className="flex h-24 items-center px-7">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#23b6b6] text-white shadow-lg shadow-teal-900/30">
@@ -49,7 +49,7 @@ export default function AdminShell({
             </div>
           </div>
 
-          <div className="mx-5 rounded-xl bg-[#123f4c] p-3">
+          <div className="vm-sidebar-card mx-5 rounded-xl p-3">
             <p className="text-xs uppercase tracking-wide text-slate-400">
               Active location
             </p>
@@ -91,8 +91,8 @@ export default function AdminShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-20 items-center justify-between gap-4 border-b border-[#d9eceb] bg-white px-4 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-3">
+          <header className="vm-topbar flex h-20 items-center justify-between gap-4 border-b px-4 sm:px-6 lg:px-8">
+            <div className="vm-content flex min-w-0 flex-1 flex-col">
               <div className="dropdown lg:hidden">
                 <button
                   type="button"
@@ -118,17 +118,15 @@ export default function AdminShell({
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#23b6b6]">
-                  {eyebrow}
-                </p>
-                <h1 className="truncate text-lg font-bold text-[#17323b] sm:text-xl">
+                <p className="vm-kicker">{eyebrow}</p>
+                <h1 className="vm-heading truncate text-lg sm:text-xl">
                   {title}
                 </h1>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-3">
-              <div className="hidden rounded-full bg-[#e9f7f6] px-4 py-2 text-sm font-semibold text-[#0f766e] md:block">
+              <div className="vm-pill hidden md:block">
                 Live visitor operations
               </div>
 
