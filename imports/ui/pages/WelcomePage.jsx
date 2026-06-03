@@ -78,61 +78,63 @@ const workflowSteps = [
 const WelcomePage = () => {
   return (
     <PublicLayout>
-      <section className="relative overflow-hidden border-b border-base-300/80 bg-base-100">
-        <div className="absolute inset-x-0 top-0 h-32 bg-primary/5" />
-        <div className="relative mx-auto grid min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:py-20">
+      <section className="relative overflow-hidden bg-[var(--vm-surface)]">
+        <div className="relative mx-auto grid min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center gap-12 px-4 pt-6 pb-16 sm:px-6 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-20">
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="visible"
             className="max-w-3xl"
           >
-            <motion.div
-              variants={fadeUp}
-              className="badge badge-outline badge-lg mb-4 rounded-md border-primary/35 bg-primary/5 px-3 text-primary"
-            >
-              AI-powered visitor operations
-            </motion.div>
             <motion.h1
               variants={fadeUp}
-              className="max-w-4xl text-4xl font-semibold leading-tight tracking-normal text-base-content sm:text-5xl lg:text-6xl"
+              className="max-w-4xl text-4xl font-semibold leading-tight tracking-normal vm-heading sm:text-5xl lg:text-6xl"
             >
-              A faster, smarter way to manage every visitor arrival.
+              Visitor Management System
             </motion.h1>
             <motion.p
               variants={fadeUp}
-              className="mt-5 max-w-2xl text-lg leading-8 text-base-content/70"
+              className="mt-5 max-w-2xl text-lg leading-8 vm-muted"
             >
-              Vistamate combines AI ID and business card detection, OCR
-              autofill, station kiosks, visitor check-in, and an admin dashboard
-              into one polished front-desk workflow.
+              A smarter way to welcome visitors, verify details, and manage
+              every check-in from one secure dashboard. From kiosk-based
+              registration and ID/business card scanning to OCR-powered form
+              autofill, station-based check-ins, visitor tracking, and admin
+              monitoring, the system keeps every entry organized from arrival to
+              checkout.
             </motion.p>
             <motion.div
               variants={fadeUp}
-              className="mt-6 flex flex-col gap-3 sm:flex-row"
+              className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
             >
-              <Link to="/checkin" className="btn btn-primary rounded-md">
-                Check In
+              <Link
+                to="/checkin"
+                className="vm-btn-primary rounded-md px-6 py-3 text-sm font-semibold text-center"
+              >
+                Start Check-In
               </Link>
-              <Link to="/login" className="btn btn-outline rounded-md">
+              <Link
+                to="/login"
+                className="vm-btn-secondary rounded-md px-6 py-3 text-sm font-semibold text-center"
+              >
                 Admin Login
               </Link>
             </motion.div>
             <motion.div
               variants={fadeUp}
-              className="mt-8 grid max-w-2xl grid-cols-3 gap-3 text-sm"
+              className="mt-10 grid max-w-2xl grid-cols-3 gap-4 text-sm"
             >
-              <div className="border-l-2 border-primary pl-3">
-                <p className="font-semibold">OCR autofill</p>
-                <p className="text-base-content/60">Reduce entry time</p>
+              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
+                <p className="font-semibold vm-heading">OCR autofill</p>
+                <p className="mt-1 vm-muted">Reduce entry time</p>
               </div>
-              <div className="border-l-2 border-info pl-3">
-                <p className="font-semibold">Kiosk-ready</p>
-                <p className="text-base-content/60">Station check-ins</p>
+              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
+                <p className="font-semibold vm-heading">Kiosk-ready</p>
+                <p className="mt-1 vm-muted">Station check-ins</p>
               </div>
-              <div className="border-l-2 border-warning pl-3">
-                <p className="font-semibold">Admin control</p>
-                <p className="text-base-content/60">Live operations</p>
+              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
+                <p className="font-semibold vm-heading">Admin control</p>
+                <p className="mt-1 vm-muted">Live operations</p>
               </div>
             </motion.div>
           </motion.div>
@@ -143,27 +145,30 @@ const WelcomePage = () => {
             transition={{ duration: 0.38, ease: 'easeOut', delay: 0.12 }}
             className="relative"
           >
-            <div className="overflow-hidden rounded-2xl border border-base-300 bg-base-100 p-2 shadow-2xl shadow-base-content/10">
+            <div className="vm-card overflow-hidden rounded-2xl p-2">
               <div className="relative overflow-hidden rounded-xl">
                 <img
                   src="/homePage.png"
                   alt="Visitor presenting an ID card to a check-in kiosk in a modern lobby"
                   className="aspect-[16/9] w-full object-cover"
                 />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-base-content/35 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section id="platform" className="bg-base-200 px-4 py-10 sm:px-6 lg:px-8">
+      <section
+        id="platform"
+        className="bg-[var(--vm-content-bg)] px-4 py-10 sm:px-6 lg:px-8"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="mb-7 max-w-3xl">
-            <p className="text-sm font-semibold uppercase text-primary">
+            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
               Platform
             </p>
-            <h2 className="mt-3 text-3xl font-semibold text-base-content sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold vm-heading sm:text-4xl">
               Built for controlled, high-volume reception workflows.
             </h2>
           </div>
@@ -181,20 +186,20 @@ const WelcomePage = () => {
                 <motion.article
                   variants={fadeUp}
                   key={card.title}
-                  className="rounded-lg border border-base-300 bg-base-100 p-5 shadow-sm"
+                  className="vm-card rounded-lg p-5"
                 >
                   <div className="mb-5 flex items-center justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--vm-primary)]/20 bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]">
                       <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </div>
-                    <span className="rounded-md bg-base-200 px-3 py-2 text-xs font-semibold text-primary">
+                    <span className="vm-pill rounded-md px-3 py-1 text-xs font-semibold">
                       {card.metric}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold">{card.title}</h3>
-                  <p className="mt-3 leading-7 text-base-content/70">
-                    {card.body}
-                  </p>
+                  <h3 className="text-lg font-semibold vm-heading">
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 leading-7 vm-muted">{card.body}</p>
                 </motion.article>
               );
             })}
@@ -204,17 +209,17 @@ const WelcomePage = () => {
 
       <section
         id="workflow"
-        className="border-y border-base-300/80 bg-base-100 px-4 py-10 sm:px-6 lg:px-8"
+        className="border-y border-[var(--vm-border)] bg-[var(--vm-surface)] px-4 py-10 sm:px-6 lg:px-8"
       >
         <div className="mx-auto grid max-w-7xl gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase text-primary">
+            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
               Workflow
             </p>
-            <h2 className="mt-3 text-3xl font-semibold sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold vm-heading sm:text-4xl">
               From document capture to dashboard visibility.
             </h2>
-            <p className="mt-4 max-w-2xl leading-8 text-base-content/70">
+            <p className="mt-4 max-w-2xl leading-8 vm-muted">
               Vistamate supports self-service station kiosks and front-desk
               assisted check-ins while preserving a consistent experience for
               administrators.
@@ -235,12 +240,14 @@ const WelcomePage = () => {
                     ease: 'easeOut',
                     delay: index * 0.05,
                   }}
-                  className="flex items-center gap-4 rounded-lg border border-base-300 bg-base-200 p-4"
+                  className="vm-panel rounded-lg p-4"
                 >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/15 bg-primary/10 text-primary">
-                    <StepIcon className="h-5 w-5" strokeWidth={1.8} />
-                  </span>
-                  <span className="font-medium">{step.label}</span>
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--vm-primary)]/20 bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]">
+                      <StepIcon className="h-5 w-5" strokeWidth={1.8} />
+                    </span>
+                    <span className="font-medium vm-heading">{step.label}</span>
+                  </div>
                 </motion.div>
               );
             })}
@@ -248,21 +255,27 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      <section className="bg-base-200 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-lg border border-base-300 bg-base-100 p-6 shadow-sm md:flex-row md:items-center">
+      <section className="bg-[var(--vm-content-bg)] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-lg vm-card p-6 md:flex-row md:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase text-primary">
+            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
               Ready for the next arrival
             </p>
-            <h2 className="mt-2 text-2xl font-semibold">
+            <h2 className="mt-2 text-2xl font-semibold vm-heading">
               Start a check-in or open the admin dashboard.
             </h2>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <Link to="/checkin" className="btn btn-primary rounded-md">
-              Check In
+            <Link
+              to="/checkin"
+              className="vm-btn-primary rounded-md px-6 py-3 text-sm font-semibold text-center"
+            >
+              Start Check-In
             </Link>
-            <Link to="/login" className="btn btn-outline rounded-md">
+            <Link
+              to="/login"
+              className="vm-btn-secondary rounded-md px-6 py-3 text-sm font-semibold text-center"
+            >
               Admin Login
             </Link>
           </div>

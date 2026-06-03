@@ -1,33 +1,35 @@
 import React from 'react';
-// imports/ui/components/StatCard.jsx
+import { Card } from '@mieweb/ui';
 
 const toneClasses = {
-  primary: 'bg-primary/10 text-primary ring-primary/15',
-  success: 'bg-success/10 text-success ring-success/15',
-  info: 'bg-info/10 text-info ring-info/15',
+  primary: 'bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]',
+  success: 'bg-[var(--vm-success-soft)] text-[var(--vm-success)]',
+  info: 'bg-[color-mix(in_oklab,var(--vm-primary),transparent_88%)] text-[var(--vm-primary)]',
+  warning: 'bg-amber-500/10 text-amber-500',
 };
 
 export default function StatCard({ title, value, icon, tone = 'primary' }) {
   return (
-    <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-sm font-medium text-base-content/60">{title}</h3>
-          <p className="mt-3 text-3xl font-semibold tracking-tight text-base-content">
-            {value}
-          </p>
-        </div>
-
+    <Card className="vm-card p-5 transition-all duration-200 hover:-translate-y-0.5">
+      <div className="flex items-center gap-4">
         {icon && (
           <div
-            className={`flex h-11 min-w-11 items-center justify-center rounded-xl text-xs font-semibold ring-1 ${
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
               toneClasses[tone] || toneClasses.primary
             }`}
           >
-            {icon}
+            <span className="text-sm font-bold">{icon}</span>
           </div>
         )}
+        <div className="min-w-0">
+          <p className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
+            {value}
+          </p>
+          <p className="mt-1 truncate text-sm font-semibold text-[var(--vm-muted)]">
+            {title}
+          </p>
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }

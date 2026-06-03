@@ -1,8 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Meteor } from 'meteor/meteor';
-import '/imports/ui/styles/tailwind.css';
 import 'survey-core/survey-core.css';
+import '/imports/ui/styles/tailwind.css';
+
+import { ThemeProvider } from '@mieweb/ui';
 
 import MainRouter from '/imports/ui/MainRouter.jsx';
 
@@ -13,5 +15,9 @@ Meteor.startup(() => {
     return;
   }
   const root = createRoot(container);
-  root.render(<MainRouter />);
+  root.render(
+    <ThemeProvider>
+      <MainRouter />
+    </ThemeProvider>,
+  );
 });

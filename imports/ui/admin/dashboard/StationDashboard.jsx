@@ -4,11 +4,14 @@ import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 
 import AdminHeader from '../../components/AdminHeader';
+import { Button, Card, Input } from '@mieweb/ui';
+
 import AdminQuickCheckIn from '../../components/AdminQuickCheckIn';
+import AdminShell from '../../components/AdminShell';
 import StatCard from '../../components/StatCard';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
-
+import { Monitor, Users, UserCheck, LogOut } from 'lucide-react';
 // /imports/ui/admin/dashboard/StationDashboard.jsx
 
 export default function StationDashboard() {
@@ -39,143 +42,234 @@ export default function StationDashboard() {
 
   // 4) Selected scope
   const [selectedId, setSelectedId] = useState('ALL');
+  const [search, setSearch] = useState('');
 
   // 5) Filter rows client-side based on scope
   const rows = useMemo(() => {
-    if (selectedId === 'ALL') return visitorsToday;
-    if (selectedId === 'GLOBAL') {
-      return visitorsToday.filter((v) => !v.stationId);
-    }
-    return visitorsToday.filter((v) => v.stationId === selectedId);
-  }, [visitorsToday, selectedId]);
+    let scopedRows = visitorsToday;
 
-  // 6) KPIs based on filtered rows
+    if (selectedId === 'GLOBAL') {
+      scopedRows = visitorsToday.filter((v) => !v.stationId);
+    } else if (selectedId !== 'ALL') {
+      scopedRows = visitorsToday.filter((v) => v.stationId === selectedId);
+    }
+
+    const q = search.trim().toLowerCase();
+    if (!q) return scopedRows;
+
+    return scopedRows.filter((v) =>
+      [v.name, v.company, v.purpose, v.host, v.email, v.phone]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q)),
+    );
+  }, [visitorsToday, selectedId, search]);
+
   const total = rows.length;
   const inBuilding = rows.filter((v) => v.status !== 'checked_out').length;
+  const checkedOut = rows.filter((v) => v.status === 'checked_out').length;
   const avg = averageDuration(rows);
+
   const selectedLabel =
     options.find((o) => o._id === selectedId)?.name || 'All Stations';
+
   const quickCheckInStationId =
     selectedId === 'ALL' || selectedId === 'GLOBAL' ? null : selectedId;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-base-200 text-base-content">
-        <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <AdminHeader />
-          <div className="space-y-6">
-            <div className="h-24 rounded-2xl border border-base-300/80 bg-base-100 shadow-sm">
-              <div className="skeleton h-full w-full rounded-2xl" />
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="skeleton h-32 rounded-2xl" />
-              <div className="skeleton h-32 rounded-2xl" />
-              <div className="skeleton h-32 rounded-2xl" />
-            </div>
+      <AdminShell title="Dashboard" eyebrow="Visitor operations">
+        <div className="space-y-5">
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="skeleton h-24 rounded-2xl" />
+            <div className="skeleton h-24 rounded-2xl" />
+            <div className="skeleton h-24 rounded-2xl" />
+            <div className="skeleton h-24 rounded-2xl" />
           </div>
+          <div className="skeleton h-[520px] rounded-3xl" />
         </div>
-      </div>
+      </AdminShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-base-200 text-base-content">
-      <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <AdminHeader />
+    <AdminShell title="Dashboard" eyebrow="Visitor operations">
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+          className="grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        >
+          <StatCard
+            title="Total Stations"
+            value={stations.length}
+            icon={<Monitor className="h-5 w-5" strokeWidth={2} />}
+          />
 
-        <main className="space-y-6">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-medium text-primary">
-                Visitor operations
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-base-content">
-                Admin Dashboard
-              </h1>
-              <p className="mt-2 text-sm text-base-content/60">
-                Monitor today&apos;s visitor activity.
-              </p>
-            </div>
+          <StatCard
+            title="Total Visitors"
+            value={total}
+            icon={<Users className="h-5 w-5" strokeWidth={2} />}
+          />
 
-            <div className="rounded-full border border-base-300/80 bg-base-100 px-4 py-2 text-sm font-medium text-base-content/70 shadow-sm">
-              Live updates • {rows.length} visitor
-              {rows.length === 1 ? '' : 's'}
-            </div>
-          </div>
+          <StatCard
+            title="Active Visitors"
+            value={inBuilding}
+            icon={<UserCheck className="h-5 w-5" strokeWidth={2} />}
+            tone="success"
+          />
 
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="grid gap-4 md:grid-cols-3"
-          >
-            <StatCard
-              title="Today's Visitors"
-              value={total}
-              icon="24h"
-              tone="primary"
-            />
-            <StatCard
-              title="Currently In Building"
-              value={inBuilding}
-              icon="In"
-              tone="success"
-            />
-            <StatCard
-              title="Avg. Visit Duration"
-              value={avg}
-              icon="Avg"
-              tone="info"
-            />
-          </motion.div>
+          <StatCard
+            title="Checked Out"
+            value={checkedOut}
+            icon={<LogOut className="h-5 w-5" strokeWidth={2} />}
+            tone="info"
+          />
+        </motion.div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
-              className="overflow-hidden rounded-2xl border border-base-300/80 bg-base-100 shadow-sm shadow-base-content/5"
-            >
-              <div className="flex flex-col gap-3 border-b border-base-300/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold">Visitor Log</h2>
-                  <p className="text-sm text-base-content/55">
-                    {selectedLabel}
-                  </p>
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+        >
+          <Card className="vm-card overflow-hidden">
+            <div className="flex flex-col gap-4 border-b border-[var(--vm-border)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
+                    Visitor Log
+                  </h2>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#b9dbda] text-xs font-bold text-[#23b6b6]">
+                    ?
+                  </span>
                 </div>
-
-                <span className="badge badge-outline rounded-md border-base-300 px-3 py-3 font-medium">
-                  Today
-                </span>
+                <p className="mt-1 text-sm font-medium text-[var(--vm-muted)]">
+                  {selectedLabel} • Today
+                </p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="table table-zebra text-base-content">
-                  <thead className="bg-base-200/70 text-xs uppercase tracking-wide text-base-content/60">
-                    <tr>
-                      <th>Visitor</th>
-                      <th>Company</th>
-                      <th>Purpose</th>
-                      <th>Host</th>
-                      <th>Station</th>
-                      <th>Time</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((v) => (
-                      <tr key={v._id} className="hover">
-                        <td className="font-medium">{v.name || '—'}</td>
-                        <td>{v.company || '—'}</td>
-                        <td>{v.purpose || '—'}</td>
-                        <td>{v.host || '—'}</td>
-                        <td>
-                          {v.stationId
-                            ? stations.find((s) => s._id === v.stationId)
-                                ?.name || '—'
-                            : 'Global'}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6c7f86]">
+                    <SearchIcon />
+                  </span>
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search visitor..."
+                    className="vm-input h-11 w-full pl-10 text-sm sm:w-72"
+                  />
+                </div>
+
+                <Button className="vm-btn-primary h-11 px-5 text-sm">
+                  Add Visitor
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="vm-btn-secondary h-11 px-5 text-sm"
+                >
+                  Export
+                </Button>
+              </div>
+            </div>
+
+            <div className="border-b border-[var(--vm-border)] bg-[var(--vm-surface-soft)] px-5 py-4">
+              <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-center">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
+                    Station filter
+                  </label>
+                  <select
+                    className="mt-2 h-11 w-full rounded-xl border border-[var(--vm-border)] bg-[var(--vm-surface)] px-3 text-sm font-semibold text-[var(--vm-heading)] outline-none focus:border-[var(--vm-primary)] focus:ring-2 focus:ring-[var(--vm-primary)]/20"
+                    value={selectedId}
+                    onChange={(e) => setSelectedId(e.target.value)}
+                  >
+                    {options.map((o) => (
+                      <option key={o._id} value={o._id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MiniMetric label="Avg. duration" value={avg} />
+                  <MiniMetric label="In building" value={inBuilding} />
+                  <MiniMetric label="Visible rows" value={rows.length} />
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--vm-border)] bg-[var(--vm-surface)] text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
+                    <th className="w-10 px-5 py-4">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
+                        aria-label="Select all visitors"
+                      />
+                    </th>
+                    <th className="px-4 py-4">Name</th>
+                    <th className="px-4 py-4">Purpose</th>
+                    <th className="px-4 py-4">Company</th>
+                    <th className="px-4 py-4">Host</th>
+                    <th className="px-4 py-4">Station</th>
+                    <th className="px-4 py-4">Check In</th>
+                    <th className="px-4 py-4">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-[var(--vm-border)]">
+                  {rows.map((v) => {
+                    const stationName = v.stationId
+                      ? stations.find((s) => s._id === v.stationId)?.name || '—'
+                      : 'Global';
+
+                    return (
+                      <tr
+                        key={v._id}
+                        className="vm-table-row transition-colors"
+                      >
+                        <td className="px-5 py-4">
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
+                            aria-label={`Select ${v.name || 'visitor'}`}
+                          />
                         </td>
-                        <td className="whitespace-nowrap">
+
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f7f6] text-xs font-bold text-[#0f766e]">
+                              {getInitials(v.name)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-[var(--vm-heading)]">
+                                {v.name || '—'}
+                              </p>
+                              <p className="text-xs text-[var(--vm-muted)]">
+                                {v.email || v.phone || 'Visitor'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-4 font-medium text-[var(--vm-muted)]">
+                          {v.purpose || '—'}
+                        </td>
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                          {v.company || '—'}
+                        </td>
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                          {v.host || '—'}
+                        </td>
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                          {stationName}
+                        </td>
+                        <td className="px-4 py-4 font-semibold text-[var(--vm-heading)]">
                           {v.createdAt
                             ? new Date(v.createdAt).toLocaleTimeString([], {
                                 hour: '2-digit',
@@ -183,65 +277,114 @@ export default function StationDashboard() {
                               })
                             : '—'}
                         </td>
-                        <td className="align-middle">
-                          {v.status === 'checked_out' ? (
-                            <span className="inline-flex h-7 items-center rounded-full border border-base-300 bg-base-200/70 px-3 text-xs font-medium leading-none text-base-content/65">
-                              Checked Out
-                            </span>
-                          ) : (
-                            <span className="inline-flex h-7 items-center gap-2 rounded-full border border-success/20 bg-success/10 px-3 text-xs font-semibold leading-none text-success">
-                              <span
-                                className="h-1.5 w-1.5 rounded-full bg-success"
-                                aria-hidden="true"
-                              />
-                              In Building
-                            </span>
-                          )}
+                        <td className="px-4 py-4">
+                          <StatusBadge status={v.status} />
                         </td>
                       </tr>
-                    ))}
-                    {rows.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={7}
-                          className="py-12 text-center text-base-content/50"
-                        >
-                          No check-ins yet for this scope.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </motion.section>
+                    );
+                  })}
 
-            <aside className="space-y-6">
-              <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-                <label className="label px-0 pt-0">
-                  <span className="label-text font-semibold">
-                    Station filter
-                  </span>
-                </label>
-                <select
-                  className="select select-bordered w-full rounded-md border-base-300"
-                  value={selectedId}
-                  onChange={(e) => setSelectedId(e.target.value)}
-                >
-                  {options.map((o) => (
-                    <option key={o._id} value={o._id}>
-                      {o.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  {rows.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="px-5 py-16 text-center text-[var(--vm-muted)]"
+                      >
+                        <div className="mx-auto max-w-sm">
+                          <p className="text-base font-bold text-[var(--vm-heading)]">
+                            No visitors found
+                          </p>
+                          <p className="mt-2 text-sm">
+                            Try changing the station filter or search keyword.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-              <AdminQuickCheckIn defaultStationId={quickCheckInStationId} />
-            </aside>
-          </div>
-        </main>
+            <div className="flex flex-col gap-3 border-t border-[var(--vm-border)] px-5 py-4 text-sm font-semibold text-[var(--vm-muted)] sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Showing {rows.length} visitor{rows.length === 1 ? '' : 's'}
+              </p>
+              <p>Live updates enabled</p>
+            </div>
+          </Card>
+        </motion.section>
+
+        <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <Card className="vm-card p-5">
+            <h3 className="text-lg font-bold text-[var(--vm-heading)]">
+              Quick Check-In
+            </h3>
+
+            <p className="mt-1 text-sm text-[var(--vm-muted)]">
+              Use the selected station context for manual visitor entry.
+            </p>
+
+            <div className="vm-panel mt-4 p-4 text-sm font-semibold text-[var(--vm-primary)]">
+              Current station: {selectedLabel}
+            </div>
+          </Card>
+
+          <AdminQuickCheckIn defaultStationId={quickCheckInStationId} />
+        </div>
       </div>
+    </AdminShell>
+  );
+}
+
+function MiniMetric({ label, value }) {
+  return (
+    <div className="vm-panel px-4 py-3">
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-bold text-[var(--vm-heading)]">{value}</p>
     </div>
   );
+}
+
+function StatusBadge({ status }) {
+  if (status === 'checked_out') {
+    return (
+      <span className="vm-status-neutral inline-flex h-7 items-center">
+        Checked Out
+      </span>
+    );
+  }
+
+  return (
+    <span className="vm-status-active inline-flex h-7 items-center gap-2">
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      In Building
+    </span>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <path
+        d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function getInitials(name = '') {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'V';
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
 }
 
 function averageDuration(list) {
@@ -252,7 +395,7 @@ function averageDuration(list) {
     return acc + Math.max(0, end - start);
   }, 0);
   const mins = Math.round(sum / list.length / 60000);
-  const h = Math.floor(mins / 60),
-    m = mins % 60;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
   return h ? `${h}h ${m}m` : `${mins}m`;
 }

@@ -1,48 +1,357 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-@import "tailwindcss";
-
-/* Plugins (v4 style) */
 @plugin "@tailwindcss/forms";
 @plugin "daisyui";
 
-
 @plugin "daisyui/theme" {
-    name: "vistamate";
-    default: false;
-    prefersdark: false;
-    color-scheme: "light";
-    --color-base-100: oklch(98% 0 0);
-    --color-base-200: oklch(97% 0 0);
-    --color-base-300: oklch(92% 0 0);
-    --color-base-content: oklch(20% 0 0);
-    --color-primary: oklch(60% 0.118 184.704);
-    --color-primary-content: oklch(98% 0.014 180.72);
-    --color-secondary: oklch(85% 0.138 181.071);
-    --color-secondary-content: oklch(96% 0.018 272.314);
-    --color-accent: oklch(38% 0.063 188.416);
-    --color-accent-content: oklch(96% 0.018 272.314);
-    --color-neutral: oklch(26% 0 0);
-    --color-neutral-content: oklch(98% 0 0);
-    --color-info: oklch(71% 0.143 215.221);
-    --color-info-content: oklch(98% 0.019 200.873);
-    --color-success: oklch(72% 0.219 149.579);
-    --color-success-content: oklch(98% 0.018 155.826);
-    --color-warning: oklch(79% 0.184 86.047);
-    --color-warning-content: oklch(98% 0.026 102.212);
-    --color-error: oklch(50% 0.213 27.518);
-    --color-error-content: oklch(97% 0.014 343.198);
-    --radius-selector: 1rem;
-    --radius-field: 2rem;
-    --radius-box: 1rem;
-    --size-selector: 0.25rem;
-    --size-field: 0.25rem;
-    --border: 1px;
-    --depth: 1;
-    --noise: 0;
+  name: 'vistamate';
+  default: false;
+  prefersdark: false;
+  color-scheme: 'light';
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f7fbfb;
+  --color-base-300: #d9eceb;
+  --color-base-content: #17323b;
+
+  --color-primary: #23b6b6;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #0f766e;
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #f59e0b;
+  --color-accent-content: #451a03;
+
+  --color-neutral: #062b38;
+  --color-neutral-content: #dff7f7;
+
+  --color-info: #0ea5e9;
+  --color-info-content: #ffffff;
+
+  --color-success: #22c55e;
+  --color-success-content: #052e16;
+
+  --color-warning: #f59e0b;
+  --color-warning-content: #451a03;
+
+  --color-error: #ef4444;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.875rem;
+  --radius-box: 1.25rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
+
+/* -----------------------------
+   Vistamate design tokens
+----------------------------- */
+
+:root,
+[data-theme='vistamate'] {
+  --vm-app-bg:
+    radial-gradient(
+      circle at top left,
+      rgba(35, 182, 182, 0.14),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #f7fbfb 0%, #eefafa 100%);
+
+  --vm-content-bg: #f7fbfb;
+  --vm-surface: #ffffff;
+  --vm-surface-soft: #f3fafa;
+  --vm-surface-muted: #e8f6f5;
+
+  --vm-sidebar: #062b38;
+  --vm-sidebar-soft: #123f4c;
+  --vm-sidebar-active: #154d5b;
+
+  --vm-text: #17323b;
+  --vm-heading: #102a33;
+  --vm-muted: #6c7f86;
+  --vm-border: #d9eceb;
+
+  --vm-primary: #23b6b6;
+  --vm-primary-hover: #159b9a;
+  --vm-primary-soft: #e5f7f6;
+
+  --vm-success: #22c55e;
+  --vm-success-soft: #ecfdf5;
+
+  --vm-danger: #ef4444;
+  --vm-danger-soft: #fef2f2;
+
+  --vm-shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 12px 32px rgb(15 23 42 / 0.07);
+
+  /* SurveyJS theme variables */
+  --sjs-primary-backcolor: var(--vm-primary);
+  --sjs-primary-backcolor-dark: var(--vm-primary-hover);
+  --sjs-primary-backcolor-light: var(--vm-primary-soft);
+  --sjs-primary-forecolor: #ffffff;
+
+  --sjs-primary-background-500: var(--vm-primary);
+  --sjs-primary-background-400: var(--vm-primary-hover);
+  --sjs-primary-background-10: var(--vm-primary-soft);
+  --sjs-primary-foreground-100: #ffffff;
+
+  --sjs-general-backcolor: var(--vm-surface);
+  --sjs-general-backcolor-dim: var(--vm-surface-soft);
+  --sjs-general-forecolor: var(--vm-text);
+  --sjs-general-forecolor-light: var(--vm-muted);
+
+  --sjs-general-background-500: var(--vm-surface);
+  --sjs-general-background-400: var(--vm-surface-soft);
+  --sjs-general-background-10: var(--vm-surface-muted);
+  --sjs-general-foreground-100: var(--vm-text);
+  --sjs-general-foreground-70: var(--vm-muted);
+  --sjs-general-foreground-50: var(--vm-muted);
+
+  --sjs-border-default: var(--vm-border);
+  --sjs-border-light: var(--vm-border);
+}
+
+[data-theme='dark'],
+.dark {
+  --vm-app-bg:
+    radial-gradient(
+      circle at top left,
+      rgba(35, 182, 182, 0.14),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #06181f 0%, #071f28 48%, #041319 100%);
+
+  --vm-content-bg: #071f28;
+  --vm-surface: #0b2530;
+  --vm-surface-soft: #0f303c;
+  --vm-surface-muted: #123f4c;
+
+  --vm-sidebar: #03161c;
+  --vm-sidebar-soft: #0b303b;
+  --vm-sidebar-active: #123f4c;
+
+  --vm-text: #dff7f7;
+  --vm-heading: #f4ffff;
+  --vm-muted: #9fb8bf;
+  --vm-border: #1d4652;
+
+  --vm-primary: #35d2cc;
+  --vm-primary-hover: #2bbdb8;
+  --vm-primary-soft: #103f45;
+
+  --vm-success: #34d399;
+  --vm-success-soft: #073a2a;
+
+  --vm-danger: #fb7185;
+  --vm-danger-soft: #3f111a;
+
+  --vm-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.35);
+
+  /* SurveyJS theme variables */
+  --sjs-primary-backcolor: var(--vm-primary);
+  --sjs-primary-backcolor-dark: var(--vm-primary-hover);
+  --sjs-primary-backcolor-light: var(--vm-primary-soft);
+  --sjs-primary-forecolor: #ffffff;
+
+  --sjs-primary-background-500: var(--vm-primary);
+  --sjs-primary-background-400: var(--vm-primary-hover);
+  --sjs-primary-background-10: var(--vm-primary-soft);
+  --sjs-primary-foreground-100: #ffffff;
+
+  --sjs-general-backcolor: var(--vm-surface);
+  --sjs-general-backcolor-dim: var(--vm-surface-soft);
+  --sjs-general-forecolor: var(--vm-text);
+  --sjs-general-forecolor-light: var(--vm-muted);
+
+  --sjs-general-background-500: var(--vm-surface);
+  --sjs-general-background-400: var(--vm-surface-soft);
+  --sjs-general-background-10: var(--vm-surface-muted);
+  --sjs-general-foreground-100: var(--vm-text);
+  --sjs-general-foreground-70: var(--vm-muted);
+  --sjs-general-foreground-50: var(--vm-muted);
+
+  --sjs-border-default: var(--vm-border);
+  --sjs-border-light: var(--vm-border);
+}
+
+/* -----------------------------
+   Vistamate reusable classes
+----------------------------- */
+
+@layer components {
+  .vm-app {
+    background: var(--vm-app-bg);
+    color: var(--vm-text);
+  }
+
+  .vm-content {
+    background: var(--vm-content-bg);
+    color: var(--vm-text);
+  }
+
+  .vm-sidebar {
+    background: var(--vm-sidebar);
+    color: #dff7f7;
+  }
+
+  .vm-sidebar-card {
+    background: var(--vm-sidebar-soft);
+    color: #dff7f7;
+  }
+
+  .vm-topbar {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-color: var(--vm-border);
+  }
+
+  .vm-card {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border: 1px solid var(--vm-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--vm-shadow);
+  }
+
+  .vm-panel {
+    background: var(--vm-surface-soft);
+    color: var(--vm-text);
+    border: 1px solid var(--vm-border);
+    border-radius: 1rem;
+  }
+
+  .vm-heading {
+    color: var(--vm-heading);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .vm-muted {
+    color: var(--vm-muted);
+  }
+
+  .vm-kicker {
+    color: var(--vm-primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .vm-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-primary-soft);
+    color: var(--vm-primary);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+
+  .vm-badge {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-text);
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .vm-input,
+  .vm-select,
+  .vm-textarea {
+    width: 100%;
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    min-height: 2.75rem;
+    padding: 0.625rem 0.875rem;
+    outline: none;
+  }
+
+  .vm-input::placeholder,
+  .vm-textarea::placeholder {
+    color: var(--vm-muted);
+  }
+
+  .vm-input:focus,
+  .vm-select:focus,
+  .vm-textarea:focus {
+    border-color: var(--vm-primary);
+    box-shadow: 0 0 0 3px
+      color-mix(in oklab, var(--vm-primary), transparent 75%);
+  }
+
+  .vm-btn-primary {
+    border: 1px solid var(--vm-primary);
+    background: var(--vm-primary);
+    color: #ffffff;
+    border-radius: 0.875rem;
+    font-weight: 800;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .vm-btn-primary:hover {
+    background: var(--vm-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .vm-btn-secondary {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface);
+    color: var(--vm-text);
+    border-radius: 0.875rem;
+    font-weight: 800;
+  }
+
+  .vm-table-row {
+    background: var(--vm-surface);
+    color: var(--vm-text);
+  }
+
+  .vm-table-row:hover {
+    background: var(--vm-surface-soft);
+  }
+
+  .vm-status-active {
+    border: 1px solid color-mix(in oklab, var(--vm-success), transparent 70%);
+    background: var(--vm-success-soft);
+    color: var(--vm-success);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  .vm-status-neutral {
+    border: 1px solid var(--vm-border);
+    background: var(--vm-surface-soft);
+    color: var(--vm-muted);
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+}
+
+/* -----------------------------
+   Tables
+----------------------------- */
 
 .table,
 .table thead,
@@ -50,17 +359,18 @@
 .table tr,
 .table th,
 .table td {
-    background-color: transparent !important;
-    color: inherit;
+  background-color: transparent !important;
+  color: inherit;
 }
 
-/* Optional: improve header contrast in both themes */
 .table thead tr th {
-    background-color: var(--color-base-200) !important;
+  background-color: var(--vm-surface-soft) !important;
 }
 
-/* --- SurveyJS (v2) x DaisyUI bridge --- */
-/* Make all panels/pages transparent and inherit DaisyUI text */
+/* -----------------------------
+   SurveyJS shared theme
+----------------------------- */
+
 .sd-root-modern,
 .sd-body,
 .sd-container-modern,
@@ -69,186 +379,214 @@
 .sd-panel,
 .sd-element,
 .sd-question {
-    background: transparent !important;
-    color: var(--color-base-content) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  color: var(--vm-text) !important;
 }
 
-/* Inputs / dropdown controls inside SurveyJS */
+.sd-title,
+.sd-question__title,
+.sd-string-viewer,
+.sd-selectbase__label {
+  color: var(--vm-text) !important;
+}
+
 .sd-input,
 .sd-text,
 .sd-comment,
 .sd-dropdown,
 .sd-tagbox,
 .sd-selectbase__control {
-    background: var(--color-base-100) !important;
-    color: var(--color-base-content) !important;
-    border-color: var(--color-base-300) !important;
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border: 1px solid var(--vm-border) !important;
+  border-radius: 0.875rem !important;
+  box-shadow: none !important;
 }
 
-/* Placeholders */
 .sd-input::placeholder,
 .sd-text::placeholder,
 .sd-comment::placeholder {
-    color: color-mix(in oklab, var(--color-base-content), transparent 50%) !important;
+  color: var(--vm-muted) !important;
 }
 
-/* Popup menus (dropdown options, date pickers) */
-.sd-popup,
-.sd-selectbase__popup,
-.sd-dropdown__popup,
-.sd-list__container {
-    background: var(--color-base-100) !important;
-    color: var(--color-base-content) !important;
-    border: 1px solid var(--color-base-300) !important;
-}
-
-/* Titles / labels */
-.sd-title,
-.sd-question__title,
-.sd-string-viewer,
-.sd-selectbase__label {
-    color: var(--color-base-content) !important;
-}
-
-/* Footer/action bar */
-.sd-footer,
-.sd-action-bar {
-    background: transparent !important;
-    border-top: 1px solid var(--color-base-300) !important;
-}
-
-/* --- SurveyJS v2 x DaisyUI: borderless, theme-matched --- */
-
-/* Remove outer frames/panels; inherit page colors */
-.sd-root-modern,
-.sd-body,
-.sd-container-modern,
-.sd-page,
-.sd-row,
-.sd-panel,
-.sd-element,
-.sd-question {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    color: var(--color-base-content) !important;
-}
-
-/* Question titles, labels */
-.sd-title,
-.sd-question__title,
-.sd-string-viewer,
-.sd-selectbase__label {
-    color: var(--color-base-content) !important;
-}
-
-/* Inputs / textareas / dropdowns */
-.sd-input,
-.sd-text,
-.sd-comment,
-.sd-dropdown,
-.sd-tagbox,
-.sd-selectbase__control {
-    background: var(--color-base-100) !important;
-    /* same as DaisyUI cards */
-    color: var(--color-base-content) !important;
-    border: 1px solid var(--color-base-300) !important;
-    border-radius: 0.75rem !important;
-    /* rounded-lg */
-    box-shadow: none !important;
-}
-
-/* Placeholder color */
-.sd-input::placeholder,
-.sd-text::placeholder,
-.sd-comment::placeholder {
-    color: color-mix(in oklab, var(--color-base-content), transparent 50%) !important;
-}
-
-/* Focus ring aligned with DaisyUI primary */
 .sd-input:focus,
 .sd-text:focus,
 .sd-comment:focus,
 .sd-selectbase__control:focus-within {
-    outline: 2px solid var(--color-primary) !important;
-    outline-offset: 2px !important;
-    border-color: var(--color-primary) !important;
+  border-color: var(--vm-primary) !important;
+  outline: 2px solid color-mix(in oklab, var(--vm-primary), transparent 72%) !important;
+  outline-offset: 1px !important;
 }
 
-/* Dropdown popup menus */
-.sd-popup,
-.sd-selectbase__popup,
-.sd-dropdown__popup,
-.sd-list__container {
-    background: var(--color-base-100) !important;
-    color: var(--color-base-content) !important;
-    border: 1px solid var(--color-base-300) !important;
-    border-radius: 0.75rem !important;
-    box-shadow: var(--tw-shadow) !important;
-}
-
-/* Buttons inside SurveyJS align to DaisyUI look */
+/* SurveyJS buttons */
 .sd-btn,
 .sd-action:not(.sd-action--icon) {
-    @apply btn btn-primary;
+  background: var(--vm-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--vm-primary) !important;
+  border-radius: 0.875rem !important;
+}
+
+.sd-btn:hover,
+.sd-action:not(.sd-action--icon):hover {
+  background: var(--vm-primary-hover) !important;
+  border-color: var(--vm-primary-hover) !important;
 }
 
 .sd-btn--flat,
 .sd-action--default {
-    @apply btn btn-outline;
+  background: transparent !important;
+  color: var(--vm-primary) !important;
+  border-color: var(--vm-border) !important;
 }
 
-/* Remove default SurveyJS footer background/border (keeps it borderless) */
 .sd-footer,
 .sd-action-bar {
-    background: transparent !important;
-    border-top: 1px solid transparent !important;
+  background: transparent !important;
+  border-top: 1px solid transparent !important;
 }
 
-/* Compact SurveyJS review panel on the public check-in flow */
+/* SurveyJS dropdown popup.
+   This must be global because SurveyJS can render the popup outside the form wrapper. */
+.sd-popup,
+.sv-popup,
+.sd-dropdown__popup,
+.sd-selectbase__popup,
+.sd-list__container,
+.sv-list__container {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border: 1px solid var(--vm-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: var(--vm-shadow) !important;
+  z-index: 9999 !important;
+}
+
+.sd-list__item,
+.sv-list__item {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+}
+
+.sd-list__item-body,
+.sv-list__item-body {
+  color: var(--vm-text) !important;
+  font-weight: 600 !important;
+}
+
+.sd-list__item:hover,
+.sd-list__item--focused,
+.sd-list__item--selected,
+.sd-list__item--selected.sd-list__item--allowhover,
+.sv-list__item:hover,
+.sv-list__item--focused,
+.sv-list__item--selected {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item:hover .sd-list__item-body,
+.sd-list__item--focused .sd-list__item-body,
+.sd-list__item--selected .sd-list__item-body,
+.sd-list__item--selected.sd-list__item--allowhover .sd-list__item-body,
+.sv-list__item:hover .sv-list__item-body,
+.sv-list__item--focused .sv-list__item-body,
+.sv-list__item--selected .sv-list__item-body {
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item--selected svg,
+.sd-list__item--focused svg,
+.sv-list__item--selected svg,
+.sv-list__item--focused svg {
+  fill: var(--vm-primary) !important;
+  stroke: var(--vm-primary) !important;
+}
+
+/* SurveyJS radio / checkbox selected decorators */
+.sd-item__decorator,
+.sd-checkbox__decorator,
+.sd-radio__decorator {
+  border-color: var(--vm-border) !important;
+}
+
+.sd-item--checked .sd-item__decorator,
+.sd-checkbox--checked .sd-checkbox__decorator,
+.sd-radio--checked .sd-radio__decorator {
+  background: var(--vm-primary) !important;
+  border-color: var(--vm-primary) !important;
+}
+
+/* -----------------------------
+   Public check-in compact review
+----------------------------- */
+
 .vistamate-review-survey .sd-root-modern {
-    max-width: 100% !important;
+  max-width: 100% !important;
 }
 
 .vistamate-review-survey .sd-body {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .vistamate-review-survey .sd-container-modern {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 .vistamate-review-survey .sd-page {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .vistamate-review-survey .sd-row {
-    margin-top: 0.75rem !important;
+  margin-top: 0.75rem !important;
 }
 
 .vistamate-review-survey .sd-question {
-    padding: 0 !important;
-    margin-bottom: 0.75rem !important;
+  padding: 0 !important;
+  margin-bottom: 0.75rem !important;
 }
 
 .vistamate-review-survey .sd-question__title {
-    font-size: 0.875rem !important;
-    line-height: 1.25rem !important;
-    font-weight: 600 !important;
-    margin-bottom: 0.35rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.35rem !important;
 }
 
 .vistamate-review-survey .sd-input,
 .vistamate-review-survey .sd-text,
 .vistamate-review-survey .sd-dropdown,
 .vistamate-review-survey .sd-selectbase__control {
-    min-height: 2.5rem !important;
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.925rem !important;
+  min-height: 2.5rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.925rem !important;
 }
 
 .vistamate-review-survey .sd-footer,
 .vistamate-review-survey .sd-action-bar {
-    margin-top: 0.75rem !important;
-    padding-top: 0.75rem !important;
+  margin-top: 0.75rem !important;
+  padding-top: 0.75rem !important;
+}
+/* SurveyJS dropdown color override */
+.sd-list__item--selected,
+.sd-list__item--focused,
+.sd-list__item:hover,
+.sd-list__item--selected.sd-list__item--allowhover {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item--selected .sd-list__item-body,
+.sd-list__item--focused .sd-list__item-body,
+.sd-list__item:hover .sd-list__item-body,
+.sd-list__item--selected.sd-list__item--allowhover .sd-list__item-body {
+  color: var(--vm-primary) !important;
+}
+
+.sd-list__item--selected svg,
+.sd-list__item--focused svg {
+  fill: var(--vm-primary) !important;
+  stroke: var(--vm-primary) !important;
 }

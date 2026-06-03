@@ -1,114 +1,56 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
-import { Survey } from 'survey-react-ui';
-import { Model } from 'survey-core';
-import {
-  LayeredDarkPanelless,
-  LayeredLightPanelless,
-} from 'survey-core/themes'; // Modern SurveyJS base CSS
-//import 'survey-core/defaultV2.min.css';
+
+const initialForm = {
+  name: '',
+  company: '',
+  purpose: 'Meeting',
+  host: '',
+};
 
 export default function AdminQuickCheckIn({ defaultStationId = null }) {
+  const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState(null);
-  const modelRef = useRef(null);
 
-  const survey = useMemo(() => {
-    const json = {
-      showQuestionNumbers: 'off',
-      widthMode: 'responsive',
-      elements: [
-        {
-          type: 'text',
-          name: 'name',
-          title: 'Full Name',
-          isRequired: true,
-          startWithNewLine: true,
-          placeholder: 'Enter visitor name',
-        },
-        {
-          type: 'text',
-          name: 'company',
-          title: 'Company',
-          startWithNewLine: false,
-          placeholder: 'Company name',
-        },
-        {
-          type: 'dropdown',
-          name: 'purpose',
-          title: 'Purpose of Visit',
-          choices: ['Meeting', 'Interview', 'Delivery', 'Other'],
-          defaultValue: 'Meeting',
-          startWithNewLine: true,
-        },
-        {
-          type: 'text',
-          name: 'host',
-          title: 'Host/Contact',
-          startWithNewLine: false,
-          placeholder: 'Who are they visiting?',
-        },
-      ],
-    };
-    const m = new Model(json);
-    // we supply our own button; hide SurveyJS nav/complete
-    m.showNavigationButtons = false;
-    modelRef.current = m;
-    return m;
-  }, []);
+  const onChange = (field, value) => {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
 
-  // Apply SurveyJS theme based on DaisyUI theme (light/dark)
-  useEffect(() => {
-    const m = modelRef.current;
-    if (!m) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const apply = () => {
-      // DaisyUI: either data-theme="dark"/"vistamate" or a "dark" class
-      const dt = document.documentElement.getAttribute('data-theme');
-      const isDark =
-        (dt && dt.toLowerCase().includes('dark')) ||
-        document.documentElement.classList.contains('dark');
-      m.applyTheme(isDark ? LayeredDarkPanelless : LayeredLightPanelless);
-    };
-
-    apply(); // initial
-    // Watch for theme changes (toggle component updates data-theme/class)
-    const obs = new MutationObserver(apply);
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme', 'class'],
-    });
-    return () => obs.disconnect();
-  }, []);
-
-  const handleSubmit = async () => {
     if (submitting) return;
-    const m = modelRef.current;
-    if (!m) return;
 
-    // validate SurveyJS fields
-    if (!m.validate(true)) return;
+    const name = form.name.trim();
+    if (!name) {
+      setMsg({ type: 'error', text: 'Visitor name is required.' });
+      return;
+    }
 
     setSubmitting(true);
     setMsg(null);
-    const data = m.data || {};
-    try {
-      const payload = {
-        name: (data.name || '').trim(),
-        company: (data.company || '').trim(),
-        purpose: data.purpose || 'Other',
-        host: (data.host || '').trim(),
-        stationId: defaultStationId || null,
-      };
 
-      await new Promise((res, rej) =>
+    const payload = {
+      name,
+      company: form.company.trim(),
+      purpose: form.purpose || 'Other',
+      host: form.host.trim(),
+      stationId: defaultStationId || null,
+    };
+
+    try {
+      await new Promise((resolve, reject) =>
         Meteor.call('admin.quickCheckIn', payload, (err, _id) =>
-          err ? rej(err) : res(_id),
+          err ? reject(err) : resolve(_id),
         ),
       );
 
       setMsg({ type: 'success', text: 'Visitor checked in.' });
-      m.clear(true, true); // reset fields, keep form visible
+      setForm(initialForm);
     } catch (e) {
       setMsg({
         type: 'error',
@@ -120,43 +62,98 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
   };
 
   return (
-    <div className="rounded-2xl border border-base-300/80 bg-base-100 p-5 shadow-sm shadow-base-content/5">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <div className="vm-card p-5 sm:p-6">
+      <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Quick check-in</h2>
-          <p className="mt-1 text-sm text-base-content/55">Admin entry</p>
+          <h2 className="text-xl font-bold tracking-tight text-[var(--vm-heading)]">
+            Quick check-in
+          </h2>
+          <p className="mt-1 text-sm text-[var(--vm-muted)]">Admin entry</p>
         </div>
-        <span className="badge badge-outline rounded-md border-base-300">
-          Manual
-        </span>
+
+        <span className="vm-badge">Manual</span>
       </div>
 
-      <div className="sv-root-modern rounded-xl border border-base-300/70 bg-base-200/30 p-3 text-base-content">
-        <Survey model={survey} />
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="vm-panel p-5 sm:p-6">
+          <div className="grid gap-5 md:grid-cols-2">
+            <label>
+              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+                Full Name <span className="text-red-500">*</span>
+              </span>
+              <input
+                className="vm-input"
+                placeholder="Enter visitor name"
+                value={form.name}
+                onChange={(e) => onChange('name', e.target.value)}
+                required
+              />
+            </label>
 
-      <div className="mt-4 space-y-3">
+            <label>
+              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+                Company
+              </span>
+              <input
+                className="vm-input"
+                placeholder="Company name"
+                value={form.company}
+                onChange={(e) => onChange('company', e.target.value)}
+              />
+            </label>
+
+            <label>
+              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+                Purpose of Visit
+              </span>
+              <select
+                className="vm-select"
+                value={form.purpose}
+                onChange={(e) => onChange('purpose', e.target.value)}
+              >
+                <option value="Meeting">Meeting</option>
+                <option value="Interview">Interview</option>
+                <option value="Delivery">Delivery</option>
+                <option value="Other">Other</option>
+              </select>
+            </label>
+
+            <label>
+              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+                Host/Contact
+              </span>
+              <input
+                className="vm-input"
+                placeholder="Who are they visiting?"
+                value={form.host}
+                onChange={(e) => onChange('host', e.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+
         <button
-          className={`btn btn-primary w-full rounded-md ${
-            submitting ? 'btn-disabled' : ''
+          type="submit"
+          className={`vm-btn-primary h-12 w-full ${
+            submitting ? 'cursor-not-allowed opacity-60' : ''
           }`}
-          onClick={handleSubmit}
           disabled={submitting}
         >
           {submitting ? 'Checking In…' : 'Check In'}
         </button>
 
         {msg?.type === 'success' && (
-          <div className="alert alert-success rounded-xl py-2 text-sm">
-            <span>{msg.text}</span>
+          <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500">
+            {msg.text}
           </div>
         )}
+
         {msg?.type === 'error' && (
-          <div className="alert alert-error rounded-xl py-2 text-sm">
-            <span>{msg.text}</span>
+          <div className="rounded-xl border border-red-300/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
+            {msg.text}
           </div>
         )}
-      </div>
+      </form>
     </div>
   );
 }

@@ -1,13 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    content: [
-        './client/**/*.{html,js,jsx}',
-        './imports/ui/**/*.{js,jsx}',
-    ],
-    theme: { extend: {} },
-    plugins: [
-        require('@tailwindcss/forms'),
-        require('daisyui'),
-    ],
-    // no need for `daisyui.themes` here because you'll define the theme via CSS
+  presets: [require('@mieweb/ui/tailwind-preset')],
+  content: [
+    './client/**/*.{html,js,jsx}',
+    './imports/ui/**/*.{js,jsx}',
+    './node_modules/@mieweb/ui/dist/**/*.js',
+  ],
+  theme: { extend: {} },
+  plugins: [require('@tailwindcss/forms'), require('daisyui')],
 };

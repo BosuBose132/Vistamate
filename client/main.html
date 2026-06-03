@@ -23,9 +23,10 @@
       const DEFAULT = 'vistamate'; // or "light" if you kept that name in your @plugin block
       const saved = localStorage.getItem(KEY) || DEFAULT;
       document.documentElement.setAttribute('data-theme', saved);
-
+      document.documentElement.classList.toggle('dark', saved === 'dark');
       window.__setTheme = function (name) {
         document.documentElement.setAttribute('data-theme', name);
+        document.documentElement.classList.toggle('dark', name === 'dark');
         localStorage.setItem(KEY, name);
       };
 
