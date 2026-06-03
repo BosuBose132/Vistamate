@@ -78,30 +78,30 @@ const workflowSteps = [
 const WelcomePage = () => {
   return (
     <PublicLayout>
-      <section className="relative overflow-hidden border-b border-[var(--vm-border)] bg-[var(--vm-surface)]">
-        <div className="absolute inset-x-0 top-0 h-32 bg-[var(--vm-primary)]/5" />
-        <div className="relative mx-auto grid min-h-[calc(100vh-8rem)] w-full max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:py-20">
+      <section className="relative overflow-hidden bg-[var(--vm-surface)]">
+        <div className="relative mx-auto grid min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center gap-12 px-4 pt-6 pb-16 sm:px-6 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-20">
           <motion.div
             variants={stagger}
             initial="hidden"
             animate="visible"
             className="max-w-3xl"
           >
-            <motion.div variants={fadeUp} className="vm-pill mb-4 inline-block">
-              AI-powered visitor operations
-            </motion.div>
             <motion.h1
               variants={fadeUp}
               className="max-w-4xl text-4xl font-semibold leading-tight tracking-normal vm-heading sm:text-5xl lg:text-6xl"
             >
-              Enterprise Visitor Management System
+              Visitor Management System
             </motion.h1>
             <motion.p
               variants={fadeUp}
               className="mt-5 max-w-2xl text-lg leading-8 vm-muted"
             >
               A smarter way to welcome visitors, verify details, and manage
-              every check-in from one secure dashboard.
+              every check-in from one secure dashboard. From kiosk-based
+              registration and ID/business card scanning to OCR-powered form
+              autofill, station-based check-ins, visitor tracking, and admin
+              monitoring, the system keeps every entry organized from arrival to
+              checkout.
             </motion.p>
             <motion.div
               variants={fadeUp}

@@ -7,14 +7,14 @@ import ThemeToggle from './ThemeToggle';
 
 const navLinkClasses = ({ isActive }) =>
   [
-    'text-sm font-medium rounded-md px-3 py-2 transition-colors',
+    'text-base font-semibold rounded-md px-4 py-2 transition-colors',
     isActive
       ? 'text-[var(--vm-primary)]'
       : 'text-[var(--vm-muted)] hover:text-[var(--vm-text)]',
   ].join(' ');
 
 const navActionClasses =
-  'text-sm font-medium rounded-md px-3 py-2 transition-colors text-[var(--vm-muted)] hover:text-[var(--vm-text)]';
+  'text-base font-semibold rounded-md px-4 py-2 transition-colors text-[var(--vm-muted)] hover:text-[var(--vm-text)]';
 
 export function PublicHeader() {
   const location = useLocation();
@@ -68,22 +68,22 @@ export function PublicHeader() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: 'easeOut' }}
-      className="sticky top-0 z-40 border-b border-[var(--vm-border)] bg-[var(--vm-surface)]/95 backdrop-blur"
+      className="sticky top-0 z-40 border-b border-[var(--vm-border)] bg-[var(--vm-content-bg)] backdrop-blur"
     >
-      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-28 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link
           to="/"
-          className="relative h-16 shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vm-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--vm-surface)]"
+          className="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vm-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--vm-content-bg)]"
           aria-label="Vistamate home"
         >
           <img
             src="/VistaMate.png"
             alt="Vistamate"
-            className="h-12 w-auto object-contain sm:h-14"
+            className="h-40 w-auto object-contain"
           />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-2 lg:flex" aria-label="Primary">
           <NavLink to="/" className={navLinkClasses}>
             Home
           </NavLink>
@@ -110,7 +110,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-3">
           <Link
             to="/checkin"
-            className="hidden vm-btn-primary rounded-md px-4 py-2 text-sm font-semibold sm:inline-block"
+            className="hidden vm-btn-primary rounded-md px-6 py-3 text-base font-semibold sm:inline-block h-12 flex items-center"
           >
             Start Check-In
           </Link>
@@ -247,10 +247,16 @@ export default function PublicLayout({ children }) {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-6 text-sm vm-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>© {new Date().getFullYear()} Vistamate. All rights reserved.</p>
           <div className="flex items-center gap-4">
-            <Link to="/checkin" className="font-medium hover:text-[var(--vm-text)] transition-colors">
+            <Link
+              to="/checkin"
+              className="font-medium hover:text-[var(--vm-text)] transition-colors"
+            >
               Check In
             </Link>
-            <Link to="/login" className="font-medium hover:text-[var(--vm-text)] transition-colors">
+            <Link
+              to="/login"
+              className="font-medium hover:text-[var(--vm-text)] transition-colors"
+            >
               Admin Login
             </Link>
           </div>
