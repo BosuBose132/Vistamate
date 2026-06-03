@@ -76,7 +76,7 @@ export default function AdminShell({
             })}
           </nav>
 
-          <div className="m-5 rounded-2xl bg-[#123f4c] p-5">
+          {/* <div className="m-5 rounded-2xl bg-[#123f4c] p-5">
             <p className="text-sm font-semibold text-white">Setup progress</p>
             <p className="mt-1 text-xs text-slate-400">
               Stations, surveys, and check-in flow configured.
@@ -87,7 +87,7 @@ export default function AdminShell({
             <p className="mt-4 text-sm font-semibold text-[#f6d883]">
               Continue setup →
             </p>
-          </div>
+          </div> */}
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">

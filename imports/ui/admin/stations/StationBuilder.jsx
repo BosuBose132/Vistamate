@@ -79,59 +79,45 @@ export default function StationBuilder() {
 
   return (
     <AdminShell title="Stations" eyebrow="Kiosk management">
-      <main className="space-y-6">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-sm font-medium text-primary">Kiosk management</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Stations
-            </h1>
-            <p className="mt-2 text-sm text-base-content/60">
-              Create and manage kiosk stations.
-            </p>
-          </div>
-
-          <div className="rounded-full border border-base-300/80 bg-base-100 px-4 py-2 text-sm font-medium text-base-content/70 shadow-sm">
-            {stations.length} station{stations.length === 1 ? '' : 's'}
-          </div>
-        </div>
-
+      <div className="space-y-6">
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="rounded-3xl border border-[#d9eceb] bg-white p-5 shadow-sm sm:p-6"
+          className="vm-card p-5 sm:p-6"
         >
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Create station</h2>
-              <p className="mt-1 text-sm text-base-content/55">
+              <h2 className="text-lg font-semibold vm-heading">
+                Create station
+              </h2>
+              <p className="mt-1 text-sm vm-muted">
                 Configure the kiosk experience and assigned survey.
               </p>
             </div>
-            <span className="text-sm font-semibold text-[#23b6b6]">
-              New kiosk
-            </span>
+            <span className="text-sm font-semibold vm-kicker">New kiosk</span>
           </div>
 
           <div className="grid gap-5">
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="form-control">
-                <span className="label-text mb-2 font-semibold">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold vm-heading">
                   Kiosk name
                 </span>
                 <input
-                  className="input input-bordered rounded-md border-base-300"
+                  className="vm-input w-full rounded-md"
                   placeholder="Lobby kiosk"
                   value={form.name}
                   onChange={(e) => onChange('name', e.target.value)}
                 />
               </label>
 
-              <label className="form-control">
-                <span className="label-text mb-2 font-semibold">Location</span>
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold vm-heading">
+                  Location
+                </span>
                 <input
-                  className="input input-bordered rounded-md border-base-300"
+                  className="vm-input w-full rounded-md"
                   placeholder="Main reception"
                   value={form.location}
                   onChange={(e) => onChange('location', e.target.value)}
@@ -139,12 +125,12 @@ export default function StationBuilder() {
               </label>
             </div>
 
-            <label className="form-control">
-              <span className="label-text mb-2 font-semibold">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold vm-heading">
                 Select questionnaire
               </span>
               <select
-                className="select select-bordered w-full rounded-md border-base-300"
+                className="vm-select w-full rounded-md"
                 value={form.surveyId}
                 onChange={(e) => onChange('surveyId', e.target.value)}
               >
@@ -158,10 +144,12 @@ export default function StationBuilder() {
             </label>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-base-300/80 bg-base-200/30 p-4">
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
                 <span>
-                  <span className="block font-semibold">Enable camera</span>
-                  <span className="text-sm text-base-content/55">
+                  <span className="block font-semibold vm-heading">
+                    Enable camera
+                  </span>
+                  <span className="mt-1 text-sm vm-muted">
                     Allow kiosk camera capture.
                   </span>
                 </span>
@@ -173,10 +161,12 @@ export default function StationBuilder() {
                 />
               </label>
 
-              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-base-300/80 bg-base-200/30 p-4">
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl vm-panel p-4">
                 <span>
-                  <span className="block font-semibold">Require photo</span>
-                  <span className="text-sm text-base-content/55">
+                  <span className="block font-semibold vm-heading">
+                    Require photo
+                  </span>
+                  <span className="mt-1 text-sm vm-muted">
                     Capture visitor image when needed.
                   </span>
                 </span>
@@ -190,16 +180,16 @@ export default function StationBuilder() {
             </div>
 
             <div>
-              <span className="label-text mb-2 block font-semibold">
+              <span className="mb-2 block text-sm font-semibold vm-heading">
                 Mobile behavior
               </span>
-              <div className="join w-full md:w-auto">
+              <div className="flex gap-2 w-full md:w-auto">
                 <button
                   type="button"
-                  className={`btn join-item flex-1 rounded-l-md md:flex-none ${
+                  className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                     form.mobileBehavior === 'form_always'
-                      ? 'btn-primary'
-                      : 'btn-outline border-base-300'
+                      ? 'bg-[var(--vm-primary)] text-white'
+                      : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
                   }`}
                   onClick={() => onChange('mobileBehavior', 'form_always')}
                 >
@@ -207,10 +197,10 @@ export default function StationBuilder() {
                 </button>
                 <button
                   type="button"
-                  className={`btn join-item flex-1 rounded-r-md md:flex-none ${
+                  className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                     form.mobileBehavior === 'toggle'
-                      ? 'btn-primary'
-                      : 'btn-outline border-base-300'
+                      ? 'bg-[var(--vm-primary)] text-white'
+                      : 'bg-[var(--vm-surface)] text-[var(--vm-muted)] border border-[var(--vm-border)]'
                   }`}
                   onClick={() => onChange('mobileBehavior', 'toggle')}
                 >
@@ -220,22 +210,24 @@ export default function StationBuilder() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <label className="form-control">
-                <span className="label-text mb-2 font-semibold">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold vm-heading">
                   Welcome message
                 </span>
                 <textarea
-                  className="textarea textarea-bordered min-h-28 rounded-md border-base-300"
+                  className="vm-textarea w-full min-h-28 rounded-md"
                   placeholder="Welcome message"
                   value={form.welcomeMessage}
                   onChange={(e) => onChange('welcomeMessage', e.target.value)}
                 />
               </label>
 
-              <label className="form-control">
-                <span className="label-text mb-2 font-semibold">Theme</span>
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold vm-heading">
+                  Theme
+                </span>
                 <input
-                  className="input input-bordered rounded-md border-base-300"
+                  className="vm-input w-full rounded-md"
                   placeholder="vistamate or dark"
                   value={form.theme}
                   onChange={(e) => onChange('theme', e.target.value)}
@@ -243,15 +235,18 @@ export default function StationBuilder() {
               </label>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-base-300/80 pt-5 sm:flex-row">
+            <div className="flex flex-col gap-3 border-t border-[var(--vm-border)] pt-5 sm:flex-row">
               <button
                 type="button"
-                className="btn btn-primary rounded-md"
+                className="vm-btn-primary rounded-md px-4 py-2 text-sm font-semibold"
                 onClick={create}
               >
                 Create Kiosk
               </button>
-              <a className="btn btn-ghost rounded-md" href="/admin">
+              <a
+                className="vm-btn-secondary rounded-md px-4 py-2 text-sm font-semibold text-center"
+                href="/admin"
+              >
                 Cancel
               </a>
             </div>
@@ -259,7 +254,7 @@ export default function StationBuilder() {
         </motion.section>
 
         <ExistingStations stations={stations} surveys={surveys} />
-      </main>
+      </div>
     </AdminShell>
   );
 }

@@ -9,76 +9,76 @@ export default function ExistingStations({ stations, surveys = [] }) {
     surveys.find((survey) => survey._id === surveyId)?.name || 'Unassigned';
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-base-300/80 bg-base-100 shadow-sm shadow-base-content/5">
-      <div className="flex flex-col gap-3 border-b border-base-300/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="vm-card overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-[var(--vm-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Existing stations</h3>
-          <p className="mt-1 text-sm text-base-content/55">
+          <h3 className="text-lg font-semibold vm-heading">
+            Existing stations
+          </h3>
+          <p className="mt-1 text-sm vm-muted">
             Manage kiosk links, availability, and survey assignment.
           </p>
         </div>
-        <span className="badge badge-outline rounded-md border-base-300 px-3 py-3 font-medium">
-          {stations.length} total
-        </span>
+        <span className="vm-badge">{stations.length} total</span>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="table table-zebra text-base-content">
-          <thead className="bg-base-200/70 text-xs uppercase tracking-wide text-base-content/60">
+        <table className="w-full min-w-[980px] text-left text-sm">
+          <thead className="border-b border-[var(--vm-border)] bg-[var(--vm-surface-soft)] text-xs font-bold uppercase tracking-wide vm-muted">
             <tr>
-              <th>Name</th>
-              <th>Location</th>
-              <th>Status</th>
-              <th>Assigned Survey</th>
-              <th>Kiosk URL</th>
-              <th>Actions</th>
+              <th className="px-5 py-4">Name</th>
+              <th className="px-4 py-4">Location</th>
+              <th className="px-4 py-4">Status</th>
+              <th className="px-4 py-4">Assigned Survey</th>
+              <th className="px-4 py-4">Kiosk URL</th>
+              <th className="px-4 py-4">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-[var(--vm-border)]">
             {stations.map((s) => (
-              <tr key={s._id} className="hover">
-                <td className="font-medium">{s.name}</td>
-                <td>{s.location || '—'}</td>
-                <td className="align-middle">
+              <tr key={s._id} className="vm-table-row">
+                <td className="px-5 py-4 font-medium vm-heading">{s.name}</td>
+                <td className="px-4 py-4 vm-muted">{s.location || '—'}</td>
+                <td className="px-4 py-4">
                   {s.isActive ? (
-                    <span className="inline-flex h-7 items-center gap-2 rounded-full border border-success/20 bg-success/10 px-3 text-xs font-semibold leading-none text-success">
+                    <span className="vm-status-active inline-flex h-7 items-center gap-2 px-3 rounded-full text-xs font-semibold">
                       <span
-                        className="h-1.5 w-1.5 rounded-full bg-success"
+                        className="h-1.5 w-1.5 rounded-full bg-current"
                         aria-hidden="true"
                       />
                       Active
                     </span>
                   ) : (
-                    <span className="inline-flex h-7 items-center rounded-full border border-base-300 bg-base-200/70 px-3 text-xs font-medium leading-none text-base-content/65">
+                    <span className="vm-status-neutral inline-flex h-7 items-center px-3 rounded-full text-xs font-semibold">
                       Inactive
                     </span>
                   )}
                 </td>
-                <td>{surveyName(s.surveyId)}</td>
-                <td>
-                  <code className="rounded-md bg-base-200 px-2 py-1 text-xs text-base-content/70">
+                <td className="px-4 py-4 vm-muted">{surveyName(s.surveyId)}</td>
+                <td className="px-4 py-4">
+                  <code className="rounded-md bg-[var(--vm-surface-soft)] px-2 py-1 text-xs vm-muted">
                     /s/{s.token}
                   </code>
                 </td>
-                <td>
+                <td className="px-4 py-4">
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      className="btn btn-outline btn-xs rounded-md border-base-300"
+                      className="vm-btn-secondary rounded-md px-3 py-1.5 text-xs font-semibold"
                       onClick={() => open(s)}
                     >
                       Open
                     </button>
                     <button
                       type="button"
-                      className="btn btn-outline btn-xs rounded-md border-base-300"
+                      className="vm-btn-secondary rounded-md px-3 py-1.5 text-xs font-semibold"
                       onClick={() => copy(s)}
                     >
                       Copy URL
                     </button>
                     <button
                       type="button"
-                      className="btn btn-ghost btn-xs rounded-md"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-[var(--vm-surface-soft)] text-[var(--vm-text)] border border-[var(--vm-border)]"
                       onClick={() =>
                         Meteor.call('stations.update', {
                           _id: s._id,
@@ -90,8 +90,10 @@ export default function ExistingStations({ stations, surveys = [] }) {
                     </button>
                     <button
                       type="button"
-                      className="btn btn-ghost btn-xs rounded-md"
-                      onClick={() => Meteor.call('stations.rotate', { _id: s._id })}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-[var(--vm-surface-soft)] text-[var(--vm-text)] border border-[var(--vm-border)]"
+                      onClick={() =>
+                        Meteor.call('stations.rotate', { _id: s._id })
+                      }
                     >
                       Rotate URL
                     </button>
@@ -101,7 +103,7 @@ export default function ExistingStations({ stations, surveys = [] }) {
             ))}
             {stations.length === 0 && (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-base-content/50">
+                <td colSpan={6} className="px-5 py-12 text-center vm-muted">
                   No stations created yet.
                 </td>
               </tr>
