@@ -121,18 +121,18 @@ export default function StationDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, ease: 'easeOut' }}
         >
-          <Card className="overflow-hidden rounded-3xl border border-[#d9eceb] bg-white shadow-xl shadow-teal-950/5">
-            <div className="flex flex-col gap-4 border-b border-[#d9eceb] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+          <Card className="vm-card overflow-hidden">
+            <div className="flex flex-col gap-4 border-b border-[var(--vm-border)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold tracking-tight text-[#17323b]">
+                  <h2 className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
                     Visitor Log
                   </h2>
                   <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#b9dbda] text-xs font-bold text-[#23b6b6]">
                     ?
                   </span>
                 </div>
-                <p className="mt-1 text-sm font-medium text-[#6c7f86]">
+                <p className="mt-1 text-sm font-medium text-[var(--vm-muted)]">
                   {selectedLabel} • Today
                 </p>
               </div>
@@ -146,31 +146,31 @@ export default function StationDashboard() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search visitor..."
-                    className="h-11 w-full rounded-2xl border-[#d9eceb] bg-[#f5fbfb] pl-10 text-sm sm:w-72"
+                    className="vm-input h-11 w-full pl-10 text-sm sm:w-72"
                   />
                 </div>
 
-                <Button className="h-11 rounded-xl bg-[#23b6b6] px-5 text-sm font-semibold text-white hover:bg-[#159b9a]">
+                <Button className="vm-btn-primary h-11 px-5 text-sm">
                   Add Visitor
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-11 rounded-xl border-[#b9dbda] bg-white px-5 text-sm font-semibold text-[#0f766e] hover:bg-[#e9f7f6]"
+                  className="vm-btn-secondary h-11 px-5 text-sm"
                 >
                   Export
                 </Button>
               </div>
             </div>
 
-            <div className="border-b border-[#d9eceb] bg-[#f9fdfd] px-5 py-4">
+            <div className="border-b border-[var(--vm-border)] bg-[var(--vm-surface-soft)] px-5 py-4">
               <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-center">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wide text-[#6c7f86]">
+                  <label className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
                     Station filter
                   </label>
                   <select
-                    className="mt-2 h-11 w-full rounded-xl border border-[#d9eceb] bg-white px-3 text-sm font-semibold text-[#17323b] outline-none focus:border-[#23b6b6] focus:ring-2 focus:ring-[#23b6b6]/20"
+                    className="mt-2 h-11 w-full rounded-xl border border-[var(--vm-border)] bg-[var(--vm-surface)] px-3 text-sm font-semibold text-[var(--vm-heading)] outline-none focus:border-[var(--vm-primary)] focus:ring-2 focus:ring-[var(--vm-primary)]/20"
                     value={selectedId}
                     onChange={(e) => setSelectedId(e.target.value)}
                   >
@@ -193,11 +193,11 @@ export default function StationDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-left text-sm">
                 <thead>
-                  <tr className="border-b border-[#d9eceb] bg-white text-xs font-bold uppercase tracking-wide text-[#6c7f86]">
+                  <tr className="border-b border-[var(--vm-border)] bg-[var(--vm-surface)] text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
                     <th className="w-10 px-5 py-4">
                       <input
                         type="checkbox"
-                        className="checkbox checkbox-sm rounded border-[#b9dbda]"
+                        className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
                         aria-label="Select all visitors"
                       />
                     </th>
@@ -211,7 +211,7 @@ export default function StationDashboard() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#eef4f4]">
+                <tbody className="divide-y divide-[var(--vm-border)]">
                   {rows.map((v) => {
                     const stationName = v.stationId
                       ? stations.find((s) => s._id === v.stationId)?.name || '—'
@@ -220,12 +220,12 @@ export default function StationDashboard() {
                     return (
                       <tr
                         key={v._id}
-                        className="bg-white transition-colors hover:bg-[#f5fbfb]"
+                        className="vm-table-row transition-colors"
                       >
                         <td className="px-5 py-4">
                           <input
                             type="checkbox"
-                            className="checkbox checkbox-sm rounded border-[#b9dbda]"
+                            className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
                             aria-label={`Select ${v.name || 'visitor'}`}
                           />
                         </td>
@@ -236,29 +236,29 @@ export default function StationDashboard() {
                               {getInitials(v.name)}
                             </div>
                             <div>
-                              <p className="font-bold text-[#17323b]">
+                              <p className="font-bold text-[var(--vm-heading)]">
                                 {v.name || '—'}
                               </p>
-                              <p className="text-xs text-[#6c7f86]">
+                              <p className="text-xs text-[var(--vm-muted)]">
                                 {v.email || v.phone || 'Visitor'}
                               </p>
                             </div>
                           </div>
                         </td>
 
-                        <td className="px-4 py-4 font-medium text-[#17323b]">
+                        <td className="px-4 py-4 font-medium text-[var(--vm-muted)]">
                           {v.purpose || '—'}
                         </td>
-                        <td className="px-4 py-4 text-[#40555c]">
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
                           {v.company || '—'}
                         </td>
-                        <td className="px-4 py-4 text-[#40555c]">
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
                           {v.host || '—'}
                         </td>
-                        <td className="px-4 py-4 text-[#40555c]">
+                        <td className="px-4 py-4 text-[var(--vm-muted)]">
                           {stationName}
                         </td>
-                        <td className="px-4 py-4 font-semibold text-[#17323b]">
+                        <td className="px-4 py-4 font-semibold text-[var(--vm-heading)]">
                           {v.createdAt
                             ? new Date(v.createdAt).toLocaleTimeString([], {
                                 hour: '2-digit',
@@ -277,10 +277,10 @@ export default function StationDashboard() {
                     <tr>
                       <td
                         colSpan={8}
-                        className="px-5 py-16 text-center text-[#6c7f86]"
+                        className="px-5 py-16 text-center text-[var(--vm-muted)]"
                       >
                         <div className="mx-auto max-w-sm">
-                          <p className="text-base font-bold text-[#17323b]">
+                          <p className="text-base font-bold text-[var(--vm-heading)]">
                             No visitors found
                           </p>
                           <p className="mt-2 text-sm">
@@ -294,7 +294,7 @@ export default function StationDashboard() {
               </table>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-[#d9eceb] px-5 py-4 text-sm font-semibold text-[#6c7f86] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-[var(--vm-border)] px-5 py-4 text-sm font-semibold text-[var(--vm-muted)] sm:flex-row sm:items-center sm:justify-between">
               <p>
                 Showing {rows.length} visitor{rows.length === 1 ? '' : 's'}
               </p>
@@ -304,12 +304,16 @@ export default function StationDashboard() {
         </motion.section>
 
         <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-          <Card className="rounded-3xl border border-[#d9eceb] bg-white p-5 shadow-sm">
-            <h3 className="text-lg font-bold text-[#17323b]">Quick Check-In</h3>
-            <p className="mt-1 text-sm text-[#6c7f86]">
+          <Card className="vm-card p-5">
+            <h3 className="text-lg font-bold text-[var(--vm-heading)]">
+              Quick Check-In
+            </h3>
+
+            <p className="mt-1 text-sm text-[var(--vm-muted)]">
               Use the selected station context for manual visitor entry.
             </p>
-            <div className="mt-4 rounded-2xl bg-[#e9f7f6] p-4 text-sm font-semibold text-[#0f766e]">
+
+            <div className="vm-panel mt-4 p-4 text-sm font-semibold text-[var(--vm-primary)]">
               Current station: {selectedLabel}
             </div>
           </Card>
@@ -323,11 +327,11 @@ export default function StationDashboard() {
 
 function MiniMetric({ label, value }) {
   return (
-    <div className="rounded-2xl border border-[#d9eceb] bg-white px-4 py-3">
-      <p className="text-xs font-bold uppercase tracking-wide text-[#6c7f86]">
+    <div className="vm-panel px-4 py-3">
+      <p className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
         {label}
       </p>
-      <p className="mt-1 text-lg font-bold text-[#17323b]">{value}</p>
+      <p className="mt-1 text-lg font-bold text-[var(--vm-heading)]">{value}</p>
     </div>
   );
 }
@@ -335,15 +339,15 @@ function MiniMetric({ label, value }) {
 function StatusBadge({ status }) {
   if (status === 'checked_out') {
     return (
-      <span className="inline-flex h-7 items-center rounded-full border border-[#d9eceb] bg-[#f3f7f7] px-3 text-xs font-bold text-[#6c7f86]">
+      <span className="vm-status-neutral inline-flex h-7 items-center">
         Checked Out
       </span>
     );
   }
 
   return (
-    <span className="inline-flex h-7 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-600">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+    <span className="vm-status-active inline-flex h-7 items-center gap-2">
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
       In Building
     </span>
   );

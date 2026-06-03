@@ -130,7 +130,7 @@ export default function AdminShell({
                 Live visitor operations
               </div>
 
-              <ThemeToggle className="rounded-xl text-[#17323b]" />
+              <ThemeToggle className="rounded-xl text-[var(--vm-heading)]" />
 
               <Button
                 type="button"

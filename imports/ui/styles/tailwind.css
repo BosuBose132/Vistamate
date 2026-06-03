@@ -745,3 +745,237 @@
   color: var(--vm-text) !important;
   border: 1px solid var(--vm-border) !important;
 }
+
+/* --- Vistamate admin SurveyJS dropdown polish --- */
+
+.vm-panel .sd-dropdown,
+.vm-panel .sd-selectbase__control {
+  min-height: 3.25rem !important;
+  border-radius: 0.875rem !important;
+  border: 1px solid var(--vm-border) !important;
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  box-shadow: none !important;
+}
+
+.vm-panel .sd-dropdown:hover,
+.vm-panel .sd-selectbase__control:hover {
+  border-color: var(--vm-primary) !important;
+}
+
+.vm-panel .sd-dropdown:focus-within,
+.vm-panel .sd-selectbase__control:focus-within {
+  border-color: var(--vm-primary) !important;
+  outline: 2px solid color-mix(in oklab, var(--vm-primary), transparent 72%) !important;
+  outline-offset: 1px !important;
+}
+
+.vm-panel .sd-dropdown__value,
+.vm-panel .sd-selectbase__value,
+.vm-panel .sd-selectbase__label,
+.vm-panel .sd-selectbase__placeholder {
+  color: var(--vm-text) !important;
+  font-weight: 500 !important;
+}
+
+.vm-panel .sd-dropdown__clean-button,
+.vm-panel .sd-dropdown__filter-string-input,
+.vm-panel .sd-dropdown__hint-suffix,
+.vm-panel .sd-dropdown__chevron-button,
+.vm-panel .sd-selectbase__arrow {
+  color: var(--vm-muted) !important;
+}
+
+.vm-panel .sd-dropdown__clean-button svg,
+.vm-panel .sd-dropdown__chevron-button svg,
+.vm-panel .sd-selectbase__arrow svg {
+  fill: var(--vm-muted) !important;
+  stroke: var(--vm-muted) !important;
+}
+
+.vm-panel .sd-popup,
+.vm-panel .sd-selectbase__popup,
+.vm-panel .sd-dropdown__popup,
+.vm-panel .sd-list__container {
+  border: 1px solid var(--vm-border) !important;
+  border-radius: 1rem !important;
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  box-shadow: var(--vm-shadow) !important;
+  overflow: hidden !important;
+}
+
+.vm-panel .sd-list__item {
+  color: var(--vm-text) !important;
+  background: var(--vm-surface) !important;
+}
+
+.vm-panel .sd-list__item:hover,
+.vm-panel .sd-list__item--selected,
+.vm-panel .sd-list__item--focused {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+.vm-panel .sd-list__item-body {
+  color: inherit !important;
+  font-weight: 600 !important;
+}
+/* --- Force SurveyJS to use Vistamate theme colors instead of default purple --- */
+
+.vm-panel {
+  --sjs-primary-backcolor: var(--vm-primary) !important;
+  --sjs-primary-backcolor-dark: var(--vm-primary-hover) !important;
+  --sjs-primary-backcolor-light: var(--vm-primary-soft) !important;
+  --sjs-primary-forecolor: #ffffff !important;
+
+  --sjs-general-backcolor: var(--vm-surface) !important;
+  --sjs-general-backcolor-dim: var(--vm-surface-soft) !important;
+  --sjs-general-forecolor: var(--vm-text) !important;
+  --sjs-general-forecolor-light: var(--vm-muted) !important;
+
+  --sjs-border-default: var(--vm-border) !important;
+  --sjs-border-light: var(--vm-border) !important;
+}
+
+/* Dropdown selected/focused item */
+.vm-panel .sd-list__item--selected,
+.vm-panel .sd-list__item--focused,
+.vm-panel .sd-list__item:hover {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+/* Text inside selected dropdown option */
+.vm-panel .sd-list__item--selected .sd-list__item-body,
+.vm-panel .sd-list__item--focused .sd-list__item-body,
+.vm-panel .sd-list__item:hover .sd-list__item-body {
+  color: var(--vm-primary) !important;
+}
+
+/* Checked/selected item indicator */
+.vm-panel .sd-list__item--selected svg,
+.vm-panel .sd-list__item--focused svg {
+  fill: var(--vm-primary) !important;
+  stroke: var(--vm-primary) !important;
+}
+
+/* SurveyJS buttons if any appear */
+.vm-panel .sd-btn,
+.vm-panel .sd-action:not(.sd-action--icon) {
+  background: var(--vm-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--vm-primary) !important;
+  border-radius: 0.875rem !important;
+}
+
+.vm-panel .sd-btn:hover,
+.vm-panel .sd-action:not(.sd-action--icon):hover {
+  background: var(--vm-primary-hover) !important;
+  border-color: var(--vm-primary-hover) !important;
+}
+
+/* Radio/checkbox/dropdown decorators that may still show purple */
+.vm-panel .sd-item__decorator,
+.vm-panel .sd-checkbox__decorator,
+.vm-panel .sd-radio__decorator {
+  border-color: var(--vm-border) !important;
+}
+
+.vm-panel .sd-item--checked .sd-item__decorator,
+.vm-panel .sd-checkbox--checked .sd-checkbox__decorator,
+.vm-panel .sd-radio--checked .sd-radio__decorator {
+  background: var(--vm-primary) !important;
+  border-color: var(--vm-primary) !important;
+}
+/* --- Global SurveyJS dropdown override because dropdown popup renders outside .vm-panel --- */
+
+:root,
+[data-theme='vistamate'],
+[data-theme='dark'],
+.dark {
+  --sjs-primary-backcolor: var(--vm-primary) !important;
+  --sjs-primary-backcolor-dark: var(--vm-primary-hover) !important;
+  --sjs-primary-backcolor-light: var(--vm-primary-soft) !important;
+  --sjs-primary-forecolor: #ffffff !important;
+
+  --sjs-general-backcolor: var(--vm-surface) !important;
+  --sjs-general-backcolor-dim: var(--vm-surface-soft) !important;
+  --sjs-general-forecolor: var(--vm-text) !important;
+  --sjs-general-forecolor-light: var(--vm-muted) !important;
+
+  --sjs-border-default: var(--vm-border) !important;
+  --sjs-border-light: var(--vm-border) !important;
+}
+
+/* Popup container */
+.sd-popup,
+.sv-popup,
+.sd-dropdown__popup,
+.sd-selectbase__popup,
+.sd-list__container,
+.sv-list__container {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border: 1px solid var(--vm-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: var(--vm-shadow) !important;
+}
+
+/* Dropdown option rows */
+.sd-list__item,
+.sv-list__item {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+}
+
+/* Option body */
+.sd-list__item-body,
+.sv-list__item-body {
+  color: var(--vm-text) !important;
+  font-weight: 600 !important;
+}
+
+/* Hover / focus / selected option */
+.sd-list__item:hover,
+.sd-list__item--focused,
+.sd-list__item--selected,
+.sv-list__item:hover,
+.sv-list__item--focused,
+.sv-list__item--selected {
+  background: var(--vm-primary-soft) !important;
+  color: var(--vm-primary) !important;
+}
+
+/* Hover / focus / selected option text */
+.sd-list__item:hover .sd-list__item-body,
+.sd-list__item--focused .sd-list__item-body,
+.sd-list__item--selected .sd-list__item-body,
+.sv-list__item:hover .sv-list__item-body,
+.sv-list__item--focused .sv-list__item-body,
+.sv-list__item--selected .sv-list__item-body {
+  color: var(--vm-primary) !important;
+}
+
+/* Any selected checkmark/icon inside dropdown */
+.sd-list__item--selected svg,
+.sd-list__item--focused svg,
+.sv-list__item--selected svg,
+.sv-list__item--focused svg {
+  fill: var(--vm-primary) !important;
+  stroke: var(--vm-primary) !important;
+}
+
+/* Dropdown input/control */
+.sd-dropdown,
+.sd-selectbase__control {
+  background: var(--vm-surface) !important;
+  color: var(--vm-text) !important;
+  border-color: var(--vm-border) !important;
+}
+
+.sd-dropdown:focus-within,
+.sd-selectbase__control:focus-within {
+  border-color: var(--vm-primary) !important;
+  outline: 2px solid color-mix(in oklab, var(--vm-primary), transparent 72%) !important;
+}

@@ -1,18 +1,16 @@
 import React from 'react';
 import { Card } from '@mieweb/ui';
 
-// imports/ui/components/StatCard.jsx
-
 const toneClasses = {
-  primary: 'bg-[#e9f7f6] text-[#23b6b6]',
-  success: 'bg-emerald-50 text-emerald-600',
-  info: 'bg-sky-50 text-sky-600',
-  warning: 'bg-amber-50 text-amber-600',
+  primary: 'bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]',
+  success: 'bg-[var(--vm-success-soft)] text-[var(--vm-success)]',
+  info: 'bg-[color-mix(in_oklab,var(--vm-primary),transparent_88%)] text-[var(--vm-primary)]',
+  warning: 'bg-amber-500/10 text-amber-500',
 };
 
 export default function StatCard({ title, value, icon, tone = 'primary' }) {
   return (
-    <Card className="rounded-2xl border border-[#d9eceb] bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="vm-card p-5 transition-all duration-200 hover:-translate-y-0.5">
       <div className="flex items-center gap-4">
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
@@ -23,10 +21,10 @@ export default function StatCard({ title, value, icon, tone = 'primary' }) {
         </div>
 
         <div className="min-w-0">
-          <p className="text-2xl font-bold tracking-tight text-[#17323b]">
+          <p className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
             {value}
           </p>
-          <p className="mt-1 truncate text-sm font-medium text-[#6c7f86]">
+          <p className="mt-1 truncate text-sm font-semibold text-[var(--vm-muted)]">
             {title}
           </p>
         </div>
