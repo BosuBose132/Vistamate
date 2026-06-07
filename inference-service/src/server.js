@@ -320,7 +320,20 @@ function applyNms(predictions) {
 function isCardPrediction(prediction) {
   return CARD_CLASS_NAMES.has(normalizeClassName(prediction.class));
 }
+function toBoundingBox(prediction) {
+  if (!prediction) return null;
 
+  return {
+    x: prediction.x,
+    y: prediction.y,
+    width: prediction.width,
+    height: prediction.height,
+    x1: prediction.x1,
+    y1: prediction.y1,
+    x2: prediction.x2,
+    y2: prediction.y2,
+  };
+}
 app.get('/health', async (req, res) => {
   try {
     const session = await getSession();
@@ -328,7 +341,9 @@ app.get('/health', async (req, res) => {
     res.json({
       ok: true,
       service: 'vistamate-local-inference-service',
+      provider: 'mie-container-onnx',
       runtime: 'node',
+      modelLoaded: true,
       modelPath: MODEL_PATH,
       imageSize: IMAGE_SIZE,
       confidenceMin: CONFIDENCE_MIN,
@@ -344,6 +359,7 @@ app.get('/health', async (req, res) => {
 });
 
 app.post('/detect', async (req, res) => {
+  const requestStartedAt = Date.now();
   try {
     const { image } = req.body || {};
 
@@ -362,7 +378,9 @@ app.post('/detect', async (req, res) => {
       [inputName]: meta.tensor,
     };
 
+    const inferenceStartedAt = Date.now();
     const results = await session.run(feeds);
+    const inferenceTimeMs = Date.now() - inferenceStartedAt;
     const outputName = session.outputNames[0];
     const outputTensor = results[outputName];
 
@@ -377,19 +395,29 @@ app.post('/detect', async (req, res) => {
 
     return res.json({
       ok: Boolean(bestCard),
+      detected: Boolean(bestCard),
+      confidence: bestCard?.confidence ?? 0,
+      boundingBox: toBoundingBox(bestCard),
       prediction: bestCard,
       predictions,
       provider: 'mie-container-onnx',
+      inferenceTimeMs,
+      totalTimeMs: Date.now() - requestStartedAt,
     });
   } catch (err) {
     console.error('Local ONNX detection failed:', err);
 
     return res.status(500).json({
       ok: false,
+      detected: false,
+      confidence: 0,
+      boundingBox: null,
       error: err.message,
       prediction: null,
       predictions: [],
       provider: 'mie-container-onnx',
+      inferenceTimeMs: null,
+      totalTimeMs: Date.now() - requestStartedAt,
     });
   }
 });
