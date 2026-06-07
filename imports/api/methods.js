@@ -123,23 +123,66 @@ Meteor.methods({
       );
     };
 
+    const normalizeBoundingBox = (prediction, result) => {
+      if (result?.boundingBox) {
+        return result.boundingBox;
+      }
+
+      if (!prediction) return null;
+
+      const hasBox =
+        prediction.x !== undefined ||
+        prediction.y !== undefined ||
+        prediction.width !== undefined ||
+        prediction.height !== undefined ||
+        prediction.x1 !== undefined ||
+        prediction.y1 !== undefined ||
+        prediction.x2 !== undefined ||
+        prediction.y2 !== undefined;
+
+      if (!hasBox) return null;
+
+      return {
+        x: prediction.x ?? null,
+        y: prediction.y ?? null,
+        width: prediction.width ?? null,
+        height: prediction.height ?? null,
+        x1: prediction.x1 ?? null,
+        y1: prediction.y1 ?? null,
+        x2: prediction.x2 ?? null,
+        y2: prediction.y2 ?? null,
+      };
+    };
+
     const normalizeDetectionResult = (result, activeProvider) => {
       const predictions = Array.isArray(result?.predictions)
         ? result.predictions
         : [];
 
+      const bestCardFromPredictions = predictions
+        .filter(isCardClass)
+        .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0];
+
+      const directPrediction = result?.prediction || null;
+
       const bestCard =
-        predictions
-          .filter(isCardClass)
-          .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0] ||
-        result?.prediction ||
-        null;
+        directPrediction && isCardClass(directPrediction)
+          ? directPrediction
+          : bestCardFromPredictions || directPrediction || null;
+
+      const detected = Boolean(result?.detected ?? result?.ok ?? bestCard);
+      const confidence = result?.confidence ?? bestCard?.confidence ?? 0;
 
       return {
-        ok: Boolean(result?.ok || bestCard),
+        ok: detected,
+        detected,
+        confidence,
+        boundingBox: normalizeBoundingBox(bestCard, result),
         prediction: bestCard,
         predictions,
-        provider: activeProvider,
+        provider: result?.provider || activeProvider,
+        inferenceTimeMs: result?.inferenceTimeMs ?? null,
+        totalTimeMs: result?.totalTimeMs ?? null,
       };
     };
 
