@@ -66,7 +66,6 @@ Meteor.methods({
 
 Meteor.methods({
   async 'visitors.checkIn'(data) {
-    console.log('Visitors has findOneAsync?', typeof Visitors.findOneAsync);
     check(data, {
       name: String,
       company: Match.Optional(String),
