@@ -40,7 +40,6 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const hasSurveyModel = Boolean(surveyModel);
 
   const handleCapture = (base64) => {
-    console.log('Captured in App.jsx:', base64);
     setCapturedImage(base64);
     setLoading(true);
     setOcrStatus('processing');
