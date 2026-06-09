@@ -291,15 +291,4 @@ Meteor.methods({
       );
     }
   },
-
-  // createInitialAdmin({ email, password }) {
-  //   const existingUser = Accounts.findUserByEmail(email);
-  //   if (existingUser) {
-  //     return { status: 'exists' };
-  //   }
-
-  //   const userId = Accounts.createUser({ email, password });
-  //   Roles.addUsersToRoles(userId, ['admin']);
-  //   return { status: 'created' };
-  // }
 });
