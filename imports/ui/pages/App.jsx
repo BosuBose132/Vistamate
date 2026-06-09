@@ -75,7 +75,6 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
             return;
           }
           const finalData = sender.data;
-          //Meteor.call('visitors.checkIn', finalData, (err, res) => {
           Meteor.call(
             'visitors.checkIn',
             {

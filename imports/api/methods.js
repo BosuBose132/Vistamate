@@ -81,8 +81,6 @@ Meteor.methods({
     });
 
     //return await checkAndCreateVisitor(data, Visitors);
-    //   const payload = { ...data, createdAt: new Date() };
-    //   return await checkAndCreateVisitor(payload, Visitors);
     // },
     const payload = {
       name: data.name?.trim(),
