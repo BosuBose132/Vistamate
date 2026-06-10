@@ -344,8 +344,8 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 8. ✅ **Step 3.9:** Admin Surveys page migration (SurveyManager)
 9. ✅ **Step 3.10:** Public pages migration (WelcomePage, Login, ThankYou)
 10. ✅ **Step 3.11:** Check-in flow cleanup (App.jsx, SurveyForm.jsx)
-11. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
-12. ⏳ **Steps 5–9:** Remaining Components (CameraCapture, StationKiosk)
+11. ✅ **Step 3.12:** CameraCapture.jsx — Badge variants, Spinner, Alert, Button, lucide-react Check
+12. ✅ **Step 3.13:** StationKiosk.jsx — Loading/error states: Spinner + Alert replace DaisyUI bg-base-* and alert alert-error
 13. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
