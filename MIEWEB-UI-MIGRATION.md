@@ -335,11 +335,12 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 **After Step 0 approval, proceed with:**
 
 1. ✅ **Step 1:** Install @mieweb/ui (already done)
-2. ⏳ **Step 2:** CSS Foundation (add @source, @custom-variant, @theme, brand import)
+2. ✅ **Step 2:** CSS Foundation (add @source, @custom-variant, @theme, brand import)
 3. ⏳ **Step 3:** Brand Switching (optional; copy brand CSS + create hooks)
-4. ⏳ **Steps 4a–4d:** Component Replacement (buttons, modals, forms, etc.)
-5. ⏳ **Steps 5–9:** Remaining Components (pages, admin, stations)
-6. ⏳ **Step 10:** Cleanup & Finalization
+4. ✅ **Step 3.5:** App Shell / Layout migration (AdminShell, PublicLayout, AdminHeader)
+5. ⏳ **Steps 4a–4d:** Component Replacement (buttons, modals, forms, etc.)
+6. ⏳ **Steps 5–9:** Remaining Components (pages, admin, stations)
+7. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
 
@@ -426,5 +427,59 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 2.0 (Step 2 Complete)  
-**Last Updated:** 2026-06-10 (Step 2 CSS Foundation Complete)
+## Step 3.5 Execution Report — App Shell / Layout Migration
+
+**Files Modified:** 3
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/components/AdminShell.jsx` | Button already in use; added `useState`, `Menu` from lucide-react; replaced DaisyUI mobile dropdown with controlled state + `border-border/bg-card` classes; replaced hardcoded sidebar hex colors with `var(--vm-sidebar-soft)` / `var(--vm-primary)`; replaced DaisyUI `btn btn-ghost btn-square btn-sm` button with `<Button variant="ghost" size="icon">`; cleaned Logout Button hardcoded hex classes; removed unused `LogoMark` and `MenuIcon` SVGs | ✅ |
+| `imports/ui/components/AdminHeader.jsx` | Added `Button` import from `@mieweb/ui`, `Menu` from lucide-react, `useState`; replaced ALL DaisyUI `base-*` color classes (`bg-base-100` → `bg-card`, `text-base-content` → `text-foreground`, `text-base-content/70` → `text-muted-foreground`, `border-base-300` → `border-border`, `hover:bg-base-200` → `hover:bg-muted`, `text-primary-content` → `text-primary-foreground`, focus ring tokens updated); replaced DaisyUI mobile dropdown with controlled state; replaced `btn btn-ghost btn-square btn-sm` with `<Button variant="ghost" size="icon">`; replaced `btn btn-outline btn-sm` logout with `<Button variant="outline">`; removed `MenuIcon` SVG; updated ThemeToggle className from DaisyUI to clean Tailwind | ✅ |
+| `imports/ui/components/PublicLayout.jsx` | Added `Button`, `Input`, `Spinner` imports from `@mieweb/ui`, `Menu` from lucide-react, `mobileNavOpen` state; replaced all `var(--vm-*)` inline class references with Tailwind tokens (`text-primary`, `text-muted-foreground`, `text-foreground`, `border-border`, `bg-background`, `bg-card`); replaced all raw `<button>` with `<Button>`; replaced DaisyUI `dropdown`/`menu`/`dropdown-content` pattern with controlled state + clean Tailwind; replaced raw `<input>` login fields with `<Input>`; replaced `loading loading-spinner loading-xs` with `<Spinner size="sm">`; replaced error div colors with `bg-destructive/10 text-destructive`; updated footer to use `border-border bg-card` | ✅ |
+
+### What Changed
+
+**DaisyUI removal (all three files):**
+- `btn btn-ghost btn-square btn-sm` → `<Button variant="ghost" size="icon">`
+- `btn btn-outline btn-sm` → `<Button variant="outline">`
+- `dropdown` / `menu` / `dropdown-content` → React controlled state with `absolute` positioned `ul`, using `border-border bg-card` classes
+- `loading loading-spinner loading-xs` → `<Spinner size="sm" />`
+- DaisyUI base-* color classes → @mieweb/ui token Tailwind classes
+
+**vm-* inline var() references replaced (PublicLayout, partially AdminShell):**
+- `text-[var(--vm-primary)]` → `text-primary`
+- `text-[var(--vm-muted)]` → `text-muted-foreground`
+- `hover:text-[var(--vm-text)]` → `hover:text-foreground`
+- `border-[var(--vm-border)]` → `border-border`
+- `bg-[var(--vm-content-bg)]` → `bg-background`
+- `bg-[var(--vm-surface)]` → `bg-card`
+- `bg-[var(--vm-danger-soft)]` → `bg-destructive/10`
+- `text-[var(--vm-danger)]` → `text-destructive`
+- Focus ring: `ring-[var(--vm-primary)]` → `ring-ring`; `ring-offset-[var(--vm-content-bg)]` → `ring-offset-background`
+
+**vm-* CSS class names kept** (defined in tailwind.css, still needed):
+- `vm-app`, `vm-sidebar`, `vm-sidebar-card`, `vm-topbar`, `vm-content`, `vm-kicker`, `vm-heading`, `vm-pill`, `vm-card`, `vm-muted`, `vm-btn-primary` (on a Link, not a button)
+
+**Sidebar link active state (AdminShell):**
+- `bg-[#123f4c]` → `bg-[var(--vm-sidebar-soft)]` (semantic variable instead of hardcoded hex)
+- `text-[#55ddd8]` → `text-[var(--vm-primary)]`
+
+**Icons:**
+- `MenuIcon` inline SVG replaced by `Menu` from `lucide-react` in all three files
+- Domain-specific nav icons (GridIcon, LogIcon, KioskIcon, FormIcon) kept as custom SVGs
+- Unused `LogoMark` SVG removed from AdminShell
+
+### What Was NOT Changed
+
+✅ All routing, NavLink/Link destinations, and navigation structure preserved  
+✅ Meteor.loginWithPassword, Meteor.logout calls preserved  
+✅ AnimatePresence/motion animations preserved (framer-motion)  
+✅ Login form state (email, password, error, isSubmitting) logic preserved  
+✅ ThemeToggle component preserved (only className prop updated)  
+✅ vm-* CSS class names (vm-sidebar, vm-topbar, etc.) preserved  
+✅ SurveyJS, camera, OCR, station, and all other business logic untouched
+
+---
+
+**Document Version:** 3.0 (Step 3.5 App Shell Complete)  
+**Last Updated:** 2026-06-10 (App Shell Migration Complete)
