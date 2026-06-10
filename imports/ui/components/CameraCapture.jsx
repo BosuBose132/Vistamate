@@ -3,6 +3,8 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { Check } from 'lucide-react';
+import { Badge, Alert, Button, Spinner } from '@mieweb/ui';
 
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
@@ -72,28 +74,32 @@ const rightAngleScore = (quad) => {
 
 const StatusBadge = ({ phase, ocrStatus }) => {
   const map = {
-    [PHASE.ALIGN]: { txt: 'Place card', cls: 'badge-outline' },
-    [PHASE.STEADY]: { txt: 'Hold steady', cls: 'badge-warning' },
-    [PHASE.READY]: { txt: 'Scanning', cls: 'badge-success' },
-    [PHASE.CAPTURING]: { txt: 'Capturing', cls: 'badge-info' },
+    [PHASE.ALIGN]: { txt: 'Place card', variant: 'outline' },
+    [PHASE.STEADY]: { txt: 'Hold steady', variant: 'warning' },
+    [PHASE.READY]: { txt: 'Scanning', variant: 'success' },
+    [PHASE.CAPTURING]: { txt: 'Capturing', variant: 'info' },
     [PHASE.PROCESSING]: {
       txt: ocrStatus === 'processed' ? 'Ready' : 'Scanning',
-      cls: ocrStatus === 'processed' ? 'badge-success' : 'badge-info',
+      variant: ocrStatus === 'processed' ? 'success' : 'info',
     },
   };
-  const { txt, cls } = map[phase] || { txt: 'Ready', cls: 'badge-ghost' };
+  const { txt, variant } = map[phase] || { txt: 'Ready', variant: 'secondary' };
   return (
-    <motion.span
+    <motion.div
       key={`${phase}-${ocrStatus}`}
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
-      className={`badge ${cls} gap-2 rounded-md px-3 py-2 text-xs font-medium`}
       aria-live="polite"
     >
-      <LoadingDot phase={phase} />
-      {txt}
-    </motion.span>
+      <Badge
+        variant={variant}
+        className="gap-2 rounded-md px-3 py-2 text-xs font-medium"
+      >
+        <LoadingDot phase={phase} />
+        {txt}
+      </Badge>
+    </motion.div>
   );
 };
 
@@ -339,13 +345,13 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       <motion.div
         layout
         transition={{ duration: 0.28, ease: 'easeOut' }}
-        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-base-300 bg-base-100/95 text-base-content shadow-xl shadow-base-content/5"
+        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-border bg-card/95 text-foreground shadow-xl"
       >
-        <div className="border-b border-base-300 bg-base-100/90 px-4 py-3 sm:px-5">
+        <div className="border-b border-border bg-card/90 px-4 py-3 sm:px-5">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold">Check in</h2>
-              <span className="text-sm text-base-content/60">
+              <span className="text-sm text-muted-foreground">
                 Place your card inside the frame
               </span>
             </div>
@@ -355,7 +361,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
         <div className="p-3 sm:p-4">
           {/* Video area */}
-          <div className="relative overflow-hidden rounded-2xl border border-base-300 bg-neutral shadow-inner">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-neutral shadow-inner">
             <div className="aspect-video w-full">
               <video
                 ref={videoRef}
@@ -370,9 +376,9 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
             </div>
 
             {!videoReady && !error && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-neutral-content">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-foreground">
                 <div className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 px-4 py-3 backdrop-blur">
-                  <span className="loading loading-spinner loading-sm" />
+                  <Spinner size="sm" />
                   <span className="text-sm font-medium">Starting camera</span>
                 </div>
               </div>
@@ -397,8 +403,8 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 <span
                   className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm ${
                     isBoxGreen
-                      ? 'bg-success text-success-content'
-                      : 'bg-base-100/75 text-base-content/70'
+                      ? 'bg-success text-success-foreground'
+                      : 'bg-card/75 text-foreground/70'
                   }`}
                 >
                   {isBoxGreen ? 'Hold steady' : 'Place card'}
@@ -414,20 +420,12 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-base-100/88 px-6 text-center text-base-content backdrop-blur-md"
+                  className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-card/88 px-6 text-center text-foreground backdrop-blur-md"
                 >
                   {ocrStatus === 'processed' ? (
                     <>
                       <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
-                        <svg
-                          className="h-7 w-7"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
+                        <Check className="h-7 w-7" strokeWidth={2} />
                       </div>
                       <div>
                         <p className="font-semibold">Review details</p>
@@ -435,7 +433,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                     </>
                   ) : (
                     <>
-                      <span className="loading loading-spinner loading-lg text-primary" />
+                      <Spinner size="lg" className="text-primary" />
                       <div>
                         <p className="font-semibold">Scanning</p>
                       </div>
@@ -448,15 +446,16 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
 
           {/* Error */}
           {error && (
-            <div className="alert alert-error mt-4 rounded-md">
-              <span>{error}</span>
-            </div>
+            <Alert variant="destructive" className="mt-4">
+              {error}
+            </Alert>
           )}
 
           {/* Manual capture button */}
           <div className="mt-4 flex justify-center">
-            <button
-              className="btn btn-primary min-w-44 rounded-md"
+            <Button
+              variant="primary"
+              className="min-w-44 rounded-md"
               onClick={doCapture}
               disabled={
                 hasCaptured ||
@@ -465,7 +464,7 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
               }
             >
               {hasCaptured ? 'Scanning' : 'Capture'}
-            </button>
+            </Button>
           </div>
         </div>
       </motion.div>
