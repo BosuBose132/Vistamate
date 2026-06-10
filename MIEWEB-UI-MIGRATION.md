@@ -339,7 +339,8 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 3. ⏳ **Step 3:** Brand Switching (optional; copy brand CSS + create hooks)
 4. ✅ **Step 3.5:** App Shell / Layout migration (AdminShell, PublicLayout, AdminHeader)
 5. ✅ **Step 3.6:** Admin Dashboard migration (StationDashboard, StatCard)
-6. ⏳ **Steps 4a–4d:** Component Replacement (buttons, modals, forms, etc.)
+6. ✅ **Step 3.7:** Admin Check-ins page migration (AdminCheckIn, AdminQuickCheckIn)
+7. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
 6. ⏳ **Steps 5–9:** Remaining Components (pages, admin, stations)
 7. ⏳ **Step 10:** Cleanup & Finalization
 
@@ -501,5 +502,23 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 4.0 (Step 3.6 Admin Dashboard Complete)  
+## Step 3.7 Execution Report — Admin Check-ins Page
+
+**Files Modified:** 2
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/admin/check-in/AdminCheckIn.jsx` | Added `Skeleton, Badge, Select`; DaisyUI `skeleton` → `<Skeleton>`; `vm-pill` → `<Badge>`; `vm-muted` class → `text-muted-foreground`; raw `<select className="vm-select">` → `<Select onValueChange options={[...]}/>`; `vm-panel` div → token-based `border-border bg-muted/50` div | ✅ |
+| `imports/ui/components/AdminQuickCheckIn.jsx` | Added `Card, Input, Select, Button, Alert, Badge`; root `<div className="vm-card">` → `<Card className="vm-card">`; all `text-[var(--vm-heading)]` → `text-foreground`; `text-[var(--vm-muted)]` → `text-muted-foreground`; `vm-badge` span → `<Badge>`; `vm-panel` form wrapper → `border-border bg-muted/50` div; 3× raw `<input className="vm-input">` → `<Input>`; raw `<select className="vm-select">` → `<Select>` with `purposeOptions` const; `<button type="submit" className="vm-btn-primary">` → `<Button variant="primary">`; `text-red-500` → `text-destructive`; success/error hardcoded-colour divs → `<Alert variant="success/destructive">` | ✅ |
+
+### Preserved unchanged
+✅ `Meteor.call('admin.quickCheckIn', payload, ...)` and all payload construction  
+✅ `form`, `submitting`, `msg` state and all handler logic  
+✅ `defaultStationId` prop threading (`selectedId === 'GLOBAL' ? null : selectedId`)  
+✅ framer-motion animation, `AdminShell` wrapper  
+✅ `vm-card` class kept on `<Card>` for Vistamate-specific card theming
+
+---
+
+**Document Version:** 5.0 (Step 3.7 Admin Check-ins Complete)  
 **Last Updated:** 2026-06-10 (App Shell Migration Complete)

@@ -5,7 +5,8 @@ import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 import { Stations } from '/imports/api/stations/stations.collection';
 import AdminShell from '/imports/ui/components/AdminShell';
 import AdminQuickCheckIn from '/imports/ui/components/AdminQuickCheckIn';
-import { Card } from '@mieweb/ui';
+import { Card, Skeleton, Badge, Select } from '@mieweb/ui';
+
 export default function AdminCheckIn() {
   const subStations = useSubscribe('stations.admin');
   const loading = subStations();
@@ -24,8 +25,8 @@ export default function AdminCheckIn() {
     return (
       <AdminShell title="Check-ins" eyebrow="Visitor operations">
         <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <div className="skeleton h-44 rounded-2xl" />
-          <div className="skeleton h-96 rounded-2xl" />
+          <Skeleton className="h-44 rounded-2xl" />
+          <Skeleton className="h-96 rounded-2xl" />
         </div>
       </AdminShell>
     );
@@ -35,10 +36,10 @@ export default function AdminCheckIn() {
     <AdminShell title="Check-ins" eyebrow="Visitor operations">
       <main className="space-y-6">
         <div className="flex justify-end">
-          <span className="vm-pill">
+          <Badge>
             {stations.length} station{stations.length === 1 ? '' : 's'}{' '}
             available
-          </span>
+          </Badge>
         </div>
 
         <motion.div
@@ -49,29 +50,23 @@ export default function AdminCheckIn() {
         >
           <Card className="vm-card p-5 sm:p-6">
             <h2 className="text-xl font-bold tracking-tight">Assignment</h2>
-            <p className="mt-1 text-sm vm-muted">
+            <p className="mt-1 text-sm text-muted-foreground">
               Choose where this visitor should be checked in.
             </p>
 
             <label className="mt-6 block">
-              <span className="mb-2 block text-sm font-bold vm-muted">
+              <span className="mb-2 block text-sm font-bold text-muted-foreground">
                 Station scope
               </span>
-
-              <select
-                className="vm-select"
+              <Select
                 value={selectedId}
-                onChange={(e) => setSelectedId(e.target.value)}
-              >
-                {options.map((o) => (
-                  <option key={o._id} value={o._id}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={(value) => setSelectedId(value)}
+                options={options.map((o) => ({ value: o._id, label: o.name }))}
+                className="w-full"
+              />
             </label>
 
-            <div className="vm-panel mt-5 p-4 text-sm">
+            <div className="mt-5 rounded-xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
               Selected visitors will use this station context for admin entry.
             </div>
           </Card>

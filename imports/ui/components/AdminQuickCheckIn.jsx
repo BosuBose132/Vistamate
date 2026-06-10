@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Card, Input, Select, Button, Alert, Badge } from '@mieweb/ui';
 
 const initialForm = {
   name: '',
@@ -7,6 +8,13 @@ const initialForm = {
   purpose: 'Meeting',
   host: '',
 };
+
+const purposeOptions = [
+  { value: 'Meeting', label: 'Meeting' },
+  { value: 'Interview', label: 'Interview' },
+  { value: 'Delivery', label: 'Delivery' },
+  { value: 'Other', label: 'Other' },
+];
 
 export default function AdminQuickCheckIn({ defaultStationId = null }) {
   const [form, setForm] = useState(initialForm);
@@ -62,27 +70,26 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
   };
 
   return (
-    <div className="vm-card p-5 sm:p-6">
+    <Card className="vm-card p-5 sm:p-6">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[var(--vm-heading)]">
+          <h2 className="text-xl font-bold tracking-tight text-foreground">
             Quick check-in
           </h2>
-          <p className="mt-1 text-sm text-[var(--vm-muted)]">Admin entry</p>
+          <p className="mt-1 text-sm text-muted-foreground">Admin entry</p>
         </div>
 
-        <span className="vm-badge">Manual</span>
+        <Badge>Manual</Badge>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="vm-panel p-5 sm:p-6">
+        <div className="rounded-xl border border-border bg-muted/50 p-5 sm:p-6">
           <div className="grid gap-5 md:grid-cols-2">
             <label>
-              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
-                Full Name <span className="text-red-500">*</span>
+              <span className="mb-2 block text-sm font-bold text-foreground">
+                Full Name <span className="text-destructive">*</span>
               </span>
-              <input
-                className="vm-input"
+              <Input
                 placeholder="Enter visitor name"
                 value={form.name}
                 onChange={(e) => onChange('name', e.target.value)}
@@ -91,11 +98,10 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
             </label>
 
             <label>
-              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+              <span className="mb-2 block text-sm font-bold text-foreground">
                 Company
               </span>
-              <input
-                className="vm-input"
+              <Input
                 placeholder="Company name"
                 value={form.company}
                 onChange={(e) => onChange('company', e.target.value)}
@@ -103,27 +109,22 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
             </label>
 
             <label>
-              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+              <span className="mb-2 block text-sm font-bold text-foreground">
                 Purpose of Visit
               </span>
-              <select
-                className="vm-select"
+              <Select
                 value={form.purpose}
-                onChange={(e) => onChange('purpose', e.target.value)}
-              >
-                <option value="Meeting">Meeting</option>
-                <option value="Interview">Interview</option>
-                <option value="Delivery">Delivery</option>
-                <option value="Other">Other</option>
-              </select>
+                onValueChange={(value) => onChange('purpose', value)}
+                options={purposeOptions}
+                className="w-full"
+              />
             </label>
 
             <label>
-              <span className="mb-2 block text-sm font-bold text-[var(--vm-heading)]">
+              <span className="mb-2 block text-sm font-bold text-foreground">
                 Host/Contact
               </span>
-              <input
-                className="vm-input"
+              <Input
                 placeholder="Who are they visiting?"
                 value={form.host}
                 onChange={(e) => onChange('host', e.target.value)}
@@ -132,28 +133,23 @@ export default function AdminQuickCheckIn({ defaultStationId = null }) {
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
-          className={`vm-btn-primary h-12 w-full ${
-            submitting ? 'cursor-not-allowed opacity-60' : ''
-          }`}
+          variant="primary"
+          className="h-12 w-full"
           disabled={submitting}
         >
           {submitting ? 'Checking In…' : 'Check In'}
-        </button>
+        </Button>
 
         {msg?.type === 'success' && (
-          <div className="rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-500">
-            {msg.text}
-          </div>
+          <Alert variant="success">{msg.text}</Alert>
         )}
 
         {msg?.type === 'error' && (
-          <div className="rounded-xl border border-red-300/40 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-500">
-            {msg.text}
-          </div>
+          <Alert variant="destructive">{msg.text}</Alert>
         )}
       </form>
-    </div>
+    </Card>
   );
 }
