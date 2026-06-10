@@ -338,7 +338,8 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 2. ✅ **Step 2:** CSS Foundation (add @source, @custom-variant, @theme, brand import)
 3. ⏳ **Step 3:** Brand Switching (optional; copy brand CSS + create hooks)
 4. ✅ **Step 3.5:** App Shell / Layout migration (AdminShell, PublicLayout, AdminHeader)
-5. ⏳ **Steps 4a–4d:** Component Replacement (buttons, modals, forms, etc.)
+5. ✅ **Step 3.6:** Admin Dashboard migration (StationDashboard, StatCard)
+6. ⏳ **Steps 4a–4d:** Component Replacement (buttons, modals, forms, etc.)
 6. ⏳ **Steps 5–9:** Remaining Components (pages, admin, stations)
 7. ⏳ **Step 10:** Cleanup & Finalization
 
@@ -481,5 +482,24 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 3.0 (Step 3.5 App Shell Complete)  
+## Step 3.6 Execution Report — Admin Dashboard Migration
+
+**Files Modified:** 2
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/admin/dashboard/StationDashboard.jsx` | Added `Skeleton, Badge, Select, Table, TableHeader, TableBody, TableRow, TableCell, Checkbox, Avatar` from @mieweb/ui; added `Search` from lucide-react; removed unused `AdminHeader` import; DaisyUI `skeleton` → `<Skeleton>`; `checkbox checkbox-sm` → `<Checkbox>`; raw `<table>/<thead>/<tbody>/<tr>/<th>/<td>` → `Table/TableHeader/TableBody/TableRow/TableCell`; raw `<select>` → `<Select>` with `options` array + `onValueChange`; visitor avatar `div` → `<Avatar name={...}>`; `<StatusBadge>` → `<Badge variant="success/secondary">`; `vm-btn-primary`/`vm-btn-secondary` overrides removed; `vm-input` removed from Input className; all `var(--vm-*)` inline refs → Tailwind tokens; removed `SearchIcon` SVG + `getInitials` functions | ✅ |
+| `imports/ui/components/StatCard.jsx` | Replaced vm-* and hardcoded color-mix tone classes with token-based: `bg-primary/10 text-primary`, `bg-success/10 text-success`, `bg-info/10 text-info`, `bg-warning/10 text-warning`; `text-[var(--vm-heading)]` → `text-foreground`; `text-[var(--vm-muted)]` → `text-muted-foreground` | ✅ |
+
+### What Was NOT Changed
+✅ All Meteor subscriptions, `useSubscribe`, `useFind` data flow  
+✅ All filter/search/scope logic (`rows`, `useMemo`, `averageDuration`)  
+✅ `StatCard` props and usage (same `title`, `value`, `icon`, `tone`)  
+✅ `AdminQuickCheckIn` wiring (`defaultStationId` prop)  
+✅ All framer-motion animations  
+✅ `vm-card`, `vm-panel`, `vm-table-row` CSS class names kept (still defined in tailwind.css)
+
+---
+
+**Document Version:** 4.0 (Step 3.6 Admin Dashboard Complete)  
 **Last Updated:** 2026-06-10 (App Shell Migration Complete)
