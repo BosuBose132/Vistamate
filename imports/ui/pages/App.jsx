@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import { Model } from 'survey-core';
 import { FlatDarkPanelless } from 'survey-core/themes';
+import { Badge, Alert, Spinner } from '@mieweb/ui';
 
 import SurveyForm from '../components/SurveyForm';
 import CameraCapture from '../components/CameraCapture';
@@ -180,7 +181,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
   return (
     <PublicLayout>
-      <section className="bg-base-200 px-4 py-6 text-base-content sm:px-6 lg:px-8">
+      <section className="bg-muted px-4 py-6 text-foreground sm:px-6 lg:px-8">
         <div className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-7xl flex-col justify-center">
           <motion.div
             layout
@@ -201,15 +202,15 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
               {(loading || error) && (
                 <div className="mt-4">
                   {loading && (
-                    <div className="alert rounded-md border-info/30 bg-info/10 text-base-content">
-                      <span className="loading loading-spinner loading-sm" />
+                    <div className="flex items-center gap-2 rounded-md border border-info/30 bg-info/10 px-4 py-3 text-sm text-foreground">
+                      <Spinner size="sm" />
                       <span>Scanning</span>
                     </div>
                   )}
                   {error && (
-                    <div className="alert alert-error mt-3">
-                      <span>{error}</span>
-                    </div>
+                    <Alert variant="destructive" className="mt-3">
+                      {error}
+                    </Alert>
                   )}
                 </div>
               )}
@@ -217,7 +218,7 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
 
             {hasSurveyModel && (
               <div
-                className="hidden h-full min-h-[28rem] w-px bg-base-300 lg:block"
+                className="hidden h-full min-h-[28rem] w-px bg-border lg:block"
                 aria-hidden="true"
               />
             )}
@@ -230,19 +231,19 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.28, ease: 'easeOut' }}
-                  className="w-full max-w-[440px] justify-self-center rounded-2xl border border-base-300 bg-base-100/95 p-4 shadow-xl shadow-base-content/5 lg:justify-self-end"
+                  className="w-full max-w-[440px] justify-self-center rounded-2xl border border-border bg-card/95 p-4 shadow-xl lg:justify-self-end"
                 >
-                  <div className="mb-4 flex items-start justify-between gap-4 border-b border-base-300 pb-4">
+                  <div className="mb-4 flex items-start justify-between gap-4 border-b border-border pb-4">
                     <div>
                       <h2 className="text-xl font-semibold">Review details</h2>
-                      <p className="mt-1 text-sm text-base-content/60">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         Confirm the scanned information.
                       </p>
                     </div>
                     {ocrStatus === 'processed' && (
-                      <span className="badge badge-success rounded-md">
+                      <Badge variant="success" className="rounded-md">
                         Ready
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <SurveyForm surveyModel={surveyModel} />

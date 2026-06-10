@@ -343,9 +343,10 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 7. ✅ **Step 3.8:** Admin Stations page migration (StationBuilder, ExistingStations)
 8. ✅ **Step 3.9:** Admin Surveys page migration (SurveyManager)
 9. ✅ **Step 3.10:** Public pages migration (WelcomePage, Login, ThankYou)
-10. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
-11. ⏳ **Steps 5–9:** Remaining Components (camera, SurveyJS form)
-12. ⏳ **Step 10:** Cleanup & Finalization
+10. ✅ **Step 3.11:** Check-in flow cleanup (App.jsx, SurveyForm.jsx)
+11. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
+12. ⏳ **Steps 5–9:** Remaining Components (CameraCapture, StationKiosk)
+13. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
 
@@ -578,5 +579,24 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 8.0 (Step 3.10 Public Pages Complete)  
+## Step 3.11 Execution Report — Check-in Flow Cleanup
+
+**Files Modified:** 2
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/pages/App.jsx` | Added `Badge, Alert, Spinner`; `bg-base-200 text-base-content` → `bg-muted text-foreground`; DaisyUI `alert + loading-spinner` → token div + `<Spinner size="sm">`; `alert alert-error` → `<Alert variant="destructive">`; divider `bg-base-300` → `bg-border`; survey aside `border-base-300 bg-base-100/95 shadow-base-content/5` → `border-border bg-card/95 shadow-xl`; header `border-base-300` → `border-border`; `text-base-content/60` → `text-muted-foreground`; `badge badge-success` → `<Badge variant="success">` | ✅ |
+| `imports/ui/components/SurveyForm.jsx` | Empty state `border-base-300 bg-base-200 text-base-content` → `border-border bg-muted text-foreground`; survey wrapper `bg-base-100` → `bg-card`; removed DaisyUI reference from inline comment | ✅ |
+
+### Preserved unchanged
+✅ All `Meteor.call('visitors.processOCR', ...)` and `('visitors.checkIn', ...)` logic  
+✅ `handleCapture`, `generateSurveyJsonFromOCR`, `getOCRDefaults`, `removeEmptyValues`  
+✅ SurveyJS `Model`, `FlatDarkPanelless` theme, `model.onComplete`, `model.data`  
+✅ `sessionStorage` persistence, `navigate('/thankyou', { state: last })`  
+✅ `<Survey model={surveyModel} />` render and `surveyModel.isCompleted` reset  
+✅ `<CameraCapture>` component (not touched)
+
+---
+
+**Document Version:** 9.0 (Step 3.11 Check-in Flow Cleanup Complete)  
 **Last Updated:** 2026-06-10
