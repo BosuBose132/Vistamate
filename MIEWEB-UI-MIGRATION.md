@@ -342,9 +342,10 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 6. ✅ **Step 3.7:** Admin Check-ins page migration (AdminCheckIn, AdminQuickCheckIn)
 7. ✅ **Step 3.8:** Admin Stations page migration (StationBuilder, ExistingStations)
 8. ✅ **Step 3.9:** Admin Surveys page migration (SurveyManager)
-9. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
-10. ⏳ **Steps 5–9:** Remaining Components (public, camera, SurveyJS form)
-11. ⏳ **Step 10:** Cleanup & Finalization
+9. ✅ **Step 3.10:** Public pages migration (WelcomePage, Login, ThankYou)
+10. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
+11. ⏳ **Steps 5–9:** Remaining Components (camera, SurveyJS form)
+12. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
 
@@ -558,5 +559,24 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 7.0 (Step 3.9 Admin Surveys Complete)  
+## Step 3.10 Execution Report — Public Pages Migration
+
+**Files Modified:** 3
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/pages/WelcomePage.jsx` | Added `Card, Badge`; `bg-[var(--vm-surface)]` → `bg-background`; `bg-[var(--vm-content-bg)]` → `bg-muted/30`; `border-[var(--vm-border)]` → `border-border`; `vm-heading` (×7) → `text-foreground`; `vm-muted` (×7) → `text-muted-foreground`; `text-[var(--vm-primary)]` (×3) → `text-primary`; `border-[var(--vm-primary)]` left-borders (×3) → `border-primary`; icon box raw CSS vars → `border-primary/20 bg-primary/10 text-primary`; `vm-pill` span (×6) → `<Badge>`; hero image bare div → `<Card>`; `motion.article vm-card` → `<motion.div>` + `<Card>`; `vm-panel` workflow steps → `border-border bg-card` div; CTA bare div → `<Card>`; `vm-btn-primary`/`vm-btn-secondary` on `<Link>` (×4) → token-based inline classes | ✅ |
+| `imports/ui/pages/Login.jsx` | Added `Card, Input, Button`; `bg-slate-100 dark:bg-slate-900` → `bg-background`; form `bg-white dark:bg-slate-800` wrapper → `<Card className="w-full max-w-sm p-8 shadow-md">`; `text-slate-800 dark:text-white` → `text-foreground`; `text-red-500` → `text-destructive`; 2× raw `<input>` → `<Input>`; `<button className="bg-green-600...">` → `<Button type="submit" variant="primary" className="w-full">` | ✅ |
+| `imports/ui/pages/ThankYou.jsx` | Added `Badge, Button, Card` from @mieweb/ui; added `Check` from lucide-react; all DaisyUI `base-*` tokens replaced: `bg-base-200` → `bg-muted`, `bg-base-100` → `bg-card`, `border-base-300` → `border-border`, `text-base-content` → `text-foreground`, `text-base-content/55` + `/65` → `text-muted-foreground`; 2× inline SVG checkmark → `<Check>`; `badge badge-success` → `<Badge variant="success">`; both `motion.div` card wrappers → `<motion.div>` + `<Card>`; `btn btn-primary` (×2) → `<Button variant="primary">`; `btn btn-ghost` → `<Button variant="ghost">`; `btn btn-outline` on `<a>` (download link) → `<a>` with token classes; `shadow-base-content/5` removed (kept `shadow-xl`) | ✅ |
+
+### Preserved unchanged
+✅ `Meteor.loginWithPassword`, `navigate('/admin')` in Login  
+✅ `useLocation`, `useNavigate`, `sessionStorage` logic and commented countdown in ThankYou  
+✅ `buildVCard`, `QRCodeSVG`, `vcardDownloadUrl` blob URL construction in ThankYou  
+✅ All `<Link to="...">` routing in WelcomePage  
+✅ framer-motion animations, `PublicLayout` wrapper across all three files
+
+---
+
+**Document Version:** 8.0 (Step 3.10 Public Pages Complete)  
 **Last Updated:** 2026-06-10
