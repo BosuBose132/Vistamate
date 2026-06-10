@@ -66,7 +66,6 @@ Meteor.methods({
 
 Meteor.methods({
   async 'visitors.checkIn'(data) {
-    console.log('Visitors has findOneAsync?', typeof Visitors.findOneAsync);
     check(data, {
       name: String,
       company: Match.Optional(String),
@@ -82,8 +81,6 @@ Meteor.methods({
     });
 
     //return await checkAndCreateVisitor(data, Visitors);
-    //   const payload = { ...data, createdAt: new Date() };
-    //   return await checkAndCreateVisitor(payload, Visitors);
     // },
     const payload = {
       name: data.name?.trim(),
@@ -292,15 +289,4 @@ Meteor.methods({
       );
     }
   },
-
-  // createInitialAdmin({ email, password }) {
-  //   const existingUser = Accounts.findUserByEmail(email);
-  //   if (existingUser) {
-  //     return { status: 'exists' };
-  //   }
-
-  //   const userId = Accounts.createUser({ email, password });
-  //   Roles.addUsersToRoles(userId, ['admin']);
-  //   return { status: 'created' };
-  // }
 });

@@ -1,16 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-//import { Roles } from 'meteor/alanning:roles';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Stations } from './stations.collection';
 import { assertAdminAsync } from '/imports/api/_roles.helpers.js';
-
-// function assertAdmin(userId) {
-//     if (!userId || !Roles.userIsInRole(userId, 'admin')) {
-//         throw new Meteor.Error('not-authorized', 'Admin role required.');
-//     }
-// }
 
 Meteor.methods({
   // used by Welcome button to route to Lobby

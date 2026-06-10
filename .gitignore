@@ -1,13 +1,17 @@
+# Dependencies
 node_modules/
 visitor-npm-app/
 
+# OS files
 .DS_Store
 Thumbs.db
 
-# Environment files
+# Environment / secrets
 .env
 .env.local
 .env.*.local
+*.env
+settings.json
 
 # Editor-specific
 .vscode/
@@ -17,9 +21,14 @@ Thumbs.db
 dist/
 build/
 
+# Meteor private folder
 /private/
-settings.json
 
-# Local AI model files
+# Model artifacts and training outputs
 inference-service/models/*.onnx
 inference-service/models/*.pt
+*.engine
+*.tflite
+datasets/
+runs/
+*.zip

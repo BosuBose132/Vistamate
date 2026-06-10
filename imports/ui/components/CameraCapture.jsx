@@ -196,7 +196,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     const onMeta = () => {
       if (!mounted) return;
       setVideoReady(true);
-      console.log('[cam] loadedmetadata', v.videoWidth, 'x', v.videoHeight);
     };
 
     const start = async () => {
@@ -270,14 +269,12 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       aiCheckingRef.current = false;
 
       if (err) {
-        console.error('[ai] Roboflow detection failed:', err);
+        console.error('[ai] ID card detection failed:', err);
         setIsBoxGreen(false);
         setPhase(PHASE.ALIGN);
         steadyCountRef.current = 0;
         return;
       }
-
-      console.log('[ai] Roboflow detection:', result);
 
       const confidence = result?.prediction?.confidence ?? 0;
       const ok = Boolean(result?.ok && confidence >= AI_CONFIDENCE_MIN);

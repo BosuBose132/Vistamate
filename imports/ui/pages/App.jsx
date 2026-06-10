@@ -40,7 +40,6 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
   const hasSurveyModel = Boolean(surveyModel);
 
   const handleCapture = (base64) => {
-    console.log('Captured in App.jsx:', base64);
     setCapturedImage(base64);
     setLoading(true);
     setOcrStatus('processing');
@@ -75,7 +74,6 @@ export const App = ({ stationId, kioskConfig = {}, assignedSurveyJson }) => {
             return;
           }
           const finalData = sender.data;
-          //Meteor.call('visitors.checkIn', finalData, (err, res) => {
           Meteor.call(
             'visitors.checkIn',
             {
