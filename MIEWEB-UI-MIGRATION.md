@@ -340,9 +340,10 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 4. ✅ **Step 3.5:** App Shell / Layout migration (AdminShell, PublicLayout, AdminHeader)
 5. ✅ **Step 3.6:** Admin Dashboard migration (StationDashboard, StatCard)
 6. ✅ **Step 3.7:** Admin Check-ins page migration (AdminCheckIn, AdminQuickCheckIn)
-7. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
-6. ⏳ **Steps 5–9:** Remaining Components (pages, admin, stations)
-7. ⏳ **Step 10:** Cleanup & Finalization
+7. ✅ **Step 3.8:** Admin Stations page migration (StationBuilder, ExistingStations)
+8. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
+9. ⏳ **Steps 5–9:** Remaining Components (surveys, public, camera, SurveyJS form)
+10. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
 
@@ -520,5 +521,24 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 5.0 (Step 3.7 Admin Check-ins Complete)  
-**Last Updated:** 2026-06-10 (App Shell Migration Complete)
+## Step 3.8 Execution Report — Admin Stations Page
+
+**Files Modified:** 2
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/admin/stations/StationBuilder.jsx` | Added `Skeleton, Input, Select, Switch, Textarea`; DaisyUI `skeleton` divs → `<Skeleton>`; `motion.section className="vm-card"` → `<motion.div>` wrapping `<Card className="vm-card">`; `vm-heading` (×6) → `text-foreground`; `vm-muted` (×3) → `text-muted-foreground`; `vm-kicker` → `text-xs font-bold uppercase tracking-widest text-primary`; 2× `<input className="vm-input">` → `<Input>`; `<select className="vm-select">` → `<Select onValueChange options={surveyOptions}>`; `border-[var(--vm-border)]` (×2) → `border-border`; advanced toggle raw `<button>` → `<Button variant="ghost" className="... hover:bg-transparent">`; `vm-panel` on toggle labels → `border-border bg-muted/50` divs; 2× `<input type="checkbox" className="toggle toggle-primary">` → `<Switch onCheckedChange>`; `<label>` toggle wrappers → `<div>`; mobile behavior raw buttons → `<Button variant="primary/outline">`; `<textarea className="vm-textarea">` → `<Textarea>`; `<button className="vm-btn-primary">` → `<Button variant="primary">`; `<a className="vm-btn-secondary">` → `<a>` with token classes | ✅ |
+| `imports/ui/admin/stations/ExistingStations.jsx` | Added `Card, Badge, Button, Table, TableHeader, TableBody, TableRow, TableCell`; root `<section className="vm-card">` → `<Card className="vm-card">`; `border-[var(--vm-border)]` → `border-border`; `vm-heading` → `text-foreground`; `vm-muted` → `text-muted-foreground`; `vm-badge` span → `<Badge>`; raw `<table>/<thead>/<tbody>/<tr>/<th>/<td>` → Table/TableHeader/TableBody/TableRow/TableCell; `bg-[var(--vm-surface-soft)] vm-muted` → `bg-muted text-muted-foreground`; `divide-[var(--vm-border)]` → `divide-border`; `vm-table-row` removed → `hover:bg-muted/50 transition-colors`; `vm-status-active/neutral` spans → `<Badge variant="success/secondary">`; `bg-[var(--vm-surface-soft)] vm-muted` on `<code>` → `bg-muted text-muted-foreground`; 4× action buttons → `<Button variant="outline" size="sm">` | ✅ |
+
+### Preserved unchanged
+✅ All `Meteor.call('stations.create', ...)`, `('stations.update', ...)`, `('stations.rotate', ...)` calls  
+✅ `form`, `showAdvanced` state and all `onChange`/`create` handler logic  
+✅ `useSubscribe`, `useFind` subscriptions for surveys and stations  
+✅ `open(s)`, `copy(s)`, `surveyName(surveyId)` utility functions  
+✅ framer-motion animation, `AdminShell` wrapper, `ExistingStations` props interface  
+✅ `vm-card` class kept on `<Card>` for Vistamate-specific card theming
+
+---
+
+**Document Version:** 6.0 (Step 3.8 Admin Stations Complete)  
+**Last Updated:** 2026-06-10

@@ -1,5 +1,15 @@
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
+import {
+  Card,
+  Badge,
+  Button,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@mieweb/ui';
 
 export default function ExistingStations({ stations, surveys = [] }) {
   const open = (s) => window.open(`/s/${s.token}`, '_blank');
@@ -9,76 +19,87 @@ export default function ExistingStations({ stations, surveys = [] }) {
     surveys.find((survey) => survey._id === surveyId)?.name || 'Unassigned';
 
   return (
-    <section className="vm-card overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-[var(--vm-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="vm-card overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold vm-heading">
+          <h3 className="text-lg font-semibold text-foreground">
             Existing stations
           </h3>
-          <p className="mt-1 text-sm vm-muted">
+          <p className="mt-1 text-sm text-muted-foreground">
             Manage kiosk links, availability, and survey assignment.
           </p>
         </div>
-        <span className="vm-badge">{stations.length} total</span>
+        <Badge>{stations.length} total</Badge>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="border-b border-[var(--vm-border)] bg-[var(--vm-surface-soft)] text-xs font-bold uppercase tracking-wide vm-muted">
-            <tr>
-              <th className="px-5 py-4">Name</th>
-              <th className="px-4 py-4">Location</th>
-              <th className="px-4 py-4">Status</th>
-              <th className="px-4 py-4">Assigned Survey</th>
-              <th className="px-4 py-4">Kiosk URL</th>
-              <th className="px-4 py-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[var(--vm-border)]">
+        <Table className="w-full min-w-[980px] text-left text-sm">
+          <TableHeader>
+            <TableRow className="border-b border-border bg-muted text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              <TableCell className="px-5 py-4">Name</TableCell>
+              <TableCell className="px-4 py-4">Location</TableCell>
+              <TableCell className="px-4 py-4">Status</TableCell>
+              <TableCell className="px-4 py-4">Assigned Survey</TableCell>
+              <TableCell className="px-4 py-4">Kiosk URL</TableCell>
+              <TableCell className="px-4 py-4">Actions</TableCell>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody className="divide-y divide-border">
             {stations.map((s) => (
-              <tr key={s._id} className="vm-table-row">
-                <td className="px-5 py-4 font-medium vm-heading">{s.name}</td>
-                <td className="px-4 py-4 vm-muted">{s.location || '—'}</td>
-                <td className="px-4 py-4">
+              <TableRow
+                key={s._id}
+                className="hover:bg-muted/50 transition-colors"
+              >
+                <TableCell className="px-5 py-4 font-medium text-foreground">
+                  {s.name}
+                </TableCell>
+                <TableCell className="px-4 py-4 text-muted-foreground">
+                  {s.location || '—'}
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   {s.isActive ? (
-                    <span className="vm-status-active inline-flex h-7 items-center gap-2 px-3 rounded-full text-xs font-semibold">
+                    <Badge variant="success">
                       <span
-                        className="h-1.5 w-1.5 rounded-full bg-current"
+                        className="me-1 inline-block h-1.5 w-1.5 rounded-full bg-current"
                         aria-hidden="true"
                       />
                       Active
-                    </span>
+                    </Badge>
                   ) : (
-                    <span className="vm-status-neutral inline-flex h-7 items-center px-3 rounded-full text-xs font-semibold">
-                      Inactive
-                    </span>
+                    <Badge variant="secondary">Inactive</Badge>
                   )}
-                </td>
-                <td className="px-4 py-4 vm-muted">{surveyName(s.surveyId)}</td>
-                <td className="px-4 py-4">
-                  <code className="rounded-md bg-[var(--vm-surface-soft)] px-2 py-1 text-xs vm-muted">
+                </TableCell>
+                <TableCell className="px-4 py-4 text-muted-foreground">
+                  {surveyName(s.surveyId)}
+                </TableCell>
+                <TableCell className="px-4 py-4">
+                  <code className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
                     /s/{s.token}
                   </code>
-                </td>
-                <td className="px-4 py-4">
+                </TableCell>
+                <TableCell className="px-4 py-4">
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
                       type="button"
-                      className="vm-btn-secondary rounded-md px-3 py-1.5 text-xs font-semibold"
+                      variant="outline"
+                      size="sm"
                       onClick={() => open(s)}
                     >
                       Open
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
-                      className="vm-btn-secondary rounded-md px-3 py-1.5 text-xs font-semibold"
+                      variant="outline"
+                      size="sm"
                       onClick={() => copy(s)}
                     >
                       Copy URL
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-[var(--vm-surface-soft)] text-[var(--vm-text)] border border-[var(--vm-border)]"
+                      variant="outline"
+                      size="sm"
                       onClick={() =>
                         Meteor.call('stations.update', {
                           _id: s._id,
@@ -87,30 +108,35 @@ export default function ExistingStations({ stations, surveys = [] }) {
                       }
                     >
                       {s.isActive ? 'Disable' : 'Enable'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
-                      className="text-xs font-semibold px-3 py-1.5 rounded-md bg-[var(--vm-surface-soft)] text-[var(--vm-text)] border border-[var(--vm-border)]"
+                      variant="outline"
+                      size="sm"
                       onClick={() =>
                         Meteor.call('stations.rotate', { _id: s._id })
                       }
                     >
                       Rotate URL
-                    </button>
+                    </Button>
                   </div>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
+
             {stations.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-5 py-12 text-center vm-muted">
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="px-5 py-12 text-center text-muted-foreground"
+                >
                   No stations created yet.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
-    </section>
+    </Card>
   );
 }
