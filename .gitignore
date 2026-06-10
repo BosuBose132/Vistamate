@@ -23,3 +23,6 @@ settings.json
 # Local AI model files
 inference-service/models/*.onnx
 inference-service/models/*.pt
+
+# Local AI/Copilot reference docs
+.copilot-context/
