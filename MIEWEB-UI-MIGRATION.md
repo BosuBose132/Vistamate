@@ -341,9 +341,10 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 5. ✅ **Step 3.6:** Admin Dashboard migration (StationDashboard, StatCard)
 6. ✅ **Step 3.7:** Admin Check-ins page migration (AdminCheckIn, AdminQuickCheckIn)
 7. ✅ **Step 3.8:** Admin Stations page migration (StationBuilder, ExistingStations)
-8. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
-9. ⏳ **Steps 5–9:** Remaining Components (surveys, public, camera, SurveyJS form)
-10. ⏳ **Step 10:** Cleanup & Finalization
+8. ✅ **Step 3.9:** Admin Surveys page migration (SurveyManager)
+9. ⏳ **Steps 4a–4d:** Component Replacement (remaining pages)
+10. ⏳ **Steps 5–9:** Remaining Components (public, camera, SurveyJS form)
+11. ⏳ **Step 10:** Cleanup & Finalization
 
 ---
 
@@ -540,5 +541,22 @@ After validation, proceed with:
 
 ---
 
-**Document Version:** 6.0 (Step 3.8 Admin Stations Complete)  
+## Step 3.9 Execution Report — Admin Surveys Page
+
+**Files Modified:** 1
+
+| File | Changes | Status |
+| ---- | ------- | ------ |
+| `imports/ui/admin/surveys/SurveyManager.jsx` | Added `Skeleton, Input, Textarea, Badge`; 2× DaisyUI `skeleton` divs → `<Skeleton>`; 2× `motion.section className="vm-card"` → `<motion.div>` wrapping `<Card className="vm-card">`; `vm-heading` (×3) → `text-foreground`; `vm-muted` (×4) → `text-muted-foreground`; `vm-kicker` span with raw CSS vars → `<Badge>JSON</Badge>`; `<input className="vm-input">` → `<Input>`; `<textarea className="vm-textarea">` → `<Textarea className="min-h-96 font-mono text-sm leading-relaxed">`; `border-[var(--vm-border)]` (×2) → `border-border`; `divide-[var(--vm-border)]` → `divide-border`; `<button className="vm-btn-primary">` → `<Button type="submit" variant="primary">`; `vm-panel` on survey item divs → token-based `hover:bg-muted/50 transition-colors` div; `vm-badge` span → `<Badge>SurveyJS</Badge>` | ✅ |
+
+### Preserved unchanged
+✅ `Meteor.call('surveys.create', { name, json }, ...)` and all callback logic  
+✅ `name`, `json` state and `create` handler  
+✅ `useSubscribe`, `useFind` subscriptions  
+✅ `surveyElementCount(json)` helper function  
+✅ framer-motion animations, `AdminShell` wrapper, two-column layout
+
+---
+
+**Document Version:** 7.0 (Step 3.9 Admin Surveys Complete)  
 **Last Updated:** 2026-06-10
