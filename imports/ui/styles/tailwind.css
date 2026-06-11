@@ -354,32 +354,6 @@ body {
     font-weight: 700;
   }
 
-  .vm-input,
-  .vm-select,
-  .vm-textarea {
-    width: 100%;
-    border: 1px solid var(--vm-border);
-    background: var(--vm-surface);
-    color: var(--vm-text);
-    border-radius: 0.875rem;
-    min-height: 2.75rem;
-    padding: 0.625rem 0.875rem;
-    outline: none;
-  }
-
-  .vm-input::placeholder,
-  .vm-textarea::placeholder {
-    color: var(--vm-muted);
-  }
-
-  .vm-input:focus,
-  .vm-select:focus,
-  .vm-textarea:focus {
-    border-color: var(--vm-primary);
-    box-shadow: 0 0 0 3px
-      color-mix(in oklab, var(--vm-primary), transparent 75%);
-  }
-
   .vm-btn-primary {
     border: 1px solid var(--vm-primary);
     background: var(--vm-primary);

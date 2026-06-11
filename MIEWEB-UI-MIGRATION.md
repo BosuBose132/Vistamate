@@ -346,7 +346,7 @@ body { @apply bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutr
 10. ✅ **Step 3.11:** Check-in flow cleanup (App.jsx, SurveyForm.jsx)
 11. ✅ **Step 3.12:** CameraCapture.jsx — Badge variants, Spinner, Alert, Button, lucide-react Check
 12. ✅ **Step 3.13:** StationKiosk.jsx — Loading/error states: Spinner + Alert replace DaisyUI bg-base-* and alert alert-error
-13. ⏳ **Step 10:** Cleanup & Finalization
+13. ✅ **Step 10:** Cleanup & Finalization — ThemeToggle swap→button, removed vm-input/vm-select/vm-textarea CSS (replaced by @mieweb/ui form components)
 
 ---
 
