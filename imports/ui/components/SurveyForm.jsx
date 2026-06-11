@@ -19,16 +19,16 @@ const SurveyForm = ({ surveyModel }) => {
 
   if (!surveyModel) {
     return (
-      <div className="rounded-2xl border border-dashed border-base-300 bg-base-200 p-6 text-center">
-        <p className="text-base font-medium text-base-content">Ready to scan</p>
+      <div className="rounded-2xl border border-dashed border-border bg-muted p-6 text-center">
+        <p className="text-base font-medium text-foreground">Ready to scan</p>
       </div>
     );
   }
 
   return (
     <div className="vistamate-review-survey w-full max-w-[440px]">
-      {/* Borderless, DaisyUI-colored form (no card/border here) */}
-      <div className="rounded-xl bg-base-100">
+      {/* Borderless survey form — SurveyJS handles its own theming */}
+      <div className="rounded-xl bg-card">
         <Survey model={surveyModel} />
       </div>
     </div>

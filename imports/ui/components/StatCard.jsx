@@ -2,10 +2,10 @@ import React from 'react';
 import { Card } from '@mieweb/ui';
 
 const toneClasses = {
-  primary: 'bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]',
-  success: 'bg-[var(--vm-success-soft)] text-[var(--vm-success)]',
-  info: 'bg-[color-mix(in_oklab,var(--vm-primary),transparent_88%)] text-[var(--vm-primary)]',
-  warning: 'bg-amber-500/10 text-amber-500',
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-success/10 text-success',
+  info: 'bg-info/10 text-info',
+  warning: 'bg-warning/10 text-warning',
 };
 
 export default function StatCard({ title, value, icon, tone = 'primary' }) {
@@ -22,10 +22,10 @@ export default function StatCard({ title, value, icon, tone = 'primary' }) {
           </div>
         )}
         <div className="min-w-0">
-          <p className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
+          <p className="text-2xl font-bold tracking-tight text-foreground">
             {value}
           </p>
-          <p className="mt-1 truncate text-sm font-semibold text-[var(--vm-muted)]">
+          <p className="mt-1 truncate text-sm font-semibold text-muted-foreground">
             {title}
           </p>
         </div>

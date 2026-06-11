@@ -3,16 +3,28 @@ import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useSubscribe, useFind } from 'meteor/react-meteor-data';
 
-import AdminHeader from '../../components/AdminHeader';
-import { Button, Card, Input } from '@mieweb/ui';
+import {
+  Button,
+  Card,
+  Input,
+  Skeleton,
+  Badge,
+  Select,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+  Checkbox,
+  Avatar,
+} from '@mieweb/ui';
 
 import AdminQuickCheckIn from '../../components/AdminQuickCheckIn';
 import AdminShell from '../../components/AdminShell';
 import StatCard from '../../components/StatCard';
 import { Stations } from '/imports/api/stations/stations.collection';
 import { Visitors } from '/imports/api/collections';
-import { Monitor, Users, UserCheck, LogOut } from 'lucide-react';
-// /imports/ui/admin/dashboard/StationDashboard.jsx
+import { Monitor, Users, UserCheck, LogOut, Search } from 'lucide-react';
 
 export default function StationDashboard() {
   // 1) Subscriptions:
@@ -80,12 +92,12 @@ export default function StationDashboard() {
       <AdminShell title="Dashboard" eyebrow="Visitor operations">
         <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="skeleton h-24 rounded-2xl" />
-            <div className="skeleton h-24 rounded-2xl" />
-            <div className="skeleton h-24 rounded-2xl" />
-            <div className="skeleton h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
           </div>
-          <div className="skeleton h-[520px] rounded-3xl" />
+          <Skeleton className="h-[520px] rounded-3xl" />
         </div>
       </AdminShell>
     );
@@ -133,64 +145,56 @@ export default function StationDashboard() {
           transition={{ duration: 0.28, ease: 'easeOut' }}
         >
           <Card className="vm-card overflow-hidden">
-            <div className="flex flex-col gap-4 border-b border-[var(--vm-border)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-4 border-b border-border px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold tracking-tight text-[var(--vm-heading)]">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground">
                     Visitor Log
                   </h2>
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#b9dbda] text-xs font-bold text-[#23b6b6]">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-xs font-bold text-primary">
                     ?
                   </span>
                 </div>
-                <p className="mt-1 text-sm font-medium text-[var(--vm-muted)]">
+                <p className="mt-1 text-sm font-medium text-muted-foreground">
                   {selectedLabel} • Today
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6c7f86]">
-                    <SearchIcon />
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Search className="h-4 w-4" />
                   </span>
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search visitor..."
-                    className="vm-input h-11 w-full pl-10 text-sm sm:w-72"
+                    className="h-11 w-full pl-10 text-sm sm:w-72"
                   />
                 </div>
 
-                <Button className="vm-btn-primary h-11 px-5 text-sm">
+                <Button variant="primary" className="h-11 px-5 text-sm">
                   Add Visitor
                 </Button>
 
-                <Button
-                  variant="outline"
-                  className="vm-btn-secondary h-11 px-5 text-sm"
-                >
+                <Button variant="outline" className="h-11 px-5 text-sm">
                   Export
                 </Button>
               </div>
             </div>
 
-            <div className="border-b border-[var(--vm-border)] bg-[var(--vm-surface-soft)] px-5 py-4">
+            <div className="border-b border-border bg-muted px-5 py-4">
               <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-center">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
+                  <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                     Station filter
                   </label>
-                  <select
-                    className="mt-2 h-11 w-full rounded-xl border border-[var(--vm-border)] bg-[var(--vm-surface)] px-3 text-sm font-semibold text-[var(--vm-heading)] outline-none focus:border-[var(--vm-primary)] focus:ring-2 focus:ring-[var(--vm-primary)]/20"
+                  <Select
                     value={selectedId}
-                    onChange={(e) => setSelectedId(e.target.value)}
-                  >
-                    {options.map((o) => (
-                      <option key={o._id} value={o._id}>
-                        {o.name}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={(value) => setSelectedId(value)}
+                    options={options.map((o) => ({ value: o._id, label: o.name }))}
+                    className="mt-2 w-full"
+                  />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -202,110 +206,105 @@ export default function StationDashboard() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--vm-border)] bg-[var(--vm-surface)] text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
-                    <th className="w-10 px-5 py-4">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
-                        aria-label="Select all visitors"
-                      />
-                    </th>
-                    <th className="px-4 py-4">Name</th>
-                    <th className="px-4 py-4">Purpose</th>
-                    <th className="px-4 py-4">Company</th>
-                    <th className="px-4 py-4">Host</th>
-                    <th className="px-4 py-4">Station</th>
-                    <th className="px-4 py-4">Check In</th>
-                    <th className="px-4 py-4">Status</th>
-                  </tr>
-                </thead>
+              <Table className="w-full min-w-[980px] text-left text-sm">
+                <TableHeader>
+                  <TableRow className="border-b border-border bg-card text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                    <TableCell className="w-10 px-5 py-4">
+                      <Checkbox aria-label="Select all visitors" />
+                    </TableCell>
+                    <TableCell className="px-4 py-4">Name</TableCell>
+                    <TableCell className="px-4 py-4">Purpose</TableCell>
+                    <TableCell className="px-4 py-4">Company</TableCell>
+                    <TableCell className="px-4 py-4">Host</TableCell>
+                    <TableCell className="px-4 py-4">Station</TableCell>
+                    <TableCell className="px-4 py-4">Check In</TableCell>
+                    <TableCell className="px-4 py-4">Status</TableCell>
+                  </TableRow>
+                </TableHeader>
 
-                <tbody className="divide-y divide-[var(--vm-border)]">
+                <TableBody className="divide-y divide-border">
                   {rows.map((v) => {
                     const stationName = v.stationId
                       ? stations.find((s) => s._id === v.stationId)?.name || '—'
                       : 'Global';
 
                     return (
-                      <tr
+                      <TableRow
                         key={v._id}
                         className="vm-table-row transition-colors"
                       >
-                        <td className="px-5 py-4">
-                          <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm rounded border-[var(--vm-border)]"
+                        <TableCell className="px-5 py-4">
+                          <Checkbox
                             aria-label={`Select ${v.name || 'visitor'}`}
                           />
-                        </td>
+                        </TableCell>
 
-                        <td className="px-4 py-4">
+                        <TableCell className="px-4 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9f7f6] text-xs font-bold text-[#0f766e]">
-                              {getInitials(v.name)}
-                            </div>
+                            <Avatar
+                              name={v.name || 'Visitor'}
+                              className="h-9 w-9 shrink-0"
+                            />
                             <div>
-                              <p className="font-bold text-[var(--vm-heading)]">
+                              <p className="font-bold text-foreground">
                                 {v.name || '—'}
                               </p>
-                              <p className="text-xs text-[var(--vm-muted)]">
+                              <p className="text-xs text-muted-foreground">
                                 {v.email || v.phone || 'Visitor'}
                               </p>
                             </div>
                           </div>
-                        </td>
+                        </TableCell>
 
-                        <td className="px-4 py-4 font-medium text-[var(--vm-muted)]">
+                        <TableCell className="px-4 py-4 font-medium text-muted-foreground">
                           {v.purpose || '—'}
-                        </td>
-                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                        </TableCell>
+                        <TableCell className="px-4 py-4 text-muted-foreground">
                           {v.company || '—'}
-                        </td>
-                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                        </TableCell>
+                        <TableCell className="px-4 py-4 text-muted-foreground">
                           {v.host || '—'}
-                        </td>
-                        <td className="px-4 py-4 text-[var(--vm-muted)]">
+                        </TableCell>
+                        <TableCell className="px-4 py-4 text-muted-foreground">
                           {stationName}
-                        </td>
-                        <td className="px-4 py-4 font-semibold text-[var(--vm-heading)]">
+                        </TableCell>
+                        <TableCell className="px-4 py-4 font-semibold text-foreground">
                           {v.createdAt
                             ? new Date(v.createdAt).toLocaleTimeString([], {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })
                             : '—'}
-                        </td>
-                        <td className="px-4 py-4">
+                        </TableCell>
+                        <TableCell className="px-4 py-4">
                           <StatusBadge status={v.status} />
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
 
                   {rows.length === 0 && (
-                    <tr>
-                      <td
+                    <TableRow>
+                      <TableCell
                         colSpan={8}
-                        className="px-5 py-16 text-center text-[var(--vm-muted)]"
+                        className="px-5 py-16 text-center text-muted-foreground"
                       >
                         <div className="mx-auto max-w-sm">
-                          <p className="text-base font-bold text-[var(--vm-heading)]">
+                          <p className="text-base font-bold text-foreground">
                             No visitors found
                           </p>
                           <p className="mt-2 text-sm">
                             Try changing the station filter or search keyword.
                           </p>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-[var(--vm-border)] px-5 py-4 text-sm font-semibold text-[var(--vm-muted)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-border px-5 py-4 text-sm font-semibold text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
               <p>
                 Showing {rows.length} visitor{rows.length === 1 ? '' : 's'}
               </p>
@@ -316,15 +315,15 @@ export default function StationDashboard() {
 
         <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
           <Card className="vm-card p-5">
-            <h3 className="text-lg font-bold text-[var(--vm-heading)]">
+            <h3 className="text-lg font-bold text-foreground">
               Quick Check-In
             </h3>
 
-            <p className="mt-1 text-sm text-[var(--vm-muted)]">
+            <p className="mt-1 text-sm text-muted-foreground">
               Use the selected station context for manual visitor entry.
             </p>
 
-            <div className="vm-panel mt-4 p-4 text-sm font-semibold text-[var(--vm-primary)]">
+            <div className="vm-panel mt-4 p-4 text-sm font-semibold text-primary">
               Current station: {selectedLabel}
             </div>
           </Card>
@@ -339,52 +338,25 @@ export default function StationDashboard() {
 function MiniMetric({ label, value }) {
   return (
     <div className="vm-panel px-4 py-3">
-      <p className="text-xs font-bold uppercase tracking-wide text-[var(--vm-muted)]">
+      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-lg font-bold text-[var(--vm-heading)]">{value}</p>
+      <p className="mt-1 text-lg font-bold text-foreground">{value}</p>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
   if (status === 'checked_out') {
-    return (
-      <span className="vm-status-neutral inline-flex h-7 items-center">
-        Checked Out
-      </span>
-    );
+    return <Badge variant="secondary">Checked Out</Badge>;
   }
 
   return (
-    <span className="vm-status-active inline-flex h-7 items-center gap-2">
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+    <Badge variant="success">
+      <span className="me-1 inline-block h-1.5 w-1.5 rounded-full bg-current" />
       In Building
-    </span>
+    </Badge>
   );
-}
-
-function SearchIcon() {
-  return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
-      <path
-        d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function getInitials(name = '') {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return 'V';
-  return parts
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
 }
 
 function averageDuration(list) {

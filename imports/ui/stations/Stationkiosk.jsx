@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useParams } from 'react-router-dom';
 import { useSubscribe, useTracker } from 'meteor/react-meteor-data';
+import { Alert, Spinner } from '@mieweb/ui';
 
 import { Stations } from '/imports/api/stations/stations.collection';
 import App from '/imports/ui/pages/App';
@@ -78,34 +79,42 @@ export default function StationKiosk() {
 
   if (stationLoading) {
     return (
-      <div className="min-h-screen bg-base-200 p-8 text-base-content">
-        Loading station…
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <div className="flex items-center gap-3 text-foreground">
+          <Spinner size="sm" />
+          <span className="text-sm font-medium">Loading station…</span>
+        </div>
       </div>
     );
   }
 
   if (!station) {
     return (
-      <div className="min-h-screen bg-base-200 p-8 text-base-content">
-        This kiosk link is invalid or inactive.
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <p className="text-base font-medium text-muted-foreground">
+          This kiosk link is invalid or inactive.
+        </p>
       </div>
     );
   }
 
   if (surveyLoading) {
     return (
-      <div className="min-h-screen bg-base-200 p-8 text-base-content">
-        Loading kiosk survey…
+      <div className="flex min-h-screen items-center justify-center bg-muted">
+        <div className="flex items-center gap-3 text-foreground">
+          <Spinner size="sm" />
+          <span className="text-sm font-medium">Loading kiosk survey…</span>
+        </div>
       </div>
     );
   }
 
   if (surveyError) {
     return (
-      <div className="min-h-screen bg-base-200 p-8 text-base-content">
-        <div className="alert alert-error max-w-xl">
-          <span>{surveyError}</span>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-muted p-8">
+        <Alert variant="destructive" className="max-w-xl">
+          {surveyError}
+        </Alert>
       </div>
     );
   }

@@ -52,56 +52,54 @@ function ThemeToggle({ className = '' }) {
     return () => obs.disconnect();
   }, []);
 
-  const onChange = (e) => {
-    const next = e.target.checked ? DARK_THEME : LIGHT_THEME;
-    applyTheme(next);
-    setIsDark(next === DARK_THEME);
-  };
-
   return (
-    <label className={`swap swap-rotate cursor-pointer ${className}`}>
-      <input
-        type="checkbox"
-        className="hidden"
-        checked={isDark}
-        onChange={onChange}
-      />
-
-      <svg
-        aria-label="sun"
-        className="swap-on h-6 w-6"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-      >
-        <g
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          fill="none"
-          stroke="currentColor"
+    <button
+      type="button"
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      onClick={() => {
+        const next = isDark ? LIGHT_THEME : DARK_THEME;
+        applyTheme(next);
+        setIsDark(next === DARK_THEME);
+      }}
+      className={`cursor-pointer ${className}`}
+    >
+      {isDark ? (
+        <svg
+          aria-hidden="true"
+          className="h-6 w-6"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
         >
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-        </g>
-      </svg>
-
-      <svg
-        aria-label="moon"
-        className="swap-off h-6 w-6"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-      >
-        <g
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          fill="none"
-          stroke="currentColor"
+          <g
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </g>
+        </svg>
+      ) : (
+        <svg
+          aria-hidden="true"
+          className="h-6 w-6"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
         >
-          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-        </g>
-      </svg>
-    </label>
+          <g
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </g>
+        </svg>
+      )}
+    </button>
   );
 }
 

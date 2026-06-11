@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   UserCheck,
 } from 'lucide-react';
+import { Card, Badge } from '@mieweb/ui';
 
 import PublicLayout from '../components/PublicLayout';
 
@@ -78,7 +79,7 @@ const workflowSteps = [
 const WelcomePage = () => {
   return (
     <PublicLayout>
-      <section className="relative overflow-hidden bg-[var(--vm-surface)]">
+      <section className="relative overflow-hidden bg-background">
         <div className="relative mx-auto grid min-h-[calc(100vh-6rem)] w-full max-w-7xl items-center gap-12 px-4 pt-6 pb-16 sm:px-6 sm:pt-8 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-20">
           <motion.div
             variants={stagger}
@@ -88,13 +89,13 @@ const WelcomePage = () => {
           >
             <motion.h1
               variants={fadeUp}
-              className="max-w-4xl text-4xl font-semibold leading-tight tracking-normal vm-heading sm:text-5xl lg:text-6xl"
+              className="max-w-4xl text-4xl font-semibold leading-tight tracking-normal text-foreground sm:text-5xl lg:text-6xl"
             >
               Visitor Management System
             </motion.h1>
             <motion.p
               variants={fadeUp}
-              className="mt-5 max-w-2xl text-lg leading-8 vm-muted"
+              className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground"
             >
               A smarter way to welcome visitors, verify details, and manage
               every check-in from one secure dashboard. From kiosk-based
@@ -109,13 +110,13 @@ const WelcomePage = () => {
             >
               <Link
                 to="/checkin"
-                className="vm-btn-primary rounded-md px-6 py-3 text-sm font-semibold text-center"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 Start Check-In
               </Link>
               <Link
                 to="/login"
-                className="vm-btn-secondary rounded-md px-6 py-3 text-sm font-semibold text-center"
+                className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
               >
                 Admin Login
               </Link>
@@ -124,17 +125,17 @@ const WelcomePage = () => {
               variants={fadeUp}
               className="mt-10 grid max-w-2xl grid-cols-3 gap-4 text-sm"
             >
-              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
-                <p className="font-semibold vm-heading">OCR autofill</p>
-                <p className="mt-1 vm-muted">Reduce entry time</p>
+              <div className="border-l-2 border-primary pl-4">
+                <p className="font-semibold text-foreground">OCR autofill</p>
+                <p className="mt-1 text-muted-foreground">Reduce entry time</p>
               </div>
-              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
-                <p className="font-semibold vm-heading">Kiosk-ready</p>
-                <p className="mt-1 vm-muted">Station check-ins</p>
+              <div className="border-l-2 border-primary pl-4">
+                <p className="font-semibold text-foreground">Kiosk-ready</p>
+                <p className="mt-1 text-muted-foreground">Station check-ins</p>
               </div>
-              <div className="border-l-2 border-[var(--vm-primary)] pl-4">
-                <p className="font-semibold vm-heading">Admin control</p>
-                <p className="mt-1 vm-muted">Live operations</p>
+              <div className="border-l-2 border-primary pl-4">
+                <p className="font-semibold text-foreground">Admin control</p>
+                <p className="mt-1 text-muted-foreground">Live operations</p>
               </div>
             </motion.div>
           </motion.div>
@@ -145,7 +146,7 @@ const WelcomePage = () => {
             transition={{ duration: 0.38, ease: 'easeOut', delay: 0.12 }}
             className="relative"
           >
-            <div className="vm-card overflow-hidden rounded-2xl p-2">
+            <Card className="vm-card overflow-hidden rounded-2xl p-2">
               <div className="relative overflow-hidden rounded-xl">
                 <img
                   src="/homePage.png"
@@ -154,21 +155,21 @@ const WelcomePage = () => {
                 />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent" />
               </div>
-            </div>
+            </Card>
           </motion.div>
         </div>
       </section>
 
       <section
         id="platform"
-        className="bg-[var(--vm-content-bg)] px-4 py-10 sm:px-6 lg:px-8"
+        className="bg-muted/30 px-4 py-10 sm:px-6 lg:px-8"
       >
         <div className="mx-auto max-w-7xl">
           <div className="mb-7 max-w-3xl">
-            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
+            <p className="text-sm font-semibold uppercase text-primary">
               Platform
             </p>
-            <h2 className="mt-3 text-3xl font-semibold vm-heading sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold text-foreground sm:text-4xl">
               Built for controlled, high-volume reception workflows.
             </h2>
           </div>
@@ -183,24 +184,24 @@ const WelcomePage = () => {
             {platformCards.map((card) => {
               const Icon = card.icon;
               return (
-                <motion.article
-                  variants={fadeUp}
-                  key={card.title}
-                  className="vm-card rounded-lg p-5"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--vm-primary)]/20 bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]">
-                      <Icon className="h-5 w-5" strokeWidth={1.8} />
+                <motion.div variants={fadeUp} key={card.title}>
+                  <Card className="vm-card rounded-lg p-5">
+                    <div className="mb-5 flex items-center justify-between gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                        <Icon className="h-5 w-5" strokeWidth={1.8} />
+                      </div>
+                      <Badge className="rounded-md px-3 py-1 text-xs font-semibold">
+                        {card.metric}
+                      </Badge>
                     </div>
-                    <span className="vm-pill rounded-md px-3 py-1 text-xs font-semibold">
-                      {card.metric}
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-semibold vm-heading">
-                    {card.title}
-                  </h3>
-                  <p className="mt-3 leading-7 vm-muted">{card.body}</p>
-                </motion.article>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {card.title}
+                    </h3>
+                    <p className="mt-3 leading-7 text-muted-foreground">
+                      {card.body}
+                    </p>
+                  </Card>
+                </motion.div>
               );
             })}
           </motion.div>
@@ -209,17 +210,17 @@ const WelcomePage = () => {
 
       <section
         id="workflow"
-        className="border-y border-[var(--vm-border)] bg-[var(--vm-surface)] px-4 py-10 sm:px-6 lg:px-8"
+        className="border-y border-border bg-background px-4 py-10 sm:px-6 lg:px-8"
       >
         <div className="mx-auto grid max-w-7xl gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
+            <p className="text-sm font-semibold uppercase text-primary">
               Workflow
             </p>
-            <h2 className="mt-3 text-3xl font-semibold vm-heading sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-semibold text-foreground sm:text-4xl">
               From document capture to dashboard visibility.
             </h2>
-            <p className="mt-4 max-w-2xl leading-8 vm-muted">
+            <p className="mt-4 max-w-2xl leading-8 text-muted-foreground">
               Vistamate supports self-service station kiosks and front-desk
               assisted check-ins while preserving a consistent experience for
               administrators.
@@ -240,13 +241,15 @@ const WelcomePage = () => {
                     ease: 'easeOut',
                     delay: index * 0.05,
                   }}
-                  className="vm-panel rounded-lg p-4"
+                  className="rounded-lg border border-border bg-card p-4"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--vm-primary)]/20 bg-[var(--vm-primary-soft)] text-[var(--vm-primary)]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
                       <StepIcon className="h-5 w-5" strokeWidth={1.8} />
                     </span>
-                    <span className="font-medium vm-heading">{step.label}</span>
+                    <span className="font-medium text-foreground">
+                      {step.label}
+                    </span>
                   </div>
                 </motion.div>
               );
@@ -255,31 +258,31 @@ const WelcomePage = () => {
         </div>
       </section>
 
-      <section className="bg-[var(--vm-content-bg)] px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-lg vm-card p-6 md:flex-row md:items-center">
+      <section className="bg-muted/30 px-4 py-10 sm:px-6 lg:px-8">
+        <Card className="vm-card mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-lg p-6 md:flex-row md:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase text-[var(--vm-primary)]">
+            <p className="text-sm font-semibold uppercase text-primary">
               Ready for the next arrival
             </p>
-            <h2 className="mt-2 text-2xl font-semibold vm-heading">
+            <h2 className="mt-2 text-2xl font-semibold text-foreground">
               Start a check-in or open the admin dashboard.
             </h2>
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
               to="/checkin"
-              className="vm-btn-primary rounded-md px-6 py-3 text-sm font-semibold text-center"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Start Check-In
             </Link>
             <Link
               to="/login"
-              className="vm-btn-secondary rounded-md px-6 py-3 text-sm font-semibold text-center"
+              className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
             >
               Admin Login
             </Link>
           </div>
-        </div>
+        </Card>
       </section>
     </PublicLayout>
   );

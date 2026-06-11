@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Button } from '@mieweb/ui';
+import { Menu } from 'lucide-react';
 
 import ThemeToggle from '/imports/ui/components/ThemeToggle';
 
@@ -16,8 +17,8 @@ const sidebarLinkClass = ({ isActive }) =>
   [
     'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
     isActive
-      ? 'bg-[#123f4c] text-[#55ddd8] shadow-sm'
-      : 'text-slate-300 hover:bg-white/10 hover:text-white',
+      ? 'bg-[var(--vm-sidebar-soft)] text-[var(--vm-primary)]'
+      : 'text-neutral-300 hover:bg-white/10 hover:text-white',
   ].join(' ');
 
 export default function AdminShell({
@@ -26,6 +27,7 @@ export default function AdminShell({
   children,
 }) {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const onLogout = () => {
     Meteor.logout(() => navigate('/'));
@@ -44,7 +46,7 @@ export default function AdminShell({
           </div>
 
           <div className="vm-sidebar-card mx-5 rounded-xl p-3">
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+            <p className="text-xs uppercase tracking-wide text-neutral-400">
               Active location
             </p>
             <p className="mt-1 truncate text-sm font-semibold text-white">
@@ -69,46 +71,40 @@ export default function AdminShell({
               );
             })}
           </nav>
-
-          {/* <div className="m-5 rounded-2xl bg-[#123f4c] p-5">
-            <p className="text-sm font-semibold text-white">Setup progress</p>
-            <p className="mt-1 text-xs text-slate-400">
-              Stations, surveys, and check-in flow configured.
-            </p>
-            <div className="mt-4 h-2 rounded-full bg-white/10">
-              <div className="h-full w-4/5 rounded-full bg-[#55ddd8]" />
-            </div>
-            <p className="mt-4 text-sm font-semibold text-[#f6d883]">
-              Continue setup →
-            </p>
-          </div> */}
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="vm-topbar flex h-20 items-center justify-between gap-4 border-b px-4 sm:px-6 lg:px-8">
             <div className="vm-content flex min-w-0 flex-1 flex-col">
-              <div className="dropdown lg:hidden">
-                <button
+              <div className="relative lg:hidden">
+                <Button
                   type="button"
-                  tabIndex={0}
-                  className="btn btn-ghost btn-square btn-sm rounded-xl"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl"
                   aria-label="Open navigation"
+                  aria-expanded={mobileMenuOpen}
+                  onClick={() => setMobileMenuOpen((o) => !o)}
                 >
-                  <MenuIcon />
-                </button>
+                  <Menu className="h-5 w-5" />
+                </Button>
 
-                <ul
-                  tabIndex={0}
-                  className="menu dropdown-content z-50 mt-3 w-64 rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
-                >
-                  {navItems.map((item) => (
-                    <li key={item.to}>
-                      <NavLink to={item.to} end={item.end}>
-                        {item.label}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
+                {mobileMenuOpen && (
+                  <ul className="absolute left-0 top-full z-50 mt-2 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl">
+                    {navItems.map((item) => (
+                      <li key={item.to}>
+                        <NavLink
+                          to={item.to}
+                          end={item.end}
+                          className="block rounded-xl px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {item.label}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div>
@@ -129,7 +125,7 @@ export default function AdminShell({
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl border-[#d9eceb] bg-white text-sm font-semibold text-[#17323b] hover:bg-[#e9f7f6]"
+                className="rounded-xl text-sm font-semibold"
                 onClick={onLogout}
               >
                 Logout
@@ -143,38 +139,6 @@ export default function AdminShell({
         </div>
       </div>
     </div>
-  );
-}
-
-function LogoMark() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 3l7 4v5c0 4.4-2.8 7.7-7 9-4.2-1.3-7-4.6-7-9V7l7-4Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 11h6M12 8v6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-      />
-    </svg>
   );
 }
 

@@ -27,8 +27,6 @@ build/
 # Model artifacts and training outputs
 inference-service/models/*.onnx
 inference-service/models/*.pt
-*.engine
-*.tflite
-datasets/
-runs/
-*.zip
+
+# Local AI/Copilot reference docs
+.copilot-context/

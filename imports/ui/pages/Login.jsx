@@ -3,6 +3,7 @@ import React from 'react';
 import { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useNavigate } from 'react-router-dom';
+import { Card, Input, Button } from '@mieweb/ui';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -22,34 +23,30 @@ const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900">
-            <form onSubmit={handleLogin} className="bg-white dark:bg-slate-800 p-8 rounded shadow-md w-full max-w-sm space-y-4">
-                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Admin Login</h2>
-                {error && <p className="text-red-500 text-sm">{error}</p>}
-
-                <input
-                    type="email"
-                    className="w-full p-2 rounded border dark:bg-slate-700 dark:text-white"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    className="w-full p-2 rounded border dark:bg-slate-700 dark:text-white"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button
-                    type="submit"
-                    className="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded"
-                >
-                    Login
-                </button>
-            </form>
+        <div className="flex items-center justify-center min-h-screen bg-background">
+            <Card className="w-full max-w-sm p-8 shadow-md">
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <h2 className="text-xl font-bold text-foreground">Admin Login</h2>
+                    {error && <p className="text-destructive text-sm">{error}</p>}
+                    <Input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <Button type="submit" variant="primary" className="w-full">
+                        Login
+                    </Button>
+                </form>
+            </Card>
         </div>
     );
 };
