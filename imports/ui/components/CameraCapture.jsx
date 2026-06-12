@@ -1,4 +1,3 @@
-/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -57,21 +56,6 @@ const PHASE = {
   PROCESSING: 'processing',
 };
 
-// ---- Loose card-shape helpers ----
-const CARD_RATIO = 1.58;
-const RATIO_TOL = 0.4;
-const MIN_AREA_FRAC_UI = 0.05;
-const MIN_IOU = 0.03;
-
-const dot = (ax, ay, bx, by) => ax * bx + ay * by;
-const len = (ax, ay) => Math.hypot(ax, ay) || 1e-6;
-const angleCos = (p, q, r) => {
-  const ux = p[0] - q[0],
-    uy = p[1] - q[1];
-  const vx = r[0] - q[0],
-    vy = r[1] - q[1];
-  return dot(ux, uy, vx, vy) / (len(ux, uy) * len(vx, vy));
-};
 const rightAngleScore = (quad) => {
   const coses = [
     Math.abs(angleCos(quad[3], quad[0], quad[1])),
@@ -191,8 +175,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   // FIX: lastFrameData and isCheckingOCR were useState; interval callbacks
   //      captured their initial value and never saw updates → detection
   //      always returned early or ran in parallel.
-  const lastFrameDataRef = useRef(null); // replaces useState(null) for lastFrameData
-  const isCheckingRef = useRef(false); // replaces useState(false) for isCheckingOCR
   const steadyCountRef = useRef(0); // replaces useState(0) for steadyCount
   const hasCapturedRef = useRef(false); // mirrors hasCaptured state for interval reads
   const aiCheckingRef = useRef(false);
@@ -241,15 +223,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   }, []);
 
   // ── Capture helpers ─────────────────────────────────────────────────────
-  const doCapture = useCallback(() => {
-    setPhase(PHASE.CAPTURING);
-    const b64 = captureToBase64(videoRef, canvasRef);
-    if (!b64) return;
-    hasCapturedRef.current = true;
-    setHasCaptured(true);
-    setPhase(PHASE.PROCESSING);
-    onCapture?.(b64);
-  }, [onCapture]);
 
   const doCaptureWithROI = useCallback(
     (roiB64) => {
