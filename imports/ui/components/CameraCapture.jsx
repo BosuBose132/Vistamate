@@ -56,17 +56,6 @@ const PHASE = {
   PROCESSING: 'processing',
 };
 
-const rightAngleScore = (quad) => {
-  const coses = [
-    Math.abs(angleCos(quad[3], quad[0], quad[1])),
-    Math.abs(angleCos(quad[0], quad[1], quad[2])),
-    Math.abs(angleCos(quad[1], quad[2], quad[3])),
-    Math.abs(angleCos(quad[2], quad[3], quad[0])),
-  ];
-  const scores = coses.map((c) => 1 - Math.min(1, c));
-  return (scores[0] + scores[1] + scores[2] + scores[3]) / 4;
-};
-
 const StatusBadge = ({ phase, ocrStatus }) => {
   const map = {
     [PHASE.ALIGN]: { txt: 'Place card', variant: 'outline' },
@@ -109,25 +98,6 @@ const LoadingDot = ({ phase }) => (
     }`}
   />
 );
-
-const bboxOfQuad = (quad) => {
-  const xs = quad.map((p) => p[0]),
-    ys = quad.map((p) => p[1]);
-  return {
-    x: Math.min(...xs),
-    y: Math.min(...ys),
-    w: Math.max(...xs) - Math.min(...xs),
-    h: Math.max(...ys) - Math.min(...ys),
-  };
-};
-
-const iouRect = (a, b) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const inter = ix * iy;
-  const union = a.w * a.h + b.w * b.h - inter;
-  return union > 0 ? inter / union : 0;
-};
 
 const captureToBase64 = (videoRef, canvasRef) => {
   const video = videoRef.current;
@@ -223,17 +193,19 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   }, []);
 
   // ── Capture helpers ─────────────────────────────────────────────────────
+  const doCapture = useCallback(() => {
+    setPhase(PHASE.CAPTURING);
 
-  const doCaptureWithROI = useCallback(
-    (roiB64) => {
-      setPhase(PHASE.CAPTURING);
-      hasCapturedRef.current = true;
-      setHasCaptured(true);
-      setPhase(PHASE.PROCESSING);
-      onCapture?.(roiB64 || captureToBase64(videoRef, canvasRef));
-    },
-    [onCapture],
-  );
+    const b64 = captureToBase64(videoRef, canvasRef);
+    if (!b64) return;
+
+    hasCapturedRef.current = true;
+    setHasCaptured(true);
+    setPhase(PHASE.PROCESSING);
+
+    onCapture?.(b64);
+  }, [onCapture]);
+
   const checkAIFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
