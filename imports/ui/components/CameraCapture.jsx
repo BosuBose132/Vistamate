@@ -14,6 +14,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  DocumentDetectionOverlay,
   Spinner,
 } from '@mieweb/ui';
 const ENABLE_AI_DETECTION = true;
@@ -295,6 +296,31 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     return () => clearInterval(id);
   }, [checkAIFrame]);
 
+  const detectionOverlayMetrics = {
+    focusScore: videoReady ? 100 : 0,
+    isInFocus: videoReady,
+    brightness: videoReady ? 128 : 0,
+    isBrightnessOk: videoReady,
+    boundary: null,
+    isDocumentDetected: isBoxGreen,
+    documentCoverage: isBoxGreen ? 76 : 0,
+    isStable:
+      phase === PHASE.READY ||
+      phase === PHASE.CAPTURING ||
+      phase === PHASE.PROCESSING,
+    stabilityDuration: steadyCountRef.current * AI_POLL_MS,
+  };
+
+  const detectionVideoDimensions = {
+    width: videoRef.current?.videoWidth || 0,
+    height: videoRef.current?.videoHeight || 0,
+  };
+
+  const isReadyForOverlayCapture =
+    phase === PHASE.READY ||
+    phase === PHASE.CAPTURING ||
+    phase === PHASE.PROCESSING;
+
   // ── JSX ────────────────────────────────────────────────────────────────
   return (
     <div className="w-full">
@@ -350,28 +376,23 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
                 </div>
               )}
 
-              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
-                <motion.div
-                  animate={{
-                    borderColor: isBoxGreen
-                      ? 'rgb(34 197 94)'
-                      : 'rgba(255,255,255,0.58)',
-                  }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className={`relative rounded-2xl border bg-transparent text-center ${
-                    isBoxGreen
-                      ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
-                      : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
-                  }`}
-                  style={{ width: '76%', aspectRatio: '1.58' }}
-                >
+              <div className="pointer-events-none absolute inset-0 z-10">
+                <DocumentDetectionOverlay
+                  metrics={detectionOverlayMetrics}
+                  isReadyForCapture={isReadyForOverlayCapture}
+                  captureCountdown={0}
+                  videoDimensions={detectionVideoDimensions}
+                  showDetailedMetrics={false}
+                />
+
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
                   <Badge
                     variant={isBoxGreen ? 'success' : 'outline'}
-                    className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm"
+                    className="rounded-md px-2.5 py-1 text-xs font-medium shadow-sm"
                   >
                     {isBoxGreen ? 'Hold steady' : 'Place card'}
                   </Badge>
-                </motion.div>
+                </div>
               </div>
 
               <AnimatePresence>
