@@ -4,8 +4,19 @@ import { Meteor } from 'meteor/meteor';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Check } from 'lucide-react';
-import { Badge, Alert, Button, Spinner } from '@mieweb/ui';
-
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Spinner,
+} from '@mieweb/ui';
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
 const AI_CONFIDENCE_MIN = 0.45;
@@ -345,128 +356,139 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
       <motion.div
         layout
         transition={{ duration: 0.28, ease: 'easeOut' }}
-        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-border bg-card/95 text-foreground shadow-xl"
+        className="mx-auto w-full max-w-4xl"
       >
-        <div className="border-b border-border bg-card/90 px-4 py-3 sm:px-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold">Check in</h2>
-              <span className="text-sm text-muted-foreground">
-                Place your card inside the frame
-              </span>
-            </div>
-            <StatusBadge phase={phase} ocrStatus={ocrStatus} />
-          </div>
-        </div>
-
-        <div className="p-3 sm:p-4">
-          {/* Video area */}
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-neutral shadow-inner">
-            <div className="aspect-video w-full">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
-                  videoReady ? 'opacity-100' : 'opacity-50'
-                }`}
-              />
-              <canvas ref={canvasRef} className="hidden" />
-            </div>
-
-            {!videoReady && !error && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-foreground">
-                <div className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 px-4 py-3 backdrop-blur">
-                  <Spinner size="sm" />
-                  <span className="text-sm font-medium">Starting camera</span>
-                </div>
+        <Card
+          padding="none"
+          variant="elevated"
+          className="overflow-hidden border border-border bg-card/95 text-foreground"
+        >
+          <CardHeader className="border-b border-border bg-card/90 px-4 py-3 sm:px-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardTitle as="h2" className="text-xl">
+                  Card detection
+                </CardTitle>
+                <CardDescription>
+                  Place your card inside the frame
+                </CardDescription>
               </div>
-            )}
 
-            {/* Overlay guide box */}
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
-              <motion.div
-                animate={{
-                  borderColor: isBoxGreen
-                    ? 'rgb(34 197 94)'
-                    : 'rgba(255,255,255,0.58)',
-                }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className={`relative rounded-2xl border bg-transparent text-center ${
-                  isBoxGreen
-                    ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
-                    : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
-                }`}
-                style={{ width: '76%', aspectRatio: '1.58' }}
-              >
-                <span
-                  className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm ${
-                    isBoxGreen
-                      ? 'bg-success text-success-foreground'
-                      : 'bg-card/75 text-foreground/70'
+              <StatusBadge phase={phase} ocrStatus={ocrStatus} />
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-3 sm:p-4">
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-neutral shadow-inner">
+              <div className="aspect-video w-full">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
+                    videoReady ? 'opacity-100' : 'opacity-50'
                   }`}
+                />
+                <canvas ref={canvasRef} className="hidden" />
+              </div>
+
+              {!videoReady && !error && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-foreground">
+                  <Card
+                    padding="sm"
+                    className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 text-white backdrop-blur"
+                  >
+                    <Spinner size="sm" />
+                    <span className="text-sm font-medium">Starting camera</span>
+                  </Card>
+                </div>
+              )}
+
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
+                <motion.div
+                  animate={{
+                    borderColor: isBoxGreen
+                      ? 'rgb(34 197 94)'
+                      : 'rgba(255,255,255,0.58)',
+                  }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  className={`relative rounded-2xl border bg-transparent text-center ${
+                    isBoxGreen
+                      ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
+                      : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
+                  }`}
+                  style={{ width: '76%', aspectRatio: '1.58' }}
                 >
-                  {isBoxGreen ? 'Hold steady' : 'Place card'}
-                </span>
-              </motion.div>
+                  <Badge
+                    variant={isBoxGreen ? 'success' : 'outline'}
+                    className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm"
+                  >
+                    {isBoxGreen ? 'Hold steady' : 'Place card'}
+                  </Badge>
+                </motion.div>
+              </div>
+
+              <AnimatePresence>
+                {hasCaptured && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="absolute inset-0 z-30 flex items-center justify-center bg-card/88 px-6 text-center text-foreground backdrop-blur-md"
+                  >
+                    <Card
+                      padding="lg"
+                      className="flex flex-col items-center justify-center gap-3 border border-border bg-card/95 text-center shadow-xl"
+                    >
+                      {ocrStatus === 'processed' ? (
+                        <>
+                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
+                            <Check className="h-7 w-7" strokeWidth={2} />
+                          </div>
+                          <div>
+                            <p className="font-semibold">Review details</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Spinner size="lg" className="text-primary" />
+                          <div>
+                            <p className="font-semibold">Scanning</p>
+                          </div>
+                        </>
+                      )}
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Post-capture overlay */}
-            <AnimatePresence>
-              {hasCaptured && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-card/88 px-6 text-center text-foreground backdrop-blur-md"
-                >
-                  {ocrStatus === 'processed' ? (
-                    <>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
-                        <Check className="h-7 w-7" strokeWidth={2} />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Review details</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Spinner size="lg" className="text-primary" />
-                      <div>
-                        <p className="font-semibold">Scanning</p>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                {error}
+              </Alert>
+            )}
+          </CardContent>
 
-          {/* Error */}
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              {error}
-            </Alert>
-          )}
-
-          {/* Manual capture button */}
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="primary"
-              className="min-w-44 rounded-md"
-              onClick={doCapture}
-              disabled={
-                hasCaptured ||
-                phase === PHASE.CAPTURING ||
-                phase === PHASE.PROCESSING
-              }
-            >
-              {hasCaptured ? 'Scanning' : 'Capture'}
-            </Button>
-          </div>
-        </div>
+          <CardFooter className="border-t border-border px-4 py-4">
+            <CardActions align="center" className="w-full pt-0">
+              <Button
+                variant="primary"
+                className="min-w-44 rounded-md"
+                onClick={doCapture}
+                disabled={
+                  hasCaptured ||
+                  phase === PHASE.CAPTURING ||
+                  phase === PHASE.PROCESSING
+                }
+              >
+                {hasCaptured ? 'Scanning' : 'Capture'}
+              </Button>
+            </CardActions>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   );
