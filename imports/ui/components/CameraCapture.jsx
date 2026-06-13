@@ -1,11 +1,22 @@
-/* eslint-disable-next-line unused-imports/no-unused-imports */
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Check } from 'lucide-react';
-import { Badge, Alert, Button, Spinner } from '@mieweb/ui';
-
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  DocumentDetectionOverlay,
+  Spinner,
+} from '@mieweb/ui';
 const ENABLE_AI_DETECTION = true;
 const AI_POLL_MS = 1000;
 const AI_CONFIDENCE_MIN = 0.45;
@@ -44,32 +55,6 @@ const PHASE = {
   READY: 'ready',
   CAPTURING: 'capturing',
   PROCESSING: 'processing',
-};
-
-// ---- Loose card-shape helpers ----
-const CARD_RATIO = 1.58;
-const RATIO_TOL = 0.4;
-const MIN_AREA_FRAC_UI = 0.05;
-const MIN_IOU = 0.03;
-
-const dot = (ax, ay, bx, by) => ax * bx + ay * by;
-const len = (ax, ay) => Math.hypot(ax, ay) || 1e-6;
-const angleCos = (p, q, r) => {
-  const ux = p[0] - q[0],
-    uy = p[1] - q[1];
-  const vx = r[0] - q[0],
-    vy = r[1] - q[1];
-  return dot(ux, uy, vx, vy) / (len(ux, uy) * len(vx, vy));
-};
-const rightAngleScore = (quad) => {
-  const coses = [
-    Math.abs(angleCos(quad[3], quad[0], quad[1])),
-    Math.abs(angleCos(quad[0], quad[1], quad[2])),
-    Math.abs(angleCos(quad[1], quad[2], quad[3])),
-    Math.abs(angleCos(quad[2], quad[3], quad[0])),
-  ];
-  const scores = coses.map((c) => 1 - Math.min(1, c));
-  return (scores[0] + scores[1] + scores[2] + scores[3]) / 4;
 };
 
 const StatusBadge = ({ phase, ocrStatus }) => {
@@ -114,25 +99,6 @@ const LoadingDot = ({ phase }) => (
     }`}
   />
 );
-
-const bboxOfQuad = (quad) => {
-  const xs = quad.map((p) => p[0]),
-    ys = quad.map((p) => p[1]);
-  return {
-    x: Math.min(...xs),
-    y: Math.min(...ys),
-    w: Math.max(...xs) - Math.min(...xs),
-    h: Math.max(...ys) - Math.min(...ys),
-  };
-};
-
-const iouRect = (a, b) => {
-  const ix = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
-  const iy = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
-  const inter = ix * iy;
-  const union = a.w * a.h + b.w * b.h - inter;
-  return union > 0 ? inter / union : 0;
-};
 
 const captureToBase64 = (videoRef, canvasRef) => {
   const video = videoRef.current;
@@ -180,8 +146,6 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   // FIX: lastFrameData and isCheckingOCR were useState; interval callbacks
   //      captured their initial value and never saw updates → detection
   //      always returned early or ran in parallel.
-  const lastFrameDataRef = useRef(null); // replaces useState(null) for lastFrameData
-  const isCheckingRef = useRef(false); // replaces useState(false) for isCheckingOCR
   const steadyCountRef = useRef(0); // replaces useState(0) for steadyCount
   const hasCapturedRef = useRef(false); // mirrors hasCaptured state for interval reads
   const aiCheckingRef = useRef(false);
@@ -232,24 +196,17 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
   // ── Capture helpers ─────────────────────────────────────────────────────
   const doCapture = useCallback(() => {
     setPhase(PHASE.CAPTURING);
+
     const b64 = captureToBase64(videoRef, canvasRef);
     if (!b64) return;
+
     hasCapturedRef.current = true;
     setHasCaptured(true);
     setPhase(PHASE.PROCESSING);
+
     onCapture?.(b64);
   }, [onCapture]);
 
-  const doCaptureWithROI = useCallback(
-    (roiB64) => {
-      setPhase(PHASE.CAPTURING);
-      hasCapturedRef.current = true;
-      setHasCaptured(true);
-      setPhase(PHASE.PROCESSING);
-      onCapture?.(roiB64 || captureToBase64(videoRef, canvasRef));
-    },
-    [onCapture],
-  );
   const checkAIFrame = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -339,134 +296,165 @@ export default function CameraCapture({ onCapture, ocrStatus = 'idle' }) {
     return () => clearInterval(id);
   }, [checkAIFrame]);
 
+  const detectionOverlayMetrics = {
+    focusScore: videoReady ? 100 : 0,
+    isInFocus: videoReady,
+    brightness: videoReady ? 128 : 0,
+    isBrightnessOk: videoReady,
+    boundary: null,
+    isDocumentDetected: isBoxGreen,
+    documentCoverage: isBoxGreen ? 76 : 0,
+    isStable:
+      phase === PHASE.READY ||
+      phase === PHASE.CAPTURING ||
+      phase === PHASE.PROCESSING,
+    stabilityDuration: steadyCountRef.current * AI_POLL_MS,
+  };
+
+  const detectionVideoDimensions = {
+    width: videoRef.current?.videoWidth || 0,
+    height: videoRef.current?.videoHeight || 0,
+  };
+
+  const isReadyForOverlayCapture =
+    phase === PHASE.READY ||
+    phase === PHASE.CAPTURING ||
+    phase === PHASE.PROCESSING;
+
   // ── JSX ────────────────────────────────────────────────────────────────
   return (
     <div className="w-full">
       <motion.div
         layout
         transition={{ duration: 0.28, ease: 'easeOut' }}
-        className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-border bg-card/95 text-foreground shadow-xl"
+        className="mx-auto w-full max-w-4xl"
       >
-        <div className="border-b border-border bg-card/90 px-4 py-3 sm:px-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-semibold">Check in</h2>
-              <span className="text-sm text-muted-foreground">
-                Place your card inside the frame
-              </span>
-            </div>
-            <StatusBadge phase={phase} ocrStatus={ocrStatus} />
-          </div>
-        </div>
+        <Card
+          padding="none"
+          variant="elevated"
+          className="overflow-hidden border border-border bg-card/95 text-foreground"
+        >
+          <CardHeader className="border-b border-border bg-card/90 px-4 py-3 sm:px-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <CardTitle as="h2" className="text-xl">
+                  Card detection
+                </CardTitle>
+                <CardDescription>
+                  Place your card inside the frame
+                </CardDescription>
+              </div>
 
-        <div className="p-3 sm:p-4">
-          {/* Video area */}
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-neutral shadow-inner">
-            <div className="aspect-video w-full">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
-                  videoReady ? 'opacity-100' : 'opacity-50'
-                }`}
-              />
-              <canvas ref={canvasRef} className="hidden" />
+              <StatusBadge phase={phase} ocrStatus={ocrStatus} />
             </div>
+          </CardHeader>
 
-            {!videoReady && !error && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-foreground">
-                <div className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 px-4 py-3 backdrop-blur">
-                  <Spinner size="sm" />
-                  <span className="text-sm font-medium">Starting camera</span>
+          <CardContent className="p-3 sm:p-4">
+            <div className="relative overflow-hidden rounded-2xl border border-border bg-neutral shadow-inner">
+              <div className="aspect-video w-full">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`h-full w-full bg-neutral object-contain transition-opacity duration-300 ${
+                    videoReady ? 'opacity-100' : 'opacity-50'
+                  }`}
+                />
+                <canvas ref={canvasRef} className="hidden" />
+              </div>
+
+              {!videoReady && !error && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-neutral/40 text-foreground">
+                  <Card
+                    padding="sm"
+                    className="flex items-center gap-3 rounded-md border border-white/15 bg-black/35 text-white backdrop-blur"
+                  >
+                    <Spinner size="sm" />
+                    <span className="text-sm font-medium">Starting camera</span>
+                  </Card>
+                </div>
+              )}
+
+              <div className="pointer-events-none absolute inset-0 z-10">
+                <DocumentDetectionOverlay
+                  metrics={detectionOverlayMetrics}
+                  isReadyForCapture={isReadyForOverlayCapture}
+                  captureCountdown={0}
+                  videoDimensions={detectionVideoDimensions}
+                  showDetailedMetrics={false}
+                />
+
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+                  <Badge
+                    variant={isBoxGreen ? 'success' : 'outline'}
+                    className="rounded-md px-2.5 py-1 text-xs font-medium shadow-sm"
+                  >
+                    {isBoxGreen ? 'Hold steady' : 'Place card'}
+                  </Badge>
                 </div>
               </div>
-            )}
 
-            {/* Overlay guide box */}
-            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center p-8">
-              <motion.div
-                animate={{
-                  borderColor: isBoxGreen
-                    ? 'rgb(34 197 94)'
-                    : 'rgba(255,255,255,0.58)',
-                }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                className={`relative rounded-2xl border bg-transparent text-center ${
-                  isBoxGreen
-                    ? 'shadow-[0_0_34px_rgba(34,197,94,0.32)]'
-                    : 'shadow-[0_20px_70px_rgba(0,0,0,0.16)]'
-                }`}
-                style={{ width: '76%', aspectRatio: '1.58' }}
-              >
-                <span
-                  className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm ${
-                    isBoxGreen
-                      ? 'bg-success text-success-foreground'
-                      : 'bg-card/75 text-foreground/70'
-                  }`}
-                >
-                  {isBoxGreen ? 'Hold steady' : 'Place card'}
-                </span>
-              </motion.div>
+              <AnimatePresence>
+                {hasCaptured && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="absolute inset-0 z-30 flex items-center justify-center bg-card/88 px-6 text-center text-foreground backdrop-blur-md"
+                  >
+                    <Card
+                      padding="lg"
+                      className="flex flex-col items-center justify-center gap-3 border border-border bg-card/95 text-center shadow-xl"
+                    >
+                      {ocrStatus === 'processed' ? (
+                        <>
+                          <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
+                            <Check className="h-7 w-7" strokeWidth={2} />
+                          </div>
+                          <div>
+                            <p className="font-semibold">Review details</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Spinner size="lg" className="text-primary" />
+                          <div>
+                            <p className="font-semibold">Scanning</p>
+                          </div>
+                        </>
+                      )}
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Post-capture overlay */}
-            <AnimatePresence>
-              {hasCaptured && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-card/88 px-6 text-center text-foreground backdrop-blur-md"
-                >
-                  {ocrStatus === 'processed' ? (
-                    <>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-success/12 text-success">
-                        <Check className="h-7 w-7" strokeWidth={2} />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Review details</p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Spinner size="lg" className="text-primary" />
-                      <div>
-                        <p className="font-semibold">Scanning</p>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                {error}
+              </Alert>
+            )}
+          </CardContent>
 
-          {/* Error */}
-          {error && (
-            <Alert variant="destructive" className="mt-4">
-              {error}
-            </Alert>
-          )}
-
-          {/* Manual capture button */}
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="primary"
-              className="min-w-44 rounded-md"
-              onClick={doCapture}
-              disabled={
-                hasCaptured ||
-                phase === PHASE.CAPTURING ||
-                phase === PHASE.PROCESSING
-              }
-            >
-              {hasCaptured ? 'Scanning' : 'Capture'}
-            </Button>
-          </div>
-        </div>
+          <CardFooter className="border-t border-border px-4 py-4">
+            <CardActions align="center" className="w-full pt-0">
+              <Button
+                variant="primary"
+                className="min-w-44 rounded-md"
+                onClick={doCapture}
+                disabled={
+                  hasCaptured ||
+                  phase === PHASE.CAPTURING ||
+                  phase === PHASE.PROCESSING
+                }
+              >
+                {hasCaptured ? 'Scanning' : 'Capture'}
+              </Button>
+            </CardActions>
+          </CardFooter>
+        </Card>
       </motion.div>
     </div>
   );
